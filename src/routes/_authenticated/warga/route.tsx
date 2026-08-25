@@ -11,7 +11,7 @@ function WargaLayout() {
   return (
     <RoleGate role="warga">
       <MobileShell
-        title="Bank Sampah"
+        title="LESTARI MAGETAN"
         subtitle="Warga"
         items={[
           { to: "/warga", label: "Beranda", icon: Home, exact: true },

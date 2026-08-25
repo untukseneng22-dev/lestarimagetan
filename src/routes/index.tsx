@@ -8,11 +8,11 @@ import { LoadingScreen } from "@/components/RoleGate";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "LESTARI MAGETAN — Setor Sampah, Pantau Saldo" },
+      { title: "LESTARI MAGETAN — Layanan Elektronik Sampah & Tabungan" },
       {
         name: "description",
         content:
-          "Aplikasi LESTARI MAGETAN untuk warga, tim lapangan, dan admin: setoran sampah, tabungan saldo, harga terkini, penjemputan, dan notifikasi WhatsApp.",
+          "LESTARI MAGETAN — Layanan Elektronik Sampah, Tabungan, dan Rawat Lingkungan Magetan untuk warga, tim lapangan, dan admin.",
       },
       { property: "og:title", content: "LESTARI MAGETAN" },
       {

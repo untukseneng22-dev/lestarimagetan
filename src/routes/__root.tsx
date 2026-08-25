@@ -83,13 +83,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Aplikasi LESTARI MAGETAN: setor sampah, pantau saldo tabungan, harga sampah terkini, penjemputan, dan aduan — terintegrasi notifikasi WhatsApp.",
+          "LESTARI MAGETAN — Layanan Elektronik Sampah, Tabungan, dan Rawat Lingkungan Magetan. Setor sampah, pantau saldo, dan jadwal penjemputan dalam satu aplikasi.",
       },
       { property: "og:title", content: "LESTARI MAGETAN" },
       {
         property: "og:description",
         content:
-          "Setor sampah, pantau saldo, dan kelola bank sampah lingkungan Anda secara digital.",
+          "Layanan Elektronik Sampah, Tabungan, dan Rawat Lingkungan Magetan.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
