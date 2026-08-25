@@ -132,6 +132,139 @@ export const createUserAccount = createServerFn({ method: "POST" })
     return { ok: true, userId: created.user.id };
   });
 
+const USERNAME_REGEX = /^[a-z0-9_.]{3,30}$/;
+
+export const updateUserAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        userId: z.string().uuid(),
+        fullName: z.string().trim().min(3).max(100),
+        phone: z.string().trim().max(20).optional(),
+        address: z.string().trim().max(255).optional(),
+        rt: z.string().trim().max(20).optional(),
+        username: z
+          .string()
+          .trim()
+          .toLowerCase()
+          .regex(USERNAME_REGEX, "Username 3-30 karakter: huruf kecil, angka, titik, atau garis bawah"),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireRole(supabase, userId, ["admin"]);
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        full_name: data.fullName,
+        phone: data.phone || null,
+        address: data.address || null,
+        rt: data.rt || null,
+      })
+      .eq("id", data.userId);
+    if (error) throw new Error(error.message);
+
+    // Jika username berubah, perbarui email internal di auth
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: target } = await supabaseAdmin.auth.admin.getUserById(data.userId);
+    const newEmail = `${data.username}@banksampah.id`;
+    if (target?.user && target.user.email !== newEmail) {
+      const { error: emailError } = await supabaseAdmin.auth.admin.updateUserById(data.userId, {
+        email: newEmail,
+        email_confirm: true,
+      });
+      if (emailError) throw new Error(`Profil tersimpan, tetapi username gagal diubah: ${emailError.message}`);
+    }
+    return { ok: true };
+  });
+
+export const resetUserPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        userId: z.string().uuid(),
+        password: z.string().min(6, "Kata sandi minimal 6 karakter").max(72),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireRole(supabase, userId, ["admin"]);
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: target, error } = await supabaseAdmin.auth.admin.updateUserById(data.userId, {
+      password: data.password,
+    });
+    if (error) throw new Error(error.message);
+
+    // Kirim kredensial baru via WhatsApp bila warga punya nomor
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name, phone")
+      .eq("id", data.userId)
+      .single();
+    const email = target?.user?.email ?? "";
+    const username = email.endsWith("@banksampah.id") ? email.replace(/@banksampah\.id$/, "") : email;
+    if (profile?.phone) {
+      await sendWhatsappNotification(supabase, {
+        phone: profile.phone,
+        name: profile.full_name,
+        event: "reset_sandi",
+        message: buildMessage("reset_sandi", {
+          nama: profile.full_name,
+          username,
+          password: data.password,
+        }),
+      });
+    }
+    return { ok: true };
+  });
+
+export const deleteUserAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ userId: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireRole(supabase, userId, ["admin"]);
+
+    if (data.userId === userId) throw new Error("Anda tidak dapat menghapus akun sendiri.");
+
+    // Cegah menghapus admin terakhir
+    const { data: targetRoles } = await supabase.from("user_roles").select("role").eq("user_id", data.userId);
+    if ((targetRoles ?? []).some((r) => r.role === "admin")) {
+      const { data: adminRoles } = await supabase.from("user_roles").select("user_id").eq("role", "admin");
+      if ((adminRoles ?? []).length <= 1) throw new Error("Tidak dapat menghapus admin terakhir.");
+    }
+
+    // Tolak penghapusan bila akun masih punya riwayat agar data laporan tetap utuh
+    const [tx, complaints, withdrawals, pickups, priceLogs] = await Promise.all([
+      supabase.from("transactions").select("id", { count: "exact", head: true }).or(`resident_id.eq.${data.userId},recorded_by.eq.${data.userId}`),
+      supabase.from("complaints").select("id", { count: "exact", head: true }).eq("resident_id", data.userId),
+      supabase.from("withdrawals").select("id", { count: "exact", head: true }).eq("resident_id", data.userId),
+      supabase.from("pickup_tasks").select("id", { count: "exact", head: true }).or(`resident_id.eq.${data.userId},assigned_to.eq.${data.userId}`),
+      supabase.from("price_history").select("id", { count: "exact", head: true }).eq("changed_by", data.userId),
+    ]);
+    const historyCount =
+      (tx.count ?? 0) + (complaints.count ?? 0) + (withdrawals.count ?? 0) + (pickups.count ?? 0) + (priceLogs.count ?? 0);
+    if (historyCount > 0) {
+      throw new Error(
+        "Akun tidak dapat dihapus karena masih memiliki riwayat (transaksi, aduan, pencairan, atau penjemputan). Hapus riwayat tersebut terlebih dahulu atau nonaktifkan dengan mengganti kata sandinya.",
+      );
+    }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("announcements").update({ created_by: null }).eq("created_by", data.userId);
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId);
+    await supabaseAdmin.from("profiles").delete().eq("id", data.userId);
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 // ---------- Harga sampah ----------
 export const listCategoriesAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
