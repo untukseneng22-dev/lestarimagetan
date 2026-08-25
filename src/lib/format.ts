@@ -40,6 +40,23 @@ export function formatTanggalWaktu(iso: string | Date | null | undefined): strin
   return `${formatTanggal(d)}, ${jam}.${menit}`;
 }
 
+export function todayISO(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = (d.getMonth() + 1).toString().padStart(2, "0");
+  const day = d.getDate().toString().padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+export function formatWaktu(iso: string | Date | null | undefined): string {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "-";
+  const jam = d.getHours().toString().padStart(2, "0");
+  const menit = d.getMinutes().toString().padStart(2, "0");
+  return `${jam}.${menit}`;
+}
+
 export function hariTanggalSekarang(now: Date): string {
   return formatTanggalPanjang(now);
 }
