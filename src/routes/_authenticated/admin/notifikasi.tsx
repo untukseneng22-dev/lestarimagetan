@@ -80,13 +80,13 @@ function NotifikasiPage() {
                     <TableCell><StatusBadge status={l.status} /></TableCell>
                   </TableRow>
                   {expanded.has(l.id) && (
-                    <TableRow key={`${l.id}-msg`}>
+                    <TableRow>
                       <TableCell colSpan={6} className="bg-muted/40">
                         <pre className="whitespace-pre-wrap rounded-lg bg-background p-3 font-sans text-sm">{l.message}</pre>
                       </TableCell>
                     </TableRow>
                   )}
-                </>
+                </Fragment>
               ))}
             </TableBody>
           </Table>
