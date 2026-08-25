@@ -596,3 +596,50 @@ export const assignPickup = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// ---------- Pengaturan jadwal layanan ----------
+export const updateAppSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        pickupSchedule: z.string().trim().min(3, "Jadwal minimal 3 karakter").max(255),
+        dropoffInfo: z.string().trim().min(3, "Info antar mandiri minimal 3 karakter").max(255),
+        notify: z.boolean(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireRole(supabase, userId, ["admin"]);
+
+    const { error } = await supabase.from("app_settings").upsert([
+      { key: "pickup_schedule", value: data.pickupSchedule, updated_by: userId },
+      { key: "dropoff_info", value: data.dropoffInfo, updated_by: userId },
+    ]);
+    if (error) throw new Error(error.message);
+
+    if (data.notify) {
+      const { data: roleRows } = await supabase.from("user_roles").select("user_id").eq("role", "warga");
+      const ids = (roleRows ?? []).map((r) => r.user_id);
+      if (ids.length > 0) {
+        const { data: wargaProfiles } = await supabase
+          .from("profiles")
+          .select("full_name, phone")
+          .in("id", ids);
+        for (const p of wargaProfiles ?? []) {
+          if (!p.phone) continue;
+          await sendWhatsappNotification(supabase, {
+            phone: p.phone,
+            name: p.full_name,
+            event: "jadwal_penjemputan",
+            message: buildMessage("jadwal_penjemputan", {
+              jadwal: data.pickupSchedule,
+              antar: data.dropoffInfo,
+            }),
+          });
+        }
+      }
+    }
+    return { ok: true };
+  });
