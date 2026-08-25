@@ -79,7 +79,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" })
       .single();
     await sendWhatsappNotification(supabase, {
       phone: profile?.phone ?? "-",
-      name: profile?.full_name,
+      name: profile?.full_name ?? null,
       event: "pengajuan_pencairan",
       message: buildMessage("pengajuan_pencairan", { jumlah: rupiah(data.amount) }),
     });

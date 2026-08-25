@@ -181,7 +181,7 @@ export const decideRegistration = createServerFn({ method: "POST" })
         .single();
       await sendWhatsappNotification(supabase, {
         phone: rtProfile?.phone ?? "-",
-        name: rtProfile?.full_name,
+        name: rtProfile?.full_name ?? null,
         event: "pengajuan_rt",
         message: buildMessage("pengajuan_rt", {
           nama: req.full_name,
@@ -423,11 +423,11 @@ export const respondComplaint = createServerFn({ method: "POST" })
       const labels: Record<string, string> = { baru: "Baru", diproses: "Diproses", selesai: "Selesai" };
       await sendWhatsappNotification(supabase, {
         phone: resident?.phone ?? "-",
-        name: resident?.full_name,
+        name: resident?.full_name ?? null,
         event: "status_aduan",
         message: buildMessage("status_aduan", {
           judul: complaint.title,
-          status: labels[data.status],
+          status: labels[data.status] ?? data.status,
           tanggapan: data.response ?? "",
         }),
       });
@@ -554,11 +554,11 @@ export const processWithdrawal = createServerFn({ method: "POST" })
       };
       await sendWhatsappNotification(supabase, {
         phone: resident?.phone ?? "-",
-        name: resident?.full_name,
+        name: resident?.full_name ?? null,
         event: "status_pencairan",
         message: buildMessage("status_pencairan", {
           jumlah: rupiah(Number(wd.amount)),
-          status: labels[data.status],
+          status: labels[data.status] ?? data.status,
           catatan: data.note ?? "",
         }),
       });
