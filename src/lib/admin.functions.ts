@@ -346,7 +346,7 @@ export const listTransactionsAdmin = createServerFn({ method: "GET" })
     return list.map((r) => ({
       ...r,
       resident_name: nameMap.get(r.resident_id) ?? "-",
-      recorded_by_name: nameMap.get(r.recorded_by) ?? "-",
+      recorded_by_name: r.recorded_by ? (nameMap.get(r.recorded_by) ?? "-") : "-",
     }));
   });
 
