@@ -8,15 +8,24 @@ export const getMyAccount = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     const [{ data: profile }, { data: roles }] = await Promise.all([
-      supabase.from("profiles").select("full_name, phone, address, rt").eq("id", userId).single(),
+      supabase.from("profiles").select("full_name, phone, address, rt, avatar_url").eq("id", userId).single(),
       supabase.from("user_roles").select("role").eq("user_id", userId),
     ]);
+    // avatar_url menyimpan path bucket privat; buat signed URL untuk ditampilkan.
+    let avatarUrl: string | null = null;
+    if (profile?.avatar_url) {
+      const { data: signed } = await supabase.storage
+        .from("avatars")
+        .createSignedUrl(profile.avatar_url, 60 * 60 * 24 * 7);
+      avatarUrl = signed?.signedUrl ?? null;
+    }
     return {
       id: userId,
       email: (context.claims?.email as string | undefined) ?? null,
       fullName: profile?.full_name ?? "Pengguna",
       phone: profile?.phone ?? null,
       address: profile?.address ?? null,
+      avatarUrl,
       rt: profile?.rt ?? null,
       role: (roles?.[0]?.role as string | undefined) ?? null,
     };
@@ -41,11 +50,11 @@ export const getAnnouncements = createServerFn({ method: "GET" })
 
 export const updateMyProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
+  // Warga/petugas hanya boleh mengganti foto profil; data diri diubah Admin.
   .inputValidator((data) =>
     z
       .object({
-        phone: z.string().trim().regex(/^(\+62|62|0)8\d{7,12}$/, "Nomor WhatsApp tidak valid").optional(),
-        address: z.string().trim().min(3).max(255).optional(),
+        avatarUrl: z.string().trim().max(500),
       })
       .parse(data),
   )
@@ -53,10 +62,7 @@ export const updateMyProfile = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { error } = await supabase
       .from("profiles")
-      .update({
-        ...(data.phone ? { phone: data.phone } : {}),
-        ...(data.address ? { address: data.address } : {}),
-      })
+      .update({ avatar_url: data.avatarUrl })
       .eq("id", userId);
     if (error) throw new Error(error.message);
     return { ok: true };

@@ -1,15 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
-import { Loader2, Phone, MapPin, ShieldCheck } from "lucide-react";
-import { toast } from "sonner";
-import { updateMyProfile } from "@/lib/common.functions";
+import { Phone, MapPin, ShieldCheck } from "lucide-react";
 import { useMyAccount } from "@/lib/use-account";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { AvatarUpload } from "@/components/AvatarUpload";
 import { LogoutButton } from "@/components/LogoutButton";
 
 export const Route = createFileRoute("/_authenticated/tim/profil")({
@@ -19,65 +12,39 @@ export const Route = createFileRoute("/_authenticated/tim/profil")({
 
 function TimProfilPage() {
   const { data: account } = useMyAccount();
-  const updateFn = useServerFn(updateMyProfile);
-  const queryClient = useQueryClient();
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (account) {
-      setPhone(account.phone ?? "");
-      setAddress(account.address ?? "");
-    }
-  }, [account]);
 
   if (!account) return null;
-
-  async function save() {
-    setLoading(true);
-    try {
-      await updateFn({ data: { phone: phone || undefined, address: address || undefined } });
-      toast.success("Profil diperbarui");
-      await queryClient.invalidateQueries({ queryKey: ["my-account"] });
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Gagal memperbarui profil");
-    } finally {
-      setLoading(false);
-    }
-  }
 
   return (
     <div className="space-y-4">
       <Card className="overflow-hidden">
-        <div className="bg-gradient-primary flex items-center gap-3 p-5 text-white">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 text-xl font-bold backdrop-blur">
-            {account.fullName?.slice(0, 1).toUpperCase()}
-          </div>
-          <div>
-            <p className="text-base font-bold">{account.fullName}</p>
-            <p className="flex items-center gap-1 text-xs text-white/80">
-              <ShieldCheck className="h-3.5 w-3.5" /> Petugas Lapangan
-            </p>
+        <div className="bg-gradient-primary relative overflow-hidden p-5 text-primary-foreground">
+          <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/10" />
+          <div className="relative flex items-center gap-4">
+            <AvatarUpload userId={account.id} name={account.fullName} avatarUrl={account.avatarUrl} tone="gradient" />
+            <div className="min-w-0">
+              <p className="truncate text-base font-bold">{account.fullName}</p>
+              <p className="flex items-center gap-1 text-xs text-primary-foreground/80">
+                <ShieldCheck className="h-3.5 w-3.5 shrink-0" /> Petugas Lapangan
+              </p>
+              <p className="mt-1 text-[11px] text-primary-foreground/70">
+                Ketuk foto untuk mengganti foto profil
+              </p>
+            </div>
           </div>
         </div>
         <CardContent className="space-y-3 p-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="phone" className="flex items-center gap-1.5">
-              <Phone className="h-3.5 w-3.5" /> Nomor WhatsApp
-            </Label>
-            <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="08xxxxxxxxxx" />
+          <div className="flex items-center gap-2 text-sm">
+            <Phone className="h-4 w-4 shrink-0 text-primary" />
+            <span>{account.phone ?? "-"}</span>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="address" className="flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5" /> Alamat
-            </Label>
-            <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Alamat rumah" />
+          <div className="flex items-start gap-2 text-sm">
+            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            <span className="min-w-0">{account.address ?? "-"}</span>
           </div>
-          <Button className="w-full" onClick={() => void save()} disabled={loading}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Simpan Perubahan
-          </Button>
+          <p className="rounded-xl bg-muted px-3 py-2 text-[11px] text-muted-foreground">
+            Data diri hanya dapat diubah oleh Admin. Hubungi Admin bila ada data yang perlu diperbarui.
+          </p>
         </CardContent>
       </Card>
 
