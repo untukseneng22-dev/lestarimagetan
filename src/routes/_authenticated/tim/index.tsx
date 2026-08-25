@@ -87,15 +87,15 @@ function TimDashboard() {
           <div className="mt-3 grid grid-cols-3 gap-2 text-center">
             <div className="rounded-lg bg-muted/60 p-2.5">
               <p className="text-lg font-bold text-foreground">{recap.totalTransactions}</p>
-              <p className="text-[10px] text-muted-foreground">Transaksi</p>
+              <p className="text-xs text-muted-foreground">Transaksi</p>
             </div>
             <div className="rounded-lg bg-muted/60 p-2.5">
               <p className="text-lg font-bold text-foreground">{formatNumber(recap.totalWeight)}</p>
-              <p className="text-[10px] text-muted-foreground">Kg Sampah</p>
+              <p className="text-xs text-muted-foreground">Kg Sampah</p>
             </div>
             <div className="rounded-lg bg-muted/60 p-2.5">
               <p className="text-lg font-bold text-accent">{formatRupiah(recap.totalAmount)}</p>
-              <p className="text-[10px] text-muted-foreground">Nilai Setoran</p>
+              <p className="text-xs text-muted-foreground">Nilai Setoran</p>
             </div>
           </div>
         </CardContent>

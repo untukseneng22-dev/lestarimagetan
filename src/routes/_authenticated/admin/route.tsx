@@ -39,7 +39,7 @@ function AdminLayout() {
               <Recycle className="h-5 w-5 text-primary-foreground" />
             </div>
             <div>
-              <p className="text-sm font-bold text-sidebar-foreground">Bank Sampah</p>
+              <p className="text-sm font-bold text-sidebar-foreground">LESTARI MAGETAN</p>
               <p className="text-xs text-muted-foreground">Panel Admin</p>
             </div>
           </div>
@@ -67,6 +67,11 @@ function AdminLayout() {
           <div className="border-t border-sidebar-border p-3">
             <p className="mb-2 truncate px-1 text-xs text-muted-foreground">{account?.fullName}</p>
             <LogoutButton />
+            <p className="mt-3 px-1 text-[10px] leading-relaxed text-muted-foreground/70">
+              © 2026 LESTARI MAGETAN
+              <br />
+              Tim Kreatif SMAS PGRI Maospati
+            </p>
           </div>
         </aside>
         <main className="ml-64 flex-1 p-6">
