@@ -11,7 +11,10 @@ export const searchResidents = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     await requireRole(supabase, userId, ["tim", "admin"]);
 
-    const { data: wargaRoles } = await supabase.from("user_roles").select("user_id").eq("role", "warga");
+    // user_roles dibatasi RLS (admin saja yang bisa baca semua), jadi lookup id warga
+    // memakai admin client setelah peran tim/admin terverifikasi
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: wargaRoles } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "warga");
     const wargaIds = (wargaRoles ?? []).map((r) => r.user_id);
     if (wargaIds.length === 0) return [];
 
@@ -24,11 +27,15 @@ export const searchResidents = createServerFn({ method: "GET" })
 
     const q = data.query.trim();
     if (q) {
+      // id.eq hanya valid untuk UUID (ID dari QR); selain itu cari nama/No. WA saja
+      const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(q);
+      const filters = [`full_name.ilike.%${q}%`, `phone.ilike.%${q}%`];
+      if (isUuid) filters.push(`id.eq.${q}`);
       query = supabase
         .from("profiles")
         .select("id, full_name, phone, address, rt")
         .in("id", wargaIds)
-        .or(`full_name.ilike.%${q}%,phone.ilike.%${q}%,id.eq.${q}`)
+        .or(filters.join(","))
         .limit(20);
     }
 
@@ -110,7 +117,7 @@ export const createDeposit = createServerFn({ method: "POST" })
       .join(", ");
     await sendWhatsappNotification(supabase, {
       phone: resident?.phone ?? "-",
-      name: resident?.full_name,
+      name: resident?.full_name ?? null,
       event: "transaksi_setoran",
       message: buildMessage("transaksi_setoran", {
         tanggal: depositDate,
@@ -186,11 +193,11 @@ export const updatePickupStatus = createServerFn({ method: "POST" })
       };
       await sendWhatsappNotification(supabase, {
         phone: resident?.phone ?? "-",
-        name: resident?.full_name,
+        name: resident?.full_name ?? null,
         event: "status_penjemputan",
         message: buildMessage("status_penjemputan", {
           tanggal: task.scheduled_date,
-          status: statusLabels[data.status],
+          status: statusLabels[data.status] ?? data.status,
           petugas: petugas?.full_name ?? "",
         }),
       });
@@ -230,6 +237,7 @@ export const getDailyRecap = createServerFn({ method: "GET" })
       }
     }
 
+    type TxItem = { category_name: string; weight_kg: number; price_per_kg: number; subtotal: number };
     return {
       date: data.date,
       totalTransactions: rows.length,
@@ -238,12 +246,17 @@ export const getDailyRecap = createServerFn({ method: "GET" })
       perCategory: [...perCategory.entries()].map(([name, v]) => ({ name, ...v })),
       transactions: rows.map((r) => ({
         id: r.id,
-        residentName: nameMap.get(r.resident_id) ?? "-",
-        recordedBy: nameMap.get(r.recorded_by) ?? "-",
+        residentName: r.resident_id ? (nameMap.get(r.resident_id) ?? "-") : "-",
+        recordedBy: r.recorded_by ? (nameMap.get(r.recorded_by) ?? "-") : "-",
         totalWeight: Number(r.total_weight),
         totalAmount: Number(r.total_amount),
         createdAt: r.created_at,
-        items: (r as { transaction_items?: unknown[] }).transaction_items ?? [],
+        items: ((r as { transaction_items?: TxItem[] }).transaction_items ?? []).map((it) => ({
+          categoryName: it.category_name,
+          weightKg: Number(it.weight_kg),
+          pricePerKg: Number(it.price_per_kg),
+          subtotal: Number(it.subtotal),
+        })),
       })),
     };
   });

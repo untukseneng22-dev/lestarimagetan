@@ -16,6 +16,17 @@ import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authentic
 import { Route as AuthenticatedRtRouteRouteImport } from './routes/_authenticated/rt/route'
 import { Route as AuthenticatedTimRouteRouteImport } from './routes/_authenticated/tim/route'
 import { Route as AuthenticatedWargaRouteRouteImport } from './routes/_authenticated/warga/route'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedAdminAduanRouteImport } from './routes/_authenticated/admin/aduan'
+import { Route as AuthenticatedAdminHargaRouteImport } from './routes/_authenticated/admin/harga'
+import { Route as AuthenticatedAdminKasRouteImport } from './routes/_authenticated/admin/kas'
+import { Route as AuthenticatedAdminLaporanRouteImport } from './routes/_authenticated/admin/laporan'
+import { Route as AuthenticatedAdminNotifikasiRouteImport } from './routes/_authenticated/admin/notifikasi'
+import { Route as AuthenticatedAdminPengajuanRouteImport } from './routes/_authenticated/admin/pengajuan'
+import { Route as AuthenticatedAdminPenggunaRouteImport } from './routes/_authenticated/admin/pengguna'
+import { Route as AuthenticatedAdminPengumumanRouteImport } from './routes/_authenticated/admin/pengumuman'
+import { Route as AuthenticatedAdminPickupRouteImport } from './routes/_authenticated/admin/pickup'
+import { Route as AuthenticatedAdminTransaksiRouteImport } from './routes/_authenticated/admin/transaksi'
 import { Route as AuthenticatedRtIndexRouteImport } from './routes/_authenticated/rt/index'
 import { Route as AuthenticatedTimIndexRouteImport } from './routes/_authenticated/tim/index'
 import { Route as AuthenticatedTimPickupRouteImport } from './routes/_authenticated/tim/pickup'
@@ -61,6 +72,68 @@ const AuthenticatedWargaRouteRoute = AuthenticatedWargaRouteRouteImport.update({
   path: '/warga',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const AuthenticatedAdminAduanRoute = AuthenticatedAdminAduanRouteImport.update({
+  id: '/aduan',
+  path: '/aduan',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const AuthenticatedAdminHargaRoute = AuthenticatedAdminHargaRouteImport.update({
+  id: '/harga',
+  path: '/harga',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const AuthenticatedAdminKasRoute = AuthenticatedAdminKasRouteImport.update({
+  id: '/kas',
+  path: '/kas',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const AuthenticatedAdminLaporanRoute =
+  AuthenticatedAdminLaporanRouteImport.update({
+    id: '/laporan',
+    path: '/laporan',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminNotifikasiRoute =
+  AuthenticatedAdminNotifikasiRouteImport.update({
+    id: '/notifikasi',
+    path: '/notifikasi',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminPengajuanRoute =
+  AuthenticatedAdminPengajuanRouteImport.update({
+    id: '/pengajuan',
+    path: '/pengajuan',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminPenggunaRoute =
+  AuthenticatedAdminPenggunaRouteImport.update({
+    id: '/pengguna',
+    path: '/pengguna',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminPengumumanRoute =
+  AuthenticatedAdminPengumumanRouteImport.update({
+    id: '/pengumuman',
+    path: '/pengumuman',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminPickupRoute =
+  AuthenticatedAdminPickupRouteImport.update({
+    id: '/pickup',
+    path: '/pickup',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminTransaksiRoute =
+  AuthenticatedAdminTransaksiRouteImport.update({
+    id: '/transaksi',
+    path: '/transaksi',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedRtIndexRoute = AuthenticatedRtIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -117,10 +190,20 @@ const AuthenticatedWargaTabunganRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/admin': typeof AuthenticatedAdminRouteRoute
+  '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/rt': typeof AuthenticatedRtRouteRouteWithChildren
   '/tim': typeof AuthenticatedTimRouteRouteWithChildren
   '/warga': typeof AuthenticatedWargaRouteRouteWithChildren
+  '/admin/aduan': typeof AuthenticatedAdminAduanRoute
+  '/admin/harga': typeof AuthenticatedAdminHargaRoute
+  '/admin/kas': typeof AuthenticatedAdminKasRoute
+  '/admin/laporan': typeof AuthenticatedAdminLaporanRoute
+  '/admin/notifikasi': typeof AuthenticatedAdminNotifikasiRoute
+  '/admin/pengajuan': typeof AuthenticatedAdminPengajuanRoute
+  '/admin/pengguna': typeof AuthenticatedAdminPenggunaRoute
+  '/admin/pengumuman': typeof AuthenticatedAdminPengumumanRoute
+  '/admin/pickup': typeof AuthenticatedAdminPickupRoute
+  '/admin/transaksi': typeof AuthenticatedAdminTransaksiRoute
   '/tim/pickup': typeof AuthenticatedTimPickupRoute
   '/tim/rekap': typeof AuthenticatedTimRekapRoute
   '/tim/setor': typeof AuthenticatedTimSetorRoute
@@ -128,6 +211,7 @@ export interface FileRoutesByFullPath {
   '/warga/harga': typeof AuthenticatedWargaHargaRoute
   '/warga/profil': typeof AuthenticatedWargaProfilRoute
   '/warga/tabungan': typeof AuthenticatedWargaTabunganRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
   '/rt/': typeof AuthenticatedRtIndexRoute
   '/tim/': typeof AuthenticatedTimIndexRoute
   '/warga/': typeof AuthenticatedWargaIndexRoute
@@ -135,7 +219,16 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/admin': typeof AuthenticatedAdminRouteRoute
+  '/admin/aduan': typeof AuthenticatedAdminAduanRoute
+  '/admin/harga': typeof AuthenticatedAdminHargaRoute
+  '/admin/kas': typeof AuthenticatedAdminKasRoute
+  '/admin/laporan': typeof AuthenticatedAdminLaporanRoute
+  '/admin/notifikasi': typeof AuthenticatedAdminNotifikasiRoute
+  '/admin/pengajuan': typeof AuthenticatedAdminPengajuanRoute
+  '/admin/pengguna': typeof AuthenticatedAdminPenggunaRoute
+  '/admin/pengumuman': typeof AuthenticatedAdminPengumumanRoute
+  '/admin/pickup': typeof AuthenticatedAdminPickupRoute
+  '/admin/transaksi': typeof AuthenticatedAdminTransaksiRoute
   '/tim/pickup': typeof AuthenticatedTimPickupRoute
   '/tim/rekap': typeof AuthenticatedTimRekapRoute
   '/tim/setor': typeof AuthenticatedTimSetorRoute
@@ -143,6 +236,7 @@ export interface FileRoutesByTo {
   '/warga/harga': typeof AuthenticatedWargaHargaRoute
   '/warga/profil': typeof AuthenticatedWargaProfilRoute
   '/warga/tabungan': typeof AuthenticatedWargaTabunganRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
   '/rt': typeof AuthenticatedRtIndexRoute
   '/tim': typeof AuthenticatedTimIndexRoute
   '/warga': typeof AuthenticatedWargaIndexRoute
@@ -152,10 +246,20 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRouteRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/rt': typeof AuthenticatedRtRouteRouteWithChildren
   '/_authenticated/tim': typeof AuthenticatedTimRouteRouteWithChildren
   '/_authenticated/warga': typeof AuthenticatedWargaRouteRouteWithChildren
+  '/_authenticated/admin/aduan': typeof AuthenticatedAdminAduanRoute
+  '/_authenticated/admin/harga': typeof AuthenticatedAdminHargaRoute
+  '/_authenticated/admin/kas': typeof AuthenticatedAdminKasRoute
+  '/_authenticated/admin/laporan': typeof AuthenticatedAdminLaporanRoute
+  '/_authenticated/admin/notifikasi': typeof AuthenticatedAdminNotifikasiRoute
+  '/_authenticated/admin/pengajuan': typeof AuthenticatedAdminPengajuanRoute
+  '/_authenticated/admin/pengguna': typeof AuthenticatedAdminPenggunaRoute
+  '/_authenticated/admin/pengumuman': typeof AuthenticatedAdminPengumumanRoute
+  '/_authenticated/admin/pickup': typeof AuthenticatedAdminPickupRoute
+  '/_authenticated/admin/transaksi': typeof AuthenticatedAdminTransaksiRoute
   '/_authenticated/tim/pickup': typeof AuthenticatedTimPickupRoute
   '/_authenticated/tim/rekap': typeof AuthenticatedTimRekapRoute
   '/_authenticated/tim/setor': typeof AuthenticatedTimSetorRoute
@@ -163,6 +267,7 @@ export interface FileRoutesById {
   '/_authenticated/warga/harga': typeof AuthenticatedWargaHargaRoute
   '/_authenticated/warga/profil': typeof AuthenticatedWargaProfilRoute
   '/_authenticated/warga/tabungan': typeof AuthenticatedWargaTabunganRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/rt/': typeof AuthenticatedRtIndexRoute
   '/_authenticated/tim/': typeof AuthenticatedTimIndexRoute
   '/_authenticated/warga/': typeof AuthenticatedWargaIndexRoute
@@ -176,6 +281,16 @@ export interface FileRouteTypes {
     | '/rt'
     | '/tim'
     | '/warga'
+    | '/admin/aduan'
+    | '/admin/harga'
+    | '/admin/kas'
+    | '/admin/laporan'
+    | '/admin/notifikasi'
+    | '/admin/pengajuan'
+    | '/admin/pengguna'
+    | '/admin/pengumuman'
+    | '/admin/pickup'
+    | '/admin/transaksi'
     | '/tim/pickup'
     | '/tim/rekap'
     | '/tim/setor'
@@ -183,6 +298,7 @@ export interface FileRouteTypes {
     | '/warga/harga'
     | '/warga/profil'
     | '/warga/tabungan'
+    | '/admin/'
     | '/rt/'
     | '/tim/'
     | '/warga/'
@@ -190,7 +306,16 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
-    | '/admin'
+    | '/admin/aduan'
+    | '/admin/harga'
+    | '/admin/kas'
+    | '/admin/laporan'
+    | '/admin/notifikasi'
+    | '/admin/pengajuan'
+    | '/admin/pengguna'
+    | '/admin/pengumuman'
+    | '/admin/pickup'
+    | '/admin/transaksi'
     | '/tim/pickup'
     | '/tim/rekap'
     | '/tim/setor'
@@ -198,6 +323,7 @@ export interface FileRouteTypes {
     | '/warga/harga'
     | '/warga/profil'
     | '/warga/tabungan'
+    | '/admin'
     | '/rt'
     | '/tim'
     | '/warga'
@@ -210,6 +336,16 @@ export interface FileRouteTypes {
     | '/_authenticated/rt'
     | '/_authenticated/tim'
     | '/_authenticated/warga'
+    | '/_authenticated/admin/aduan'
+    | '/_authenticated/admin/harga'
+    | '/_authenticated/admin/kas'
+    | '/_authenticated/admin/laporan'
+    | '/_authenticated/admin/notifikasi'
+    | '/_authenticated/admin/pengajuan'
+    | '/_authenticated/admin/pengguna'
+    | '/_authenticated/admin/pengumuman'
+    | '/_authenticated/admin/pickup'
+    | '/_authenticated/admin/transaksi'
     | '/_authenticated/tim/pickup'
     | '/_authenticated/tim/rekap'
     | '/_authenticated/tim/setor'
@@ -217,6 +353,7 @@ export interface FileRouteTypes {
     | '/_authenticated/warga/harga'
     | '/_authenticated/warga/profil'
     | '/_authenticated/warga/tabungan'
+    | '/_authenticated/admin/'
     | '/_authenticated/rt/'
     | '/_authenticated/tim/'
     | '/_authenticated/warga/'
@@ -278,6 +415,83 @@ declare module '@tanstack/react-router' {
       fullPath: '/warga'
       preLoaderRoute: typeof AuthenticatedWargaRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/aduan': {
+      id: '/_authenticated/admin/aduan'
+      path: '/aduan'
+      fullPath: '/admin/aduan'
+      preLoaderRoute: typeof AuthenticatedAdminAduanRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/harga': {
+      id: '/_authenticated/admin/harga'
+      path: '/harga'
+      fullPath: '/admin/harga'
+      preLoaderRoute: typeof AuthenticatedAdminHargaRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/kas': {
+      id: '/_authenticated/admin/kas'
+      path: '/kas'
+      fullPath: '/admin/kas'
+      preLoaderRoute: typeof AuthenticatedAdminKasRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/laporan': {
+      id: '/_authenticated/admin/laporan'
+      path: '/laporan'
+      fullPath: '/admin/laporan'
+      preLoaderRoute: typeof AuthenticatedAdminLaporanRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/notifikasi': {
+      id: '/_authenticated/admin/notifikasi'
+      path: '/notifikasi'
+      fullPath: '/admin/notifikasi'
+      preLoaderRoute: typeof AuthenticatedAdminNotifikasiRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/pengajuan': {
+      id: '/_authenticated/admin/pengajuan'
+      path: '/pengajuan'
+      fullPath: '/admin/pengajuan'
+      preLoaderRoute: typeof AuthenticatedAdminPengajuanRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/pengguna': {
+      id: '/_authenticated/admin/pengguna'
+      path: '/pengguna'
+      fullPath: '/admin/pengguna'
+      preLoaderRoute: typeof AuthenticatedAdminPenggunaRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/pengumuman': {
+      id: '/_authenticated/admin/pengumuman'
+      path: '/pengumuman'
+      fullPath: '/admin/pengumuman'
+      preLoaderRoute: typeof AuthenticatedAdminPengumumanRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/pickup': {
+      id: '/_authenticated/admin/pickup'
+      path: '/pickup'
+      fullPath: '/admin/pickup'
+      preLoaderRoute: typeof AuthenticatedAdminPickupRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/transaksi': {
+      id: '/_authenticated/admin/transaksi'
+      path: '/transaksi'
+      fullPath: '/admin/transaksi'
+      preLoaderRoute: typeof AuthenticatedAdminTransaksiRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/rt/': {
       id: '/_authenticated/rt/'
@@ -352,6 +566,40 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminAduanRoute: typeof AuthenticatedAdminAduanRoute
+  AuthenticatedAdminHargaRoute: typeof AuthenticatedAdminHargaRoute
+  AuthenticatedAdminKasRoute: typeof AuthenticatedAdminKasRoute
+  AuthenticatedAdminLaporanRoute: typeof AuthenticatedAdminLaporanRoute
+  AuthenticatedAdminNotifikasiRoute: typeof AuthenticatedAdminNotifikasiRoute
+  AuthenticatedAdminPengajuanRoute: typeof AuthenticatedAdminPengajuanRoute
+  AuthenticatedAdminPenggunaRoute: typeof AuthenticatedAdminPenggunaRoute
+  AuthenticatedAdminPengumumanRoute: typeof AuthenticatedAdminPengumumanRoute
+  AuthenticatedAdminPickupRoute: typeof AuthenticatedAdminPickupRoute
+  AuthenticatedAdminTransaksiRoute: typeof AuthenticatedAdminTransaksiRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+}
+
+const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
+  {
+    AuthenticatedAdminAduanRoute: AuthenticatedAdminAduanRoute,
+    AuthenticatedAdminHargaRoute: AuthenticatedAdminHargaRoute,
+    AuthenticatedAdminKasRoute: AuthenticatedAdminKasRoute,
+    AuthenticatedAdminLaporanRoute: AuthenticatedAdminLaporanRoute,
+    AuthenticatedAdminNotifikasiRoute: AuthenticatedAdminNotifikasiRoute,
+    AuthenticatedAdminPengajuanRoute: AuthenticatedAdminPengajuanRoute,
+    AuthenticatedAdminPenggunaRoute: AuthenticatedAdminPenggunaRoute,
+    AuthenticatedAdminPengumumanRoute: AuthenticatedAdminPengumumanRoute,
+    AuthenticatedAdminPickupRoute: AuthenticatedAdminPickupRoute,
+    AuthenticatedAdminTransaksiRoute: AuthenticatedAdminTransaksiRoute,
+    AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  }
+
+const AuthenticatedAdminRouteRouteWithChildren =
+  AuthenticatedAdminRouteRoute._addFileChildren(
+    AuthenticatedAdminRouteRouteChildren,
+  )
+
 interface AuthenticatedRtRouteRouteChildren {
   AuthenticatedRtIndexRoute: typeof AuthenticatedRtIndexRoute
 }
@@ -405,14 +653,14 @@ const AuthenticatedWargaRouteRouteWithChildren =
   )
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRoute
+  AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedRtRouteRoute: typeof AuthenticatedRtRouteRouteWithChildren
   AuthenticatedTimRouteRoute: typeof AuthenticatedTimRouteRouteWithChildren
   AuthenticatedWargaRouteRoute: typeof AuthenticatedWargaRouteRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRoute,
+  AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
   AuthenticatedRtRouteRoute: AuthenticatedRtRouteRouteWithChildren,
   AuthenticatedTimRouteRoute: AuthenticatedTimRouteRouteWithChildren,
   AuthenticatedWargaRouteRoute: AuthenticatedWargaRouteRouteWithChildren,

@@ -47,7 +47,7 @@ function PickupPage() {
     }
   }
 
-  function TaskCard({ task }: { task: (typeof data)[number] }) {
+  function TaskCard({ task }: { task: NonNullable<typeof data>[number] }) {
     return (
       <Card>
         <CardContent className="space-y-2 p-4">
