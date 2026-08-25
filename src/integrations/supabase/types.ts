@@ -38,6 +38,27 @@ export type Database = {
         }
         Relationships: []
       }
+      app_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       complaints: {
         Row: {
           created_at: string
@@ -369,6 +390,15 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      monthly_leaderboard: {
+        Args: { limit_n?: number }
+        Returns: {
+          full_name: string
+          resident_id: string
+          total_amount: number
+          total_weight: number
+        }[]
       }
     }
     Enums: {

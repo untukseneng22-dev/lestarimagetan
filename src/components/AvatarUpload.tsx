@@ -5,6 +5,7 @@ import { Camera, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { updateMyProfile } from "@/lib/common.functions";
+import { compressImage } from "@/lib/image";
 import { cn } from "@/lib/utils";
 
 export function AvatarUpload({
@@ -28,17 +29,18 @@ export function AvatarUpload({
       toast.error("File harus berupa gambar");
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Ukuran foto maksimal 2MB");
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Ukuran foto maksimal 10MB");
       return;
     }
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-      const path = `${userId}/avatar.${ext}`;
+      // Kompres otomatis agar ringan (maks 512px, JPEG).
+      const compressed = await compressImage(file, { maxDim: 512, quality: 0.8 });
+      const path = `${userId}/avatar.jpg`;
       const { error } = await supabase.storage
         .from("avatars")
-        .upload(path, file, { upsert: true, contentType: file.type });
+        .upload(path, compressed, { upsert: true, contentType: "image/jpeg" });
       if (error) throw error;
       await updateFn({ data: { avatarUrl: path } });
       await queryClient.invalidateQueries({ queryKey: ["my-account"] });

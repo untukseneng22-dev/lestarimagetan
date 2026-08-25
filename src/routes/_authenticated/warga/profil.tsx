@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import QRCode from "react-qr-code";
-import { Phone, MapPin, Home, User } from "lucide-react";
+import { Phone, MapPin, Home, User, Printer } from "lucide-react";
 import { useMyAccount } from "@/lib/use-account";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { AvatarUpload } from "@/components/AvatarUpload";
 import { LogoutButton } from "@/components/LogoutButton";
 
@@ -25,6 +26,15 @@ function ProfilPage() {
           </div>
           <p className="mt-3 text-center text-xs text-muted-foreground">
             Tunjukkan QR ini ke petugas saat setor sampah
+          </p>
+          <Button asChild variant="outline" size="sm" className="mt-3">
+            <Link to="/kartu" search={{ semua: false }}>
+              <Printer className="mr-1.5 h-4 w-4" /> Cetak Kartu QR
+            </Link>
+          </Button>
+          <p className="mt-2 max-w-60 text-center text-[11px] text-muted-foreground">
+            Cetak dan tempel di depan rumah — petugas dapat memindai kartu saat penjemputan bila
+            Anda tidak di tempat.
           </p>
         </CardContent>
       </Card>

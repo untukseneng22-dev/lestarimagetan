@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
-import { Loader2, Lock, Plus, Search, Trash2, UserRound, CheckCircle2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Loader2, Lock, Plus, ScanLine, Search, Trash2, UserRound, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { createDeposit, searchResidents } from "@/lib/tim.functions";
 import { getCategoriesWithPrices } from "@/lib/common.functions";
@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import type { Html5Qrcode } from "html5-qrcode";
 
 export const Route = createFileRoute("/_authenticated/tim/setor")({
   head: () => ({ meta: [{ title: "Setor Sampah — Bank Sampah Digital" }] }),
@@ -34,11 +36,60 @@ function SetorPage() {
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const [lastDeposit, setLastDeposit] = useState<{ totalAmount: number; newBalance: number } | null>(null);
+  const [scanOpen, setScanOpen] = useState(false);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
 
-  const { data: categories } = useQuery({ queryKey: ["prices"], queryFn: () => pricesFn() });
+  // Kamera pemindai QR — aktif hanya saat dialog terbuka.
+  useEffect(() => {
+    if (!scanOpen) return;
+    let disposed = false;
+
+    async function startScanner() {
+      try {
+        const { Html5Qrcode } = await import("html5-qrcode");
+        if (disposed) return;
+        const scanner = new Html5Qrcode("qr-reader");
+        scannerRef.current = scanner;
+        await scanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 220, height: 220 } },
+          (decoded) => {
+            if (disposed) return;
+            disposed = true;
+            setScanOpen(false);
+            setQuery(decoded);
+            void doSearch(decoded);
+          },
+          () => {},
+        );
+      } catch {
+        if (!disposed) {
+          toast.error("Kamera tidak dapat diakses. Periksa izin kamera.");
+          setScanOpen(false);
+        }
+      }
+    }
+    void startScanner();
+
+    return () => {
+      disposed = true;
+      const scanner = scannerRef.current;
+      scannerRef.current = null;
+      if (scanner) {
+        scanner
+          .stop()
+          .then(() => scanner.clear())
+          .catch(() => {});
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scanOpen]);
+
+  const { data: priceData } = useQuery({ queryKey: ["prices"], queryFn: () => pricesFn() });
+  const categories = useMemo(() => priceData?.categories ?? [], [priceData]);
 
   const priceMap = useMemo(
-    () => new Map((categories ?? []).map((c) => [c.category_id, c])),
+    () => new Map(categories.map((c) => [c.category_id, c])),
     [categories],
   );
 
@@ -49,11 +100,16 @@ function SetorPage() {
     return sum + Math.round(w * cat.price_per_kg);
   }, 0);
 
-  async function doSearch() {
+  async function doSearch(value?: string) {
     setSearching(true);
     try {
-      const res = await searchFn({ data: { query } });
+      const res = await searchFn({ data: { query: value ?? query } });
       setResults(res as Resident[]);
+      if (value && res.length === 1) {
+        // Hasil pindai QR umumnya tepat satu warga — langsung pilih.
+        setResident(res[0] as Resident);
+        setResults([]);
+      }
     } finally {
       setSearching(false);
     }
@@ -123,6 +179,9 @@ function SetorPage() {
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && void doSearch()}
             />
+            <Button variant="outline" onClick={() => setScanOpen(true)} size="icon" aria-label="Pindai QR dengan kamera">
+              <ScanLine className="h-4 w-4" />
+            </Button>
             <Button onClick={() => void doSearch()} disabled={searching} size="icon" aria-label="Cari warga">
               {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             </Button>
@@ -180,7 +239,7 @@ function SetorPage() {
                           <SelectValue placeholder="Jenis sampah" />
                         </SelectTrigger>
                         <SelectContent>
-                          {(categories ?? []).map((c) => (
+                          {categories.map((c) => (
                             <SelectItem key={c.category_id} value={c.category_id}>
                               {c.name} — {formatRupiah(c.price_per_kg)}/{c.unit}
                             </SelectItem>
@@ -234,6 +293,18 @@ function SetorPage() {
           </Card>
         </>
       )}
+
+      <Dialog open={scanOpen} onOpenChange={setScanOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Pindai QR Warga</DialogTitle>
+          </DialogHeader>
+          <div id="qr-reader" className="min-h-64 w-full overflow-hidden rounded-xl bg-black" />
+          <p className="text-center text-xs text-muted-foreground">
+            Arahkan kamera ke kartu QR yang ditempel di rumah warga.
+          </p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

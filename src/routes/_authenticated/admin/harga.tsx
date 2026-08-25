@@ -33,6 +33,7 @@ function HargaPage() {
 
   const { data: categories } = useQuery({ queryKey: ["admin-categories"], queryFn: () => listFn() });
   const { data: history } = useQuery({ queryKey: ["admin-price-history"], queryFn: () => historyFn() });
+  const lastChange = history?.[0]?.effective_at;
 
   const [openCreate, setOpenCreate] = useState(false);
   const [newName, setNewName] = useState("");
@@ -162,6 +163,11 @@ function HargaPage() {
           </Table>
         </CardContent>
       </Card>
+      {lastChange && (
+        <p className="-mt-3 text-xs italic text-muted-foreground">
+          Harga terakhir diubah oleh Admin pada {formatTanggalWaktu(lastChange)}.
+        </p>
+      )}
 
       <Card>
         <CardHeader>

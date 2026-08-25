@@ -34,7 +34,40 @@ export const getMyAccount = createServerFn({ method: "GET" })
 export const getCategoriesWithPrices = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    return getPricesAtDate(context.supabase);
+    const { supabase } = context;
+    const [categories, { data: lastChange }] = await Promise.all([
+      getPricesAtDate(supabase),
+      supabase
+        .from("price_history")
+        .select("effective_at")
+        .order("effective_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
+    return { categories, lastUpdatedAt: lastChange?.effective_at ?? null };
+  });
+
+export const getAppSettings = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data } = await context.supabase
+      .from("app_settings")
+      .select("key, value, updated_at");
+    const map = new Map((data ?? []).map((r) => [r.key, r]));
+    return {
+      pickupSchedule: String(map.get("pickup_schedule")?.value ?? "Jadwal belum diatur"),
+      dropoffInfo: String(map.get("dropoff_info")?.value ?? ""),
+      updatedAt: map.get("pickup_schedule")?.updated_at ?? null,
+    };
+  });
+
+// Papan peringkat "Warga Teladan" — agregat bulan berjalan via fungsi SQL
+// security-definer (hanya mengembalikan total, bukan detail transaksi).
+export const getLeaderboard = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data } = await context.supabase.rpc("monthly_leaderboard", { limit_n: 5 });
+    return data ?? [];
   });
 
 export const getAnnouncements = createServerFn({ method: "GET" })

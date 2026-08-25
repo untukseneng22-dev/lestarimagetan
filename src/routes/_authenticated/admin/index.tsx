@@ -3,9 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Users, Truck, Scale, Wallet, Landmark,
-  MessageSquareWarning, ArrowLeftRight, UserRoundCheck,
+  MessageSquareWarning, ArrowLeftRight, UserRoundCheck, Trophy,
 } from "lucide-react";
 import { getAdminStats } from "@/lib/admin.functions";
+import { getLeaderboard } from "@/lib/common.functions";
 import { formatNumber, formatRupiah } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,7 +18,9 @@ export const Route = createFileRoute("/_authenticated/admin/")({
 
 function AdminDashboard() {
   const statsFn = useServerFn(getAdminStats);
+  const leaderboardFn = useServerFn(getLeaderboard);
   const { data: s, isLoading } = useQuery({ queryKey: ["admin-stats"], queryFn: () => statsFn() });
+  const { data: leaderboard } = useQuery({ queryKey: ["leaderboard"], queryFn: () => leaderboardFn() });
 
   if (isLoading || !s) {
     return (
@@ -85,6 +88,30 @@ function AdminDashboard() {
           );
         })}
       </div>
+
+      {leaderboard && leaderboard.length > 0 && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2 pb-2">
+            <Trophy className="h-4 w-4 text-accent" />
+            <CardTitle className="text-base">Warga Teladan Bulan Ini</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {leaderboard.map((r, i) => (
+              <div key={r.resident_id} className="flex items-center justify-between text-sm">
+                <span className="flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                    {i + 1}
+                  </span>
+                  {r.full_name}
+                </span>
+                <span className="font-medium">
+                  {formatNumber(Number(r.total_weight))} kg · {formatRupiah(Number(r.total_amount))}
+                </span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

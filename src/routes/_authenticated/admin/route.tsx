@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Users, Tag, ArrowLeftRight, Truck,
-  MessageSquareWarning, Megaphone, Landmark, FileBarChart, BellRing, Recycle,
+  MessageSquareWarning, Megaphone, Landmark, FileBarChart, BellRing, Recycle, CalendarClock,
 } from "lucide-react";
 import { RoleGate } from "@/components/RoleGate";
 import { useMyAccount } from "@/lib/use-account";
@@ -18,6 +18,7 @@ const MENU = [
   { to: "/admin/harga", label: "Harga Sampah", icon: Tag },
   { to: "/admin/transaksi", label: "Transaksi", icon: ArrowLeftRight },
   { to: "/admin/pickup", label: "Penjemputan", icon: Truck },
+  { to: "/admin/jadwal", label: "Jadwal Layanan", icon: CalendarClock },
   { to: "/admin/aduan", label: "Aduan", icon: MessageSquareWarning },
   { to: "/admin/pengumuman", label: "Pengumuman", icon: Megaphone },
   { to: "/admin/kas", label: "Kas & Pencairan", icon: Landmark },

@@ -187,3 +187,14 @@
     overflow-x: clip;
   }
 }
+
+/* Cetak kartu QR: kertas bersih tanpa latar aplikasi */
+@media print {
+  @page {
+    margin: 10mm;
+  }
+
+  body {
+    background: #fff !important;
+  }
+}

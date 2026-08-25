@@ -2,10 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import QRCode from "react-qr-code";
-import { Megaphone, Truck, Wallet, ChevronRight } from "lucide-react";
+import { Megaphone, Truck, Wallet, ChevronRight, CalendarClock, MapPin, Trophy } from "lucide-react";
 import { getWargaDashboard } from "@/lib/warga.functions";
+import { getAppSettings, getLeaderboard } from "@/lib/common.functions";
 import { useMyAccount } from "@/lib/use-account";
-import { formatRupiah, formatTanggalPanjang, formatTanggal } from "@/lib/format";
+import { formatNumber, formatRupiah, formatTanggalPanjang, formatTanggal } from "@/lib/format";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,7 +18,11 @@ export const Route = createFileRoute("/_authenticated/warga/")({
 
 function WargaDashboard() {
   const dashboardFn = useServerFn(getWargaDashboard);
+  const settingsFn = useServerFn(getAppSettings);
+  const leaderboardFn = useServerFn(getLeaderboard);
   const { data } = useQuery({ queryKey: ["warga-dashboard"], queryFn: () => dashboardFn() });
+  const { data: settings } = useQuery({ queryKey: ["app-settings"], queryFn: () => settingsFn() });
+  const { data: leaderboard } = useQuery({ queryKey: ["leaderboard"], queryFn: () => leaderboardFn() });
   const { data: account } = useMyAccount();
 
   if (!data || !account) {
@@ -66,9 +71,19 @@ function WargaDashboard() {
         </h3>
         <Card>
           <CardContent className="space-y-2 p-4">
-            <p className="text-xs text-muted-foreground">
-              Jadwal rutin: <span className="font-medium text-foreground">Selasa & Jumat, 08.00–12.00</span>
-            </p>
+            <div className="rounded-xl bg-primary/5 p-3">
+              <p className="flex items-center gap-1.5 text-xs font-semibold text-primary">
+                <CalendarClock className="h-3.5 w-3.5" /> Jadwal rutin
+              </p>
+              <p className="mt-1 text-sm font-medium">
+                {settings?.pickupSchedule ?? "Memuat jadwal…"}
+              </p>
+              {settings?.dropoffInfo && (
+                <p className="mt-1.5 flex items-start gap-1.5 text-xs text-muted-foreground">
+                  <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {settings.dropoffInfo}
+                </p>
+              )}
+            </div>
             {data.pickups.length === 0 ? (
               <p className="text-sm text-muted-foreground">Belum ada permintaan penjemputan aktif.</p>
             ) : (
@@ -85,6 +100,37 @@ function WargaDashboard() {
           </CardContent>
         </Card>
       </section>
+
+      {leaderboard && leaderboard.length > 0 && (
+        <section>
+          <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
+            <Trophy className="h-4 w-4 text-accent" /> Warga Teladan Bulan Ini
+          </h3>
+          <Card>
+            <CardContent className="space-y-2.5 p-4">
+              {leaderboard.map((r, i) => (
+                <div key={r.resident_id} className="flex items-center justify-between">
+                  <span className="flex items-center gap-2.5">
+                    <span
+                      className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
+                        i === 0
+                          ? "bg-accent text-accent-foreground shadow-glow"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {i + 1}
+                    </span>
+                    <span className="text-sm font-medium">{r.full_name}</span>
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {formatNumber(Number(r.total_weight))} kg
+                  </span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </section>
+      )}
 
       <section>
         <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
