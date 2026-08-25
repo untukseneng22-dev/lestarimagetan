@@ -659,3 +659,65 @@ export const listNotificationLogs = createServerFn({ method: "GET" })
       .limit(200);
     return data ?? [];
   });
+
+// ---------- Penjemputan ----------
+export const listPickupsAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    await requireRole(supabase, userId, ["admin"]);
+    const { data } = await supabase
+      .from("pickup_tasks")
+      .select("id, resident_id, address, scheduled_date, status, assigned_to, notes, created_at")
+      .order("scheduled_date", { ascending: false })
+      .limit(200);
+    const rows = data ?? [];
+    const ids = [
+      ...new Set(rows.flatMap((r) => [r.resident_id, r.assigned_to]).filter((x): x is string => Boolean(x))),
+    ];
+    const { data: profiles } = ids.length
+      ? await supabase.from("profiles").select("id, full_name, phone").in("id", ids)
+      : { data: [] };
+    const map = new Map((profiles ?? []).map((p) => [p.id, p]));
+
+    const { data: timRoles } = await supabase.from("user_roles").select("user_id").eq("role", "tim");
+    const timIds = (timRoles ?? []).map((r) => r.user_id);
+    const { data: timProfiles } = timIds.length
+      ? await supabase.from("profiles").select("id, full_name").in("id", timIds)
+      : { data: [] };
+
+    return {
+      tasks: rows.map((r) => ({
+        ...r,
+        resident_name: r.resident_id ? (map.get(r.resident_id)?.full_name ?? "-") : "-",
+        resident_phone: r.resident_id ? (map.get(r.resident_id)?.phone ?? null) : null,
+        assigned_name: r.assigned_to ? (map.get(r.assigned_to)?.full_name ?? "-") : null,
+      })),
+      timList: (timProfiles ?? []).map((p) => ({ id: p.id, name: p.full_name })),
+    };
+  });
+
+export const assignPickup = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        taskId: z.string().uuid(),
+        assignedTo: z.string().uuid().nullable(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireRole(supabase, userId, ["admin"]);
+    const { error } = await supabase
+      .from("pickup_tasks")
+      .update({
+        assigned_to: data.assignedTo,
+        status: data.assignedTo ? "dijadwalkan" : "menunggu",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.taskId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
