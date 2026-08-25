@@ -8,6 +8,7 @@ import {
 import { RoleGate } from "@/components/RoleGate";
 import { useMyAccount } from "@/lib/use-account";
 import { LogoutButton } from "@/components/LogoutButton";
+import { AppVersion } from "@/components/AppVersion";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/admin")({
