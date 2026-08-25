@@ -104,7 +104,7 @@ export const createComplaint = createServerFn({ method: "POST" })
       .object({
         title: z.string().trim().min(5, "Judul minimal 5 karakter").max(120),
         description: z.string().trim().min(10, "Deskripsi minimal 10 karakter").max(1000),
-        photoUrl: z.string().url().max(500).optional().nullable(),
+        photoUrl: z.string().max(500).optional().nullable(),
       })
       .parse(data),
   )

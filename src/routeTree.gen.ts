@@ -10,33 +10,95 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedWargaRouteRouteImport } from './routes/_authenticated/warga/route'
+import { Route as AuthenticatedWargaIndexRouteImport } from './routes/_authenticated/warga/index'
+import { Route as AuthenticatedWargaHargaRouteImport } from './routes/_authenticated/warga/harga'
+import { Route as AuthenticatedWargaTabunganRouteImport } from './routes/_authenticated/warga/tabungan'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedWargaRouteRoute = AuthenticatedWargaRouteRouteImport.update({
+  id: '/warga',
+  path: '/warga',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedWargaIndexRoute = AuthenticatedWargaIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedWargaRouteRoute,
+} as any)
+const AuthenticatedWargaHargaRoute = AuthenticatedWargaHargaRouteImport.update({
+  id: '/harga',
+  path: '/harga',
+  getParentRoute: () => AuthenticatedWargaRouteRoute,
+} as any)
+const AuthenticatedWargaTabunganRoute =
+  AuthenticatedWargaTabunganRouteImport.update({
+    id: '/tabungan',
+    path: '/tabungan',
+    getParentRoute: () => AuthenticatedWargaRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/warga': typeof AuthenticatedWargaRouteRouteWithChildren
+  '/warga/harga': typeof AuthenticatedWargaHargaRoute
+  '/warga/tabungan': typeof AuthenticatedWargaTabunganRoute
+  '/warga/': typeof AuthenticatedWargaIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/warga/harga': typeof AuthenticatedWargaHargaRoute
+  '/warga/tabungan': typeof AuthenticatedWargaTabunganRoute
+  '/warga': typeof AuthenticatedWargaIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/warga': typeof AuthenticatedWargaRouteRouteWithChildren
+  '/_authenticated/warga/harga': typeof AuthenticatedWargaHargaRoute
+  '/_authenticated/warga/tabungan': typeof AuthenticatedWargaTabunganRoute
+  '/_authenticated/warga/': typeof AuthenticatedWargaIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    '/' | '/auth' | '/warga' | '/warga/harga' | '/warga/tabungan' | '/warga/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/auth' | '/warga/harga' | '/warga/tabungan' | '/warga'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/warga'
+    | '/_authenticated/warga/harga'
+    | '/_authenticated/warga/tabungan'
+    | '/_authenticated/warga/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +110,84 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/warga': {
+      id: '/_authenticated/warga'
+      path: '/warga'
+      fullPath: '/warga'
+      preLoaderRoute: typeof AuthenticatedWargaRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/warga/': {
+      id: '/_authenticated/warga/'
+      path: '/'
+      fullPath: '/warga/'
+      preLoaderRoute: typeof AuthenticatedWargaIndexRouteImport
+      parentRoute: typeof AuthenticatedWargaRouteRoute
+    }
+    '/_authenticated/warga/harga': {
+      id: '/_authenticated/warga/harga'
+      path: '/harga'
+      fullPath: '/warga/harga'
+      preLoaderRoute: typeof AuthenticatedWargaHargaRouteImport
+      parentRoute: typeof AuthenticatedWargaRouteRoute
+    }
+    '/_authenticated/warga/tabungan': {
+      id: '/_authenticated/warga/tabungan'
+      path: '/tabungan'
+      fullPath: '/warga/tabungan'
+      preLoaderRoute: typeof AuthenticatedWargaTabunganRouteImport
+      parentRoute: typeof AuthenticatedWargaRouteRoute
+    }
   }
 }
 
+interface AuthenticatedWargaRouteRouteChildren {
+  AuthenticatedWargaHargaRoute: typeof AuthenticatedWargaHargaRoute
+  AuthenticatedWargaTabunganRoute: typeof AuthenticatedWargaTabunganRoute
+  AuthenticatedWargaIndexRoute: typeof AuthenticatedWargaIndexRoute
+}
+
+const AuthenticatedWargaRouteRouteChildren: AuthenticatedWargaRouteRouteChildren =
+  {
+    AuthenticatedWargaHargaRoute: AuthenticatedWargaHargaRoute,
+    AuthenticatedWargaTabunganRoute: AuthenticatedWargaTabunganRoute,
+    AuthenticatedWargaIndexRoute: AuthenticatedWargaIndexRoute,
+  }
+
+const AuthenticatedWargaRouteRouteWithChildren =
+  AuthenticatedWargaRouteRoute._addFileChildren(
+    AuthenticatedWargaRouteRouteChildren,
+  )
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedWargaRouteRoute: typeof AuthenticatedWargaRouteRouteWithChildren
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedWargaRouteRoute: AuthenticatedWargaRouteRouteWithChildren,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
