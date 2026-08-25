@@ -132,8 +132,6 @@ export const createUserAccount = createServerFn({ method: "POST" })
     return { ok: true, userId: created.user.id };
   });
 
-const USERNAME_REGEX = /^[a-z0-9_.]{3,30}$/;
-
 export const updateUserAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) =>
@@ -148,7 +146,7 @@ export const updateUserAccount = createServerFn({ method: "POST" })
           .string()
           .trim()
           .toLowerCase()
-          .regex(USERNAME_REGEX, "Username 3-30 karakter: huruf kecil, angka, titik, atau garis bawah"),
+          .regex(/^[a-z0-9_.]{3,30}$/, "Username 3-30 karakter: huruf kecil, angka, titik, atau garis bawah"),
       })
       .parse(data),
   )
