@@ -1,7 +1,9 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { useState, type ComponentType } from "react";
 import {
   LayoutDashboard, Users, Tag, ArrowLeftRight, Truck,
   MessageSquareWarning, Megaphone, Landmark, FileBarChart, BellRing, Recycle, CalendarClock,
+  ChevronDown, Database, ClipboardList, HeartHandshake, Settings2, Info,
 } from "lucide-react";
 import { RoleGate } from "@/components/RoleGate";
 import { useMyAccount } from "@/lib/use-account";
@@ -12,19 +14,102 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminLayout,
 });
 
-const MENU = [
-  { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/admin/pengguna", label: "Pengguna", icon: Users },
-  { to: "/admin/harga", label: "Harga Sampah", icon: Tag },
-  { to: "/admin/transaksi", label: "Transaksi", icon: ArrowLeftRight },
-  { to: "/admin/pickup", label: "Penjemputan", icon: Truck },
-  { to: "/admin/jadwal", label: "Jadwal Layanan", icon: CalendarClock },
-  { to: "/admin/aduan", label: "Aduan", icon: MessageSquareWarning },
-  { to: "/admin/pengumuman", label: "Pengumuman", icon: Megaphone },
-  { to: "/admin/kas", label: "Kas & Pencairan", icon: Landmark },
-  { to: "/admin/laporan", label: "Laporan", icon: FileBarChart },
-  { to: "/admin/notifikasi", label: "Notifikasi WA", icon: BellRing },
+type MenuItem = { to: string; label: string; icon: ComponentType<{ className?: string }>; exact?: boolean };
+type MenuGroup = { label: string; icon: ComponentType<{ className?: string }>; items: MenuItem[] };
+
+const DASHBOARD: MenuItem = { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true };
+
+const MENU_GROUPS: MenuGroup[] = [
+  {
+    label: "Data Master",
+    icon: Database,
+    items: [
+      { to: "/admin/pengguna", label: "Pengguna", icon: Users },
+      { to: "/admin/harga", label: "Harga Sampah", icon: Tag },
+    ],
+  },
+  {
+    label: "Operasional",
+    icon: ClipboardList,
+    items: [
+      { to: "/admin/transaksi", label: "Transaksi", icon: ArrowLeftRight },
+      { to: "/admin/pickup", label: "Penjemputan", icon: Truck },
+      { to: "/admin/jadwal", label: "Jadwal Layanan", icon: CalendarClock },
+    ],
+  },
+  {
+    label: "Layanan Warga",
+    icon: HeartHandshake,
+    items: [
+      { to: "/admin/aduan", label: "Aduan", icon: MessageSquareWarning },
+      { to: "/admin/pengumuman", label: "Pengumuman", icon: Megaphone },
+      { to: "/admin/kas", label: "Kas & Pencairan", icon: Landmark },
+    ],
+  },
+  {
+    label: "Sistem",
+    icon: Settings2,
+    items: [
+      { to: "/admin/laporan", label: "Laporan", icon: FileBarChart },
+      { to: "/admin/notifikasi", label: "Notifikasi WA", icon: BellRing },
+      { to: "/admin/tentang", label: "Tentang Aplikasi", icon: Info },
+    ],
+  },
 ];
+
+function isActivePath(pathname: string, item: MenuItem) {
+  return item.exact ? pathname === item.to : pathname.startsWith(item.to);
+}
+
+function MenuLink({ item, active }: { item: MenuItem; active: boolean }) {
+  const Icon = item.icon;
+  return (
+    <Link
+      to={item.to}
+      className={cn(
+        "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+        active
+          ? "bg-sidebar-accent text-primary"
+          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+      )}
+    >
+      <Icon className="h-4 w-4" />
+      {item.label}
+    </Link>
+  );
+}
+
+function MenuGroupDropdown({ group, pathname }: { group: MenuGroup; pathname: string }) {
+  const containsActive = group.items.some((item) => isActivePath(pathname, item));
+  const [open, setOpen] = useState(containsActive);
+  const GroupIcon = group.icon;
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={cn(
+          "flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
+          containsActive
+            ? "text-sidebar-foreground"
+            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+        )}
+      >
+        <GroupIcon className="h-4 w-4" />
+        <span className="flex-1 text-left">{group.label}</span>
+        <ChevronDown className={cn("h-4 w-4 transition-transform", open && "rotate-180")} />
+      </button>
+      {open && (
+        <div className="mt-0.5 space-y-0.5 border-l border-sidebar-border/70 pl-3 ml-5">
+          {group.items.map((item) => (
+            <MenuLink key={item.to} item={item} active={isActivePath(pathname, item)} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -43,26 +128,11 @@ function AdminLayout() {
               <p className="text-xs text-muted-foreground">Panel Admin</p>
             </div>
           </div>
-          <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-3">
-            {MENU.map((m) => {
-              const active = m.exact ? pathname === m.to : pathname.startsWith(m.to);
-              const Icon = m.icon;
-              return (
-                <Link
-                  key={m.to}
-                  to={m.to}
-                  className={cn(
-                    "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                    active
-                      ? "bg-sidebar-accent text-primary"
-                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                  {m.label}
-                </Link>
-              );
-            })}
+          <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-3">
+            <MenuLink item={DASHBOARD} active={isActivePath(pathname, DASHBOARD)} />
+            {MENU_GROUPS.map((group) => (
+              <MenuGroupDropdown key={group.label} group={group} pathname={pathname} />
+            ))}
           </nav>
           <div className="border-t border-sidebar-border p-3">
             <p className="mb-2 truncate px-1 text-xs text-muted-foreground">{account?.fullName}</p>
