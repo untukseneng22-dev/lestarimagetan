@@ -55,8 +55,8 @@ export const getAppSettings = createServerFn({ method: "GET" })
       .select("key, value, updated_at");
     const map = new Map((data ?? []).map((r) => [r.key, r]));
     return {
-      pickupSchedule: map.get("pickup_schedule")?.value ?? "Jadwal belum diatur",
-      dropoffInfo: map.get("dropoff_info")?.value ?? "",
+      pickupSchedule: String(map.get("pickup_schedule")?.value ?? "Jadwal belum diatur"),
+      dropoffInfo: String(map.get("dropoff_info")?.value ?? ""),
       updatedAt: map.get("pickup_schedule")?.updated_at ?? null,
     };
   });
