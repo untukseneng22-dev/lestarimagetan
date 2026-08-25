@@ -19,19 +19,19 @@ export function buildMessage(
 ): string {
   switch (event) {
     case "akun_baru":
-      return `Halo ${payload.nama}! Akun Bank Sampah Anda telah dibuat.\nLogin: ${payload.email}\nKata sandi: ${payload.password}\nTunjukkan QR di aplikasi saat menyetor sampah. Selamat bergabung!`;
+      return `Halo ${payload["nama"]}! Akun Bank Sampah Anda telah dibuat.\nLogin: ${payload["email"]}\nKata sandi: ${payload["password"]}\nTunjukkan QR di aplikasi saat menyetor sampah. Selamat bergabung!`;
     case "transaksi_setoran":
-      return `Setoran ${payload.tanggal} berhasil dicatat.\nRincian: ${payload.rincian}\nTotal: ${payload.total}\nSaldo Anda kini: ${payload.saldo}. Terima kasih sudah memilah sampah!`;
+      return `Setoran ${payload["tanggal"]} berhasil dicatat.\nRincian: ${payload["rincian"]}\nTotal: ${payload["total"]}\nSaldo Anda kini: ${payload["saldo"]}. Terima kasih sudah memilah sampah!`;
     case "status_penjemputan":
-      return `Status penjemputan Anda (${payload.tanggal}) berubah menjadi: ${payload.status}.${payload.petugas ? ` Petugas: ${payload.petugas}.` : ""}`;
+      return `Status penjemputan Anda (${payload["tanggal"]}) berubah menjadi: ${payload["status"]}.${payload["petugas"] ? ` Petugas: ${payload["petugas"]}.` : ""}`;
     case "pengajuan_pencairan":
-      return `Pengajuan pencairan saldo sebesar ${payload.jumlah} telah kami terima dan sedang diproses oleh admin Bank Sampah.`;
+      return `Pengajuan pencairan saldo sebesar ${payload["jumlah"]} telah kami terima dan sedang diproses oleh admin Bank Sampah.`;
     case "status_pencairan":
-      return `Pengajuan pencairan saldo ${payload.jumlah} kini berstatus: ${payload.status}.${payload.catatan ? ` Catatan: ${payload.catatan}` : ""}`;
+      return `Pengajuan pencairan saldo ${payload["jumlah"]} kini berstatus: ${payload["status"]}.${payload["catatan"] ? ` Catatan: ${payload["catatan"]}` : ""}`;
     case "status_aduan":
-      return `Aduan "${payload.judul}" kini berstatus: ${payload.status}.${payload.tanggapan ? ` Tanggapan: ${payload.tanggapan}` : ""}`;
+      return `Aduan "${payload["judul"]}" kini berstatus: ${payload["status"]}.${payload["tanggapan"] ? ` Tanggapan: ${payload["tanggapan"]}` : ""}`;
     case "pengajuan_rt":
-      return `Pengajuan pendaftaran warga atas nama ${payload.nama} (${payload.alamat}) berstatus: ${payload.status}.${payload.alasan ? ` Alasan: ${payload.alasan}` : ""}`;
+      return `Pengajuan pendaftaran warga atas nama ${payload["nama"]} (${payload["alamat"]}) berstatus: ${payload["status"]}.${payload["alasan"] ? ` Alasan: ${payload["alasan"]}` : ""}`;
     default:
       return "Notifikasi Bank Sampah Digital.";
   }
@@ -48,7 +48,7 @@ export async function sendWhatsappNotification(
   supabase: SupabaseClient,
   input: {
     phone: string;
-    name?: string | null;
+    name?: string | null | undefined;
     event: NotificationEvent;
     message: string;
   },
