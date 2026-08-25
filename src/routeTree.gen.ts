@@ -13,11 +13,13 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
+import { Route as AuthenticatedKartuRouteImport } from './routes/_authenticated/kartu'
 import { Route as AuthenticatedTimRouteRouteImport } from './routes/_authenticated/tim/route'
 import { Route as AuthenticatedWargaRouteRouteImport } from './routes/_authenticated/warga/route'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminAduanRouteImport } from './routes/_authenticated/admin/aduan'
 import { Route as AuthenticatedAdminHargaRouteImport } from './routes/_authenticated/admin/harga'
+import { Route as AuthenticatedAdminJadwalRouteImport } from './routes/_authenticated/admin/jadwal'
 import { Route as AuthenticatedAdminKasRouteImport } from './routes/_authenticated/admin/kas'
 import { Route as AuthenticatedAdminLaporanRouteImport } from './routes/_authenticated/admin/laporan'
 import { Route as AuthenticatedAdminNotifikasiRouteImport } from './routes/_authenticated/admin/notifikasi'
@@ -55,6 +57,11 @@ const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedKartuRoute = AuthenticatedKartuRouteImport.update({
+  id: '/kartu',
+  path: '/kartu',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedTimRouteRoute = AuthenticatedTimRouteRouteImport.update({
   id: '/tim',
   path: '/tim',
@@ -80,6 +87,12 @@ const AuthenticatedAdminHargaRoute = AuthenticatedAdminHargaRouteImport.update({
   path: '/harga',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminJadwalRoute =
+  AuthenticatedAdminJadwalRouteImport.update({
+    id: '/jadwal',
+    path: '/jadwal',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminKasRoute = AuthenticatedAdminKasRouteImport.update({
   id: '/kas',
   path: '/kas',
@@ -180,8 +193,10 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/tim': typeof AuthenticatedTimRouteRouteWithChildren
   '/warga': typeof AuthenticatedWargaRouteRouteWithChildren
+  '/kartu': typeof AuthenticatedKartuRoute
   '/admin/aduan': typeof AuthenticatedAdminAduanRoute
   '/admin/harga': typeof AuthenticatedAdminHargaRoute
+  '/admin/jadwal': typeof AuthenticatedAdminJadwalRoute
   '/admin/kas': typeof AuthenticatedAdminKasRoute
   '/admin/laporan': typeof AuthenticatedAdminLaporanRoute
   '/admin/notifikasi': typeof AuthenticatedAdminNotifikasiRoute
@@ -204,8 +219,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/kartu': typeof AuthenticatedKartuRoute
   '/admin/aduan': typeof AuthenticatedAdminAduanRoute
   '/admin/harga': typeof AuthenticatedAdminHargaRoute
+  '/admin/jadwal': typeof AuthenticatedAdminJadwalRoute
   '/admin/kas': typeof AuthenticatedAdminKasRoute
   '/admin/laporan': typeof AuthenticatedAdminLaporanRoute
   '/admin/notifikasi': typeof AuthenticatedAdminNotifikasiRoute
@@ -233,8 +250,10 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/tim': typeof AuthenticatedTimRouteRouteWithChildren
   '/_authenticated/warga': typeof AuthenticatedWargaRouteRouteWithChildren
+  '/_authenticated/kartu': typeof AuthenticatedKartuRoute
   '/_authenticated/admin/aduan': typeof AuthenticatedAdminAduanRoute
   '/_authenticated/admin/harga': typeof AuthenticatedAdminHargaRoute
+  '/_authenticated/admin/jadwal': typeof AuthenticatedAdminJadwalRoute
   '/_authenticated/admin/kas': typeof AuthenticatedAdminKasRoute
   '/_authenticated/admin/laporan': typeof AuthenticatedAdminLaporanRoute
   '/_authenticated/admin/notifikasi': typeof AuthenticatedAdminNotifikasiRoute
@@ -262,8 +281,10 @@ export interface FileRouteTypes {
     | '/admin'
     | '/tim'
     | '/warga'
+    | '/kartu'
     | '/admin/aduan'
     | '/admin/harga'
+    | '/admin/jadwal'
     | '/admin/kas'
     | '/admin/laporan'
     | '/admin/notifikasi'
@@ -286,8 +307,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/kartu'
     | '/admin/aduan'
     | '/admin/harga'
+    | '/admin/jadwal'
     | '/admin/kas'
     | '/admin/laporan'
     | '/admin/notifikasi'
@@ -314,8 +337,10 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/tim'
     | '/_authenticated/warga'
+    | '/_authenticated/kartu'
     | '/_authenticated/admin/aduan'
     | '/_authenticated/admin/harga'
+    | '/_authenticated/admin/jadwal'
     | '/_authenticated/admin/kas'
     | '/_authenticated/admin/laporan'
     | '/_authenticated/admin/notifikasi'
@@ -372,6 +397,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/kartu': {
+      id: '/_authenticated/kartu'
+      path: '/kartu'
+      fullPath: '/kartu'
+      preLoaderRoute: typeof AuthenticatedKartuRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/tim': {
       id: '/_authenticated/tim'
       path: '/tim'
@@ -405,6 +437,13 @@ declare module '@tanstack/react-router' {
       path: '/harga'
       fullPath: '/admin/harga'
       preLoaderRoute: typeof AuthenticatedAdminHargaRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/jadwal': {
+      id: '/_authenticated/admin/jadwal'
+      path: '/jadwal'
+      fullPath: '/admin/jadwal'
+      preLoaderRoute: typeof AuthenticatedAdminJadwalRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/admin/kas': {
@@ -532,6 +571,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAduanRoute: typeof AuthenticatedAdminAduanRoute
   AuthenticatedAdminHargaRoute: typeof AuthenticatedAdminHargaRoute
+  AuthenticatedAdminJadwalRoute: typeof AuthenticatedAdminJadwalRoute
   AuthenticatedAdminKasRoute: typeof AuthenticatedAdminKasRoute
   AuthenticatedAdminLaporanRoute: typeof AuthenticatedAdminLaporanRoute
   AuthenticatedAdminNotifikasiRoute: typeof AuthenticatedAdminNotifikasiRoute
@@ -546,6 +586,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
   {
     AuthenticatedAdminAduanRoute: AuthenticatedAdminAduanRoute,
     AuthenticatedAdminHargaRoute: AuthenticatedAdminHargaRoute,
+    AuthenticatedAdminJadwalRoute: AuthenticatedAdminJadwalRoute,
     AuthenticatedAdminKasRoute: AuthenticatedAdminKasRoute,
     AuthenticatedAdminLaporanRoute: AuthenticatedAdminLaporanRoute,
     AuthenticatedAdminNotifikasiRoute: AuthenticatedAdminNotifikasiRoute,
@@ -608,12 +649,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedTimRouteRoute: typeof AuthenticatedTimRouteRouteWithChildren
   AuthenticatedWargaRouteRoute: typeof AuthenticatedWargaRouteRouteWithChildren
+  AuthenticatedKartuRoute: typeof AuthenticatedKartuRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
   AuthenticatedTimRouteRoute: AuthenticatedTimRouteRouteWithChildren,
   AuthenticatedWargaRouteRoute: AuthenticatedWargaRouteRouteWithChildren,
+  AuthenticatedKartuRoute: AuthenticatedKartuRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
