@@ -391,6 +391,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      monthly_leaderboard: {
+        Args: { limit_n?: number }
+        Returns: {
+          full_name: string
+          resident_id: string
+          total_amount: number
+          total_weight: number
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "tim" | "warga"
