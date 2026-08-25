@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/admin/kas")({
-  head: () => ({ meta: [{ title: "Kas & Pencairan — Bank Sampah Digital" }] }),
+  head: () => ({ meta: [{ title: "Kas & Pencairan — LESTARI MAGETAN" }] }),
   component: KasPage,
 });
 

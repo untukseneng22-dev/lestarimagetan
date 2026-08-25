@@ -33,7 +33,7 @@ export function buildMessage(
     case "jadwal_penjemputan":
       return `Info jadwal Bank Sampah:\nPenjemputan rutin: ${payload["jadwal"]}.\nAntar mandiri: ${payload["antar"]}.`;
     default:
-      return "Notifikasi Bank Sampah Digital.";
+      return "Notifikasi LESTARI MAGETAN.";
   }
 }
 

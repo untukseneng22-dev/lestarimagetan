@@ -8,7 +8,7 @@ import { AvatarUpload } from "@/components/AvatarUpload";
 import { LogoutButton } from "@/components/LogoutButton";
 
 export const Route = createFileRoute("/_authenticated/warga/profil")({
-  head: () => ({ meta: [{ title: "Profil — Bank Sampah Digital" }] }),
+  head: () => ({ meta: [{ title: "Profil — LESTARI MAGETAN" }] }),
   component: ProfilPage,
 });
 

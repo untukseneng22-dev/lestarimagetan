@@ -79,13 +79,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Bank Sampah Digital" },
+      { title: "LESTARI MAGETAN" },
       {
         name: "description",
         content:
-          "Aplikasi Bank Sampah Digital: setor sampah, pantau saldo tabungan, harga sampah terkini, penjemputan, dan aduan — terintegrasi notifikasi WhatsApp.",
+          "Aplikasi LESTARI MAGETAN: setor sampah, pantau saldo tabungan, harga sampah terkini, penjemputan, dan aduan — terintegrasi notifikasi WhatsApp.",
       },
-      { property: "og:title", content: "Bank Sampah Digital" },
+      { property: "og:title", content: "LESTARI MAGETAN" },
       {
         property: "og:description",
         content:

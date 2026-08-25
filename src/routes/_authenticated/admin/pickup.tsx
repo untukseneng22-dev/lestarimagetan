@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/admin/pickup")({
-  head: () => ({ meta: [{ title: "Tugas Penjemputan — Bank Sampah Digital" }] }),
+  head: () => ({ meta: [{ title: "Tugas Penjemputan — LESTARI MAGETAN" }] }),
   component: PickupPage,
 });
 

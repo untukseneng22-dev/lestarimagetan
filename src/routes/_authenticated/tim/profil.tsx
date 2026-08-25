@@ -6,7 +6,7 @@ import { AvatarUpload } from "@/components/AvatarUpload";
 import { LogoutButton } from "@/components/LogoutButton";
 
 export const Route = createFileRoute("/_authenticated/tim/profil")({
-  head: () => ({ meta: [{ title: "Profil Petugas — Bank Sampah Digital" }] }),
+  head: () => ({ meta: [{ title: "Profil Petugas — LESTARI MAGETAN" }] }),
   component: TimProfilPage,
 });
 

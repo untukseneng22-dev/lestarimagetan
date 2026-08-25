@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/kartu")({
   }),
   head: () => ({
     meta: [
-      { title: "Kartu QR — Bank Sampah Digital" },
+      { title: "Kartu QR — LESTARI MAGETAN" },
       { name: "robots", content: "noindex" },
     ],
   }),

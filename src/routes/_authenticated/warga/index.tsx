@@ -12,7 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/_authenticated/warga/")({
-  head: () => ({ meta: [{ title: "Beranda Warga — Bank Sampah Digital" }] }),
+  head: () => ({ meta: [{ title: "Beranda Warga — LESTARI MAGETAN" }] }),
   component: WargaDashboard,
 });
 

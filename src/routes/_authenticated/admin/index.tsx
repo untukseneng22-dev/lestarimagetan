@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
-  head: () => ({ meta: [{ title: "Dashboard Admin — Bank Sampah Digital" }] }),
+  head: () => ({ meta: [{ title: "Dashboard Admin — LESTARI MAGETAN" }] }),
   component: AdminDashboard,
 });
 
@@ -51,7 +51,7 @@ function AdminDashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">Ringkasan operasional Bank Sampah Digital.</p>
+        <p className="text-sm text-muted-foreground">Ringkasan operasional LESTARI MAGETAN.</p>
       </div>
 
       {alerts.length > 0 && (

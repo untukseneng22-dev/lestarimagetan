@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/_authenticated/tim/")({
-  head: () => ({ meta: [{ title: "Beranda Tim — Bank Sampah Digital" }] }),
+  head: () => ({ meta: [{ title: "Beranda Tim — LESTARI MAGETAN" }] }),
   component: TimDashboard,
 });
 

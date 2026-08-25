@@ -22,7 +22,7 @@ import {
 type RoleTab = "warga" | "tim" | "admin";
 
 export const Route = createFileRoute("/_authenticated/admin/pengguna")({
-  head: () => ({ meta: [{ title: "Data Pengguna — Bank Sampah Digital" }] }),
+  head: () => ({ meta: [{ title: "Data Pengguna — LESTARI MAGETAN" }] }),
   component: PenggunaPage,
 });
 

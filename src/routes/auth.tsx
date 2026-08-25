@@ -12,9 +12,9 @@ import { Label } from "@/components/ui/label";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Masuk — Bank Sampah Digital" },
-      { name: "description", content: "Masuk ke akun Bank Sampah Digital Anda." },
-      { property: "og:title", content: "Masuk — Bank Sampah Digital" },
+      { title: "Masuk — LESTARI MAGETAN" },
+      { name: "description", content: "Masuk ke akun LESTARI MAGETAN Anda." },
+      { property: "og:title", content: "Masuk — LESTARI MAGETAN" },
       { property: "og:type", content: "website" },
     ],
   }),
@@ -60,7 +60,7 @@ function AuthPage() {
           <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-[1.75rem] bg-white/15 shadow-elegant backdrop-blur">
             <Recycle className="h-10 w-10" />
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Bank Sampah Digital</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight">LESTARI MAGETAN</h1>
           <p className="mt-2 flex items-center gap-1.5 text-sm text-primary-foreground/85">
             <Leaf className="h-4 w-4" /> Setor sampah, pantau saldo, jaga lingkungan.
           </p>

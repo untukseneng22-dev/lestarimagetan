@@ -8,13 +8,13 @@ import { LoadingScreen } from "@/components/RoleGate";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Bank Sampah Digital — Setor Sampah, Pantau Saldo" },
+      { title: "LESTARI MAGETAN — Setor Sampah, Pantau Saldo" },
       {
         name: "description",
         content:
-          "Aplikasi Bank Sampah Digital untuk warga, tim lapangan, dan admin: setoran sampah, tabungan saldo, harga terkini, penjemputan, dan notifikasi WhatsApp.",
+          "Aplikasi LESTARI MAGETAN untuk warga, tim lapangan, dan admin: setoran sampah, tabungan saldo, harga terkini, penjemputan, dan notifikasi WhatsApp.",
       },
-      { property: "og:title", content: "Bank Sampah Digital" },
+      { property: "og:title", content: "LESTARI MAGETAN" },
       {
         property: "og:description",
         content: "Kelola bank sampah lingkungan Anda secara digital.",
