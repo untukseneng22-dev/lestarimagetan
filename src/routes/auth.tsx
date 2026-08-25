@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Recycle, Loader2, ShieldCheck, Truck, Users, Home, Leaf, Sparkles } from "lucide-react";
+import { Recycle, Loader2, Leaf, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyAccount } from "@/lib/common.functions";
@@ -21,24 +21,21 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-const DEMO_ACCOUNTS = [
-  { label: "Admin", email: "admin@banksampah.id", icon: ShieldCheck },
-  { label: "Tim Lapangan", email: "tim@banksampah.id", icon: Truck },
-  { label: "RT 05", email: "rt@banksampah.id", icon: Home },
-  { label: "Warga (Budi)", email: "budi@banksampah.id", icon: Users },
-];
+function usernameToEmail(username: string): string {
+  return `${username.trim().toLowerCase()}@banksampah.id`;
+}
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function doLogin(loginEmail: string, loginPassword: string) {
+  async function doLogin(loginUsername: string, loginPassword: string) {
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email: loginEmail,
+        email: usernameToEmail(loginUsername),
         password: loginPassword,
       });
       if (error) throw error;
@@ -46,7 +43,7 @@ function AuthPage() {
       toast.success(`Selamat datang, ${account.fullName}!`);
       navigate({ to: roleHome(account.role) });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Login gagal. Periksa email dan kata sandi.");
+      toast.error(err instanceof Error ? err.message : "Login gagal. Periksa username dan kata sandi.");
     } finally {
       setLoading(false);
     }
@@ -68,7 +65,7 @@ function AuthPage() {
             <Leaf className="h-4 w-4" /> Setor sampah, pantau saldo, jaga lingkungan.
           </p>
           <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[11px] font-medium backdrop-blur">
-            <Sparkles className="h-3 w-3" /> RT 05 · Melayani setiap Selasa & Jumat
+            <Sparkles className="h-3 w-3" /> Bank Sampah Magetan · Setor tiap Selasa & Jumat
           </div>
         </div>
       </div>
@@ -77,24 +74,27 @@ function AuthPage() {
       <div className="relative mx-auto -mt-16 w-full max-w-md px-4 pb-10">
         <div className="rounded-3xl border border-border bg-card p-6 shadow-elegant">
           <h2 className="text-lg font-bold">Masuk ke Akun</h2>
-          <p className="mt-0.5 text-sm text-muted-foreground">Gunakan email dan kata sandi akun Anda.</p>
+          <p className="mt-0.5 text-sm text-muted-foreground">Gunakan username dan kata sandi akun Anda.</p>
           <form
             className="mt-5 space-y-4"
             onSubmit={(e) => {
               e.preventDefault();
-              void doLogin(email, password);
+              void doLogin(username, password);
             }}
           >
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Username</Label>
               <Input
-                id="email"
-                type="email"
+                id="username"
+                type="text"
                 required
-                placeholder="nama@banksampah.id"
+                autoCapitalize="none"
+                autoCorrect="off"
+                autoComplete="username"
+                placeholder="mis. budisantoso"
                 className="h-12 rounded-xl bg-muted/40"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </div>
             <div className="space-y-2">
@@ -103,6 +103,7 @@ function AuthPage() {
                 id="password"
                 type="password"
                 required
+                autoComplete="current-password"
                 placeholder="••••••••"
                 className="h-12 rounded-xl bg-muted/40"
                 value={password}
@@ -116,33 +117,9 @@ function AuthPage() {
           </form>
         </div>
 
-        <div className="mt-5 rounded-3xl border border-border bg-card p-5 shadow-card">
-          <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Akun demo · kata sandi: password123
-          </p>
-          <div className="grid grid-cols-2 gap-2.5">
-            {DEMO_ACCOUNTS.map((acc) => {
-              const Icon = acc.icon;
-              return (
-                <button
-                  key={acc.email}
-                  type="button"
-                  disabled={loading}
-                  onClick={() => void doLogin(acc.email, "password123")}
-                  className="flex items-center gap-2.5 rounded-2xl border border-border bg-muted/30 px-3 py-2.5 text-left text-sm font-medium transition-all hover:border-primary/40 hover:bg-primary/5 hover:shadow-card disabled:opacity-50"
-                >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground">
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  {acc.label}
-                </button>
-              );
-            })}
-          </div>
-          <p className="mt-4 text-center text-xs text-muted-foreground">
-            Warga baru mendaftar melalui ketua RT setempat.
-          </p>
-        </div>
+        <p className="mt-5 text-center text-xs text-muted-foreground">
+          Belum punya akun? Hubungi pengurus Bank Sampah untuk didaftarkan.
+        </p>
       </div>
     </div>
   );

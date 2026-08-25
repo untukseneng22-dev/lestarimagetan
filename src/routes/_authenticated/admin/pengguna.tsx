@@ -19,14 +19,14 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 
-type RoleTab = "warga" | "tim" | "rt" | "admin";
+type RoleTab = "warga" | "tim" | "admin";
 
 export const Route = createFileRoute("/_authenticated/admin/pengguna")({
   head: () => ({ meta: [{ title: "Data Pengguna — Bank Sampah Digital" }] }),
   component: PenggunaPage,
 });
 
-const ROLE_LABEL: Record<RoleTab, string> = { warga: "Warga", tim: "Tim", rt: "RT", admin: "Admin" };
+const ROLE_LABEL: Record<RoleTab, string> = { warga: "Warga", tim: "Tim", admin: "Admin" };
 
 function PenggunaPage() {
   const listFn = useServerFn(listUsers);
@@ -40,12 +40,12 @@ function PenggunaPage() {
   });
 
   const [open, setOpen] = useState(false);
-  const [role, setRole] = useState<"warga" | "tim" | "rt">("warga");
+  const [role, setRole] = useState<"warga" | "tim">("warga");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [rt, setRt] = useState("");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -53,11 +53,11 @@ function PenggunaPage() {
     setLoading(true);
     try {
       await createFn({
-        data: { role, fullName: fullName.trim(), phone: phone.trim(), address: address.trim(), rt: rt.trim() || undefined, email: email.trim(), password },
+        data: { role, fullName: fullName.trim(), phone: phone.trim(), address: address.trim(), rt: rt.trim() || undefined, username: username.trim(), password },
       });
       toast.success(`Akun ${ROLE_LABEL[role]} dibuat. ${role === "warga" ? "Kredensial dikirim via WhatsApp." : ""}`);
       setOpen(false);
-      setFullName(""); setPhone(""); setAddress(""); setRt(""); setEmail(""); setPassword("");
+      setFullName(""); setPhone(""); setAddress(""); setRt(""); setUsername(""); setPassword("");
       await queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       await queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
     } catch (err) {
@@ -72,7 +72,7 @@ function PenggunaPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Data Pengguna</h1>
-          <p className="text-sm text-muted-foreground">Kelola akun warga, tim bank sampah, dan pengurus RT.</p>
+          <p className="text-sm text-muted-foreground">Kelola akun warga dan tim bank sampah.</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
@@ -85,12 +85,11 @@ function PenggunaPage() {
             <div className="space-y-3">
               <div className="space-y-1.5">
                 <Label>Peran</Label>
-                <Select value={role} onValueChange={(v) => setRole(v as "warga" | "tim" | "rt")}>
+                <Select value={role} onValueChange={(v) => setRole(v as "warga" | "tim")}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="warga">Warga</SelectItem>
                     <SelectItem value="tim">Tim Bank Sampah</SelectItem>
-                    <SelectItem value="rt">Pengurus RT</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -113,8 +112,16 @@ function PenggunaPage() {
                 </div>
               )}
               <div className="space-y-1.5">
-                <Label htmlFor="email">Email login</Label>
-                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nama@banksampah.id" />
+                <Label htmlFor="username">Username login</Label>
+                <Input
+                  id="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="mis. budisantoso"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                />
+                <p className="text-xs text-muted-foreground">Huruf kecil tanpa spasi — dipakai untuk masuk ke aplikasi.</p>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="sandi">Kata sandi</Label>
@@ -135,7 +142,6 @@ function PenggunaPage() {
         <TabsList>
           <TabsTrigger value="warga">Warga</TabsTrigger>
           <TabsTrigger value="tim">Tim</TabsTrigger>
-          <TabsTrigger value="rt">RT</TabsTrigger>
           <TabsTrigger value="admin">Admin</TabsTrigger>
         </TabsList>
       </Tabs>

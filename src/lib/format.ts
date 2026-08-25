@@ -91,7 +91,7 @@ export const EVENT_LABELS: Record<string, string> = {
   pengajuan_pencairan: "Pengajuan Pencairan",
   status_pencairan: "Status Pencairan",
   status_aduan: "Status Aduan",
-  pengajuan_rt: "Pengajuan RT",
+  
 };
 
 export function statusLabel(s: string | null | undefined): string {

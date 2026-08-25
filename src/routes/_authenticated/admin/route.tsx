@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard, ClipboardCheck, Users, Tag, ArrowLeftRight, Truck,
+  LayoutDashboard, Users, Tag, ArrowLeftRight, Truck,
   MessageSquareWarning, Megaphone, Landmark, FileBarChart, BellRing, Recycle,
 } from "lucide-react";
 import { RoleGate } from "@/components/RoleGate";
@@ -14,7 +14,6 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 const MENU = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/admin/pengajuan", label: "Pengajuan RT", icon: ClipboardCheck },
   { to: "/admin/pengguna", label: "Pengguna", icon: Users },
   { to: "/admin/harga", label: "Harga Sampah", icon: Tag },
   { to: "/admin/transaksi", label: "Transaksi", icon: ArrowLeftRight },
