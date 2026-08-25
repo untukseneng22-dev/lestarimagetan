@@ -1,16 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
-import { Loader2, Phone, MapPin, Home } from "lucide-react";
-import { toast } from "sonner";
-import { updateMyProfile } from "@/lib/common.functions";
+import { Phone, MapPin, Home, User } from "lucide-react";
 import { useMyAccount } from "@/lib/use-account";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { AvatarUpload } from "@/components/AvatarUpload";
 import { LogoutButton } from "@/components/LogoutButton";
 
 export const Route = createFileRoute("/_authenticated/warga/profil")({
@@ -20,33 +13,8 @@ export const Route = createFileRoute("/_authenticated/warga/profil")({
 
 function ProfilPage() {
   const { data: account } = useMyAccount();
-  const updateFn = useServerFn(updateMyProfile);
-  const queryClient = useQueryClient();
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (account) {
-      setPhone(account.phone ?? "");
-      setAddress(account.address ?? "");
-    }
-  }, [account]);
 
   if (!account) return null;
-
-  async function save() {
-    setLoading(true);
-    try {
-      await updateFn({ data: { phone: phone || undefined, address: address || undefined } });
-      toast.success("Profil diperbarui");
-      await queryClient.invalidateQueries({ queryKey: ["my-account"] });
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Gagal memperbarui profil");
-    } finally {
-      setLoading(false);
-    }
-  }
 
   return (
     <div className="space-y-4">
@@ -62,31 +30,39 @@ function ProfilPage() {
       </Card>
 
       <Card>
-        <CardContent className="space-y-3 p-4">
-          <div>
-            <p className="text-xs text-muted-foreground">Nama Lengkap</p>
-            <p className="text-sm font-semibold">{account.fullName}</p>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-4">
+            <AvatarUpload userId={account.id} name={account.fullName} avatarUrl={account.avatarUrl} />
+            <div className="min-w-0">
+              <p className="truncate text-base font-bold">{account.fullName}</p>
+              <p className="text-xs text-muted-foreground">Warga Bank Sampah</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Ketuk foto untuk mengganti foto profil
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-sm">
-            <Home className="h-4 w-4 text-primary" />
-            <span>RT/RW: {account.rt ?? "-"}</span>
+
+          <div className="mt-4 space-y-3 border-t border-border pt-4">
+            <div className="flex items-center gap-2 text-sm">
+              <User className="h-4 w-4 shrink-0 text-primary" />
+              <span className="min-w-0 truncate">{account.fullName}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <Home className="h-4 w-4 shrink-0 text-primary" />
+              <span>RT/RW: {account.rt ?? "-"}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <Phone className="h-4 w-4 shrink-0 text-primary" />
+              <span>{account.phone ?? "-"}</span>
+            </div>
+            <div className="flex items-start gap-2 text-sm">
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <span className="min-w-0">{account.address ?? "-"}</span>
+            </div>
+            <p className="rounded-xl bg-muted px-3 py-2 text-[11px] text-muted-foreground">
+              Data diri hanya dapat diubah oleh Admin. Hubungi Admin atau RT bila ada data yang perlu diperbarui.
+            </p>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="phone" className="flex items-center gap-1.5">
-              <Phone className="h-3.5 w-3.5" /> Nomor WhatsApp
-            </Label>
-            <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="08xxxxxxxxxx" />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="address" className="flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5" /> Alamat
-            </Label>
-            <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Alamat rumah" />
-          </div>
-          <Button className="w-full" onClick={() => void save()} disabled={loading}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Simpan Perubahan
-          </Button>
         </CardContent>
       </Card>
 
