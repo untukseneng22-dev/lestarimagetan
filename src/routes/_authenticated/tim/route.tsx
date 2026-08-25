@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { Home, Scale, Truck, ClipboardList } from "lucide-react";
+import { Home, Scale, Truck, ClipboardList, User } from "lucide-react";
 import { MobileShell } from "@/components/MobileShell";
 import { RoleGate } from "@/components/RoleGate";
 
@@ -18,6 +18,7 @@ function TimLayout() {
           { to: "/tim/setor", label: "Setor", icon: Scale },
           { to: "/tim/pickup", label: "Jemput", icon: Truck },
           { to: "/tim/rekap", label: "Rekap", icon: ClipboardList },
+          { to: "/tim/profil", label: "Profil", icon: User },
         ]}
       >
         <Outlet />
