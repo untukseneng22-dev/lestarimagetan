@@ -366,11 +366,21 @@ export const listComplaintsAdmin = createServerFn({ method: "GET" })
       ? await supabase.from("profiles").select("id, full_name, phone").in("id", ids)
       : { data: [] };
     const map = new Map((profiles ?? []).map((p) => [p.id, p]));
-    return rows.map((r) => ({
-      ...r,
-      resident_name: map.get(r.resident_id)?.full_name ?? "-",
-      resident_phone: map.get(r.resident_id)?.phone ?? null,
-    }));
+    return Promise.all(
+      rows.map(async (r) => {
+        let photoSigned: string | null = null;
+        if (r.photo_url) {
+          const { data: s } = await supabase.storage.from("aduan").createSignedUrl(r.photo_url, 3600);
+          photoSigned = s?.signedUrl ?? null;
+        }
+        return {
+          ...r,
+          photo_signed_url: photoSigned,
+          resident_name: map.get(r.resident_id)?.full_name ?? "-",
+          resident_phone: map.get(r.resident_id)?.phone ?? null,
+        };
+      }),
+    );
   });
 
 export const respondComplaint = createServerFn({ method: "POST" })
