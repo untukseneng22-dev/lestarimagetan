@@ -24,11 +24,15 @@ export const searchResidents = createServerFn({ method: "GET" })
 
     const q = data.query.trim();
     if (q) {
+      // id.eq hanya valid untuk UUID (ID dari QR); selain itu cari nama/No. WA saja
+      const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(q);
+      const filters = [`full_name.ilike.%${q}%`, `phone.ilike.%${q}%`];
+      if (isUuid) filters.push(`id.eq.${q}`);
       query = supabase
         .from("profiles")
         .select("id, full_name, phone, address, rt")
         .in("id", wargaIds)
-        .or(`full_name.ilike.%${q}%,phone.ilike.%${q}%,id.eq.${q}`)
+        .or(filters.join(","))
         .limit(20);
     }
 
