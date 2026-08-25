@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
-import { Wallet, ArrowDownToLine, Loader2, Lock } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Wallet, ArrowDownToLine, Loader2, Lock, Leaf, TrendingUp } from "lucide-react";
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { toast } from "sonner";
 import { getMySavings, requestWithdrawal } from "@/lib/warga.functions";
 import { formatNumber, formatRupiah, formatTanggal, formatTanggalWaktu } from "@/lib/format";
@@ -27,6 +28,29 @@ function TabunganPage() {
   const [amount, setAmount] = useState("");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Grafik nilai setoran 6 bulan terakhir.
+  const monthly = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const t of data?.transactions ?? []) {
+      const key = t.deposit_date.slice(0, 7);
+      map.set(key, (map.get(key) ?? 0) + Number(t.total_amount));
+    }
+    return [...map.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .slice(-6)
+      .map(([key, total]) => ({
+        bulan: new Date(`${key}-02`).toLocaleDateString("id-ID", { month: "short" }),
+        total,
+      }));
+  }, [data]);
+
+  // Estimasi dampak lingkungan: tiap kg sampah terpilah ≈ 2 kg CO₂e yang dihindari,
+  // dan satu pohon menyerap ≈ 21 kg CO₂ per tahun.
+  const impact = useMemo(() => {
+    const kg = (data?.transactions ?? []).reduce((s, t) => s + Number(t.total_weight), 0);
+    return { kg, co2: kg * 2, pohon: (kg * 2) / 21 };
+  }, [data]);
 
   if (!data) return <Skeleton className="h-64 w-full rounded-2xl" />;
 
@@ -94,6 +118,53 @@ function TabunganPage() {
           </Dialog>
         </CardContent>
       </Card>
+
+      {impact.kg > 0 && (
+        <Card className="border-accent/25 bg-accent/5">
+          <CardContent className="p-4">
+            <p className="flex items-center gap-1.5 text-sm font-semibold text-accent">
+              <Leaf className="h-4 w-4" /> Dampak Lingkunganmu
+            </p>
+            <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-xl bg-card p-2.5 shadow-card">
+                <p className="text-base font-bold">{formatNumber(impact.kg)} kg</p>
+                <p className="text-[10px] text-muted-foreground">Sampah didaur ulang</p>
+              </div>
+              <div className="rounded-xl bg-card p-2.5 shadow-card">
+                <p className="text-base font-bold">{formatNumber(impact.co2)} kg</p>
+                <p className="text-[10px] text-muted-foreground">Emisi CO₂ berkurang</p>
+              </div>
+              <div className="rounded-xl bg-card p-2.5 shadow-card">
+                <p className="text-base font-bold">{formatNumber(impact.pohon)}</p>
+                <p className="text-[10px] text-muted-foreground">Setara pohon/tahun</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {monthly.length > 0 && (
+        <Card>
+          <CardContent className="p-4">
+            <p className="flex items-center gap-1.5 text-sm font-semibold">
+              <TrendingUp className="h-4 w-4 text-primary" /> Setoran 6 Bulan Terakhir
+            </p>
+            <div className="mt-3 h-44">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthly}>
+                  <XAxis dataKey="bulan" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+                  <YAxis hide />
+                  <Tooltip
+                    formatter={(v) => formatRupiah(Number(v))}
+                    cursor={{ fill: "transparent" }}
+                  />
+                  <Bar dataKey="total" radius={[6, 6, 0, 0]} fill="var(--color-primary)" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <section>
         <h3 className="mb-2 text-sm font-semibold">Riwayat Setoran</h3>

@@ -1,11 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Tag } from "lucide-react";
 import { getCategoriesWithPrices } from "@/lib/common.functions";
 import { formatRupiah, formatTanggalWaktu } from "@/lib/format";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export const Route = createFileRoute("/_authenticated/warga/harga")({
   head: () => ({ meta: [{ title: "Daftar Harga — Bank Sampah Digital" }] }),
@@ -26,27 +33,35 @@ function HargaPage() {
           Harga yang tercatat saat setoran mengikuti harga pada tanggal setoran (terkunci).
         </p>
       </div>
-      <div className="grid grid-cols-2 gap-2.5">
-        {data.map((c) => (
-          <Card key={c.category_id}>
-            <CardContent className="p-3.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/15">
-                <Tag className="h-4 w-4 text-accent" />
-              </div>
-              <p className="mt-2 text-sm font-semibold leading-tight">{c.name}</p>
-              <p className="mt-1 text-base font-bold text-primary">
-                {formatRupiah(c.price_per_kg)}
-                <span className="text-xs font-normal text-muted-foreground">/{c.unit}</span>
-              </p>
-              {c.effective_at && (
-                <p className="mt-1 text-[10px] text-muted-foreground">
-                  Berlaku sejak {formatTanggalWaktu(c.effective_at)}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Jenis Sampah</TableHead>
+                <TableHead className="text-right">Harga</TableHead>
+                <TableHead className="w-16 text-right">Satuan</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.categories.map((c) => (
+                <TableRow key={c.category_id}>
+                  <TableCell className="font-medium">{c.name}</TableCell>
+                  <TableCell className="text-right font-semibold text-primary">
+                    {formatRupiah(c.price_per_kg)}
+                  </TableCell>
+                  <TableCell className="text-right text-muted-foreground">/{c.unit}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+      {data.lastUpdatedAt && (
+        <p className="text-xs italic text-muted-foreground">
+          Harga terakhir diperbarui oleh Admin pada {formatTanggalWaktu(data.lastUpdatedAt)}.
+        </p>
+      )}
     </div>
   );
 }
