@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/_authenticated/admin/jadwal")({
-  head: () => ({ meta: [{ title: "Jadwal Layanan — Bank Sampah Digital" }] }),
+  head: () => ({ meta: [{ title: "Jadwal Layanan — LESTARI MAGETAN" }] }),
   component: JadwalPage,
 });
 

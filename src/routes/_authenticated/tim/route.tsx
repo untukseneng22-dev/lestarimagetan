@@ -11,8 +11,8 @@ function TimLayout() {
   return (
     <RoleGate role="tim">
       <MobileShell
-        title="Tim Bank Sampah"
-        subtitle="Petugas Lapangan"
+        title="LESTARI MAGETAN"
+        subtitle="Tim Bank Sampah"
         items={[
           { to: "/tim", label: "Beranda", icon: Home, exact: true },
           { to: "/tim/setor", label: "Setor", icon: Scale },

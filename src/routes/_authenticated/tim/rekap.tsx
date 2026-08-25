@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/_authenticated/tim/rekap")({
-  head: () => ({ meta: [{ title: "Rekap Harian — Bank Sampah Digital" }] }),
+  head: () => ({ meta: [{ title: "Rekap Harian — LESTARI MAGETAN" }] }),
   component: RekapPage,
 });
 

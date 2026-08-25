@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/table";
 
 export const Route = createFileRoute("/_authenticated/warga/harga")({
-  head: () => ({ meta: [{ title: "Daftar Harga — Bank Sampah Digital" }] }),
+  head: () => ({ meta: [{ title: "Daftar Harga — LESTARI MAGETAN" }] }),
   component: HargaPage,
 });
 

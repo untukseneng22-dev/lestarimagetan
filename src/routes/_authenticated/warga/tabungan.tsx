@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/warga/tabungan")({
-  head: () => ({ meta: [{ title: "Tabungan — Bank Sampah Digital" }] }),
+  head: () => ({ meta: [{ title: "Tabungan — LESTARI MAGETAN" }] }),
   component: TabunganPage,
 });
 

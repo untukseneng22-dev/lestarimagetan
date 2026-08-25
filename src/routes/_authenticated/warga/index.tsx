@@ -12,7 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/_authenticated/warga/")({
-  head: () => ({ meta: [{ title: "Beranda Warga — Bank Sampah Digital" }] }),
+  head: () => ({ meta: [{ title: "Beranda Warga — LESTARI MAGETAN" }] }),
   component: WargaDashboard,
 });
 
@@ -60,7 +60,7 @@ function WargaDashboard() {
           </div>
           <div className="shrink-0 rounded-2xl bg-white p-3 shadow-card">
             <QRCode value={account.id} size={88} />
-            <p className="mt-1 text-center text-[10px] font-semibold text-foreground">QR Setoran</p>
+            <p className="mt-1 text-center text-xs font-semibold text-foreground">QR Setoran</p>
           </div>
         </div>
       </div>
@@ -142,7 +142,7 @@ function WargaDashboard() {
               <CardContent className="p-4">
                 <p className="text-sm font-semibold">{a.title}</p>
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{a.body}</p>
-                <p className="mt-2 text-[11px] text-muted-foreground">{formatTanggal(a.published_at)}</p>
+                <p className="mt-2 text-xs text-muted-foreground">{formatTanggal(a.published_at)}</p>
               </CardContent>
             </Card>
           ))}

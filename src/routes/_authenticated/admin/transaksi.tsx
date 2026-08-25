@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/_authenticated/admin/transaksi")({
-  head: () => ({ meta: [{ title: "Transaksi Setoran — Bank Sampah Digital" }] }),
+  head: () => ({ meta: [{ title: "Transaksi Setoran — LESTARI MAGETAN" }] }),
   component: TransaksiPage,
 });
 

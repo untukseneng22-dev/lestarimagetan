@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 
 export const Route = createFileRoute("/_authenticated/admin/notifikasi")({
-  head: () => ({ meta: [{ title: "Log Notifikasi WhatsApp — Bank Sampah Digital" }] }),
+  head: () => ({ meta: [{ title: "Log Notifikasi WhatsApp — LESTARI MAGETAN" }] }),
   component: NotifikasiPage,
 });
 

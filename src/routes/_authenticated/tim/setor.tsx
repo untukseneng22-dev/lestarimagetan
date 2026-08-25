@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import type { Html5Qrcode } from "html5-qrcode";
 
 export const Route = createFileRoute("/_authenticated/tim/setor")({
-  head: () => ({ meta: [{ title: "Setor Sampah — Bank Sampah Digital" }] }),
+  head: () => ({ meta: [{ title: "Setor Sampah — LESTARI MAGETAN" }] }),
   component: SetorPage,
 });
 
