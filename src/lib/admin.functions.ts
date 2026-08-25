@@ -60,7 +60,19 @@ export const listUsers = createServerFn({ method: "GET" })
       .select("id, full_name, phone, address, rt, created_at")
       .in("id", ids)
       .order("full_name");
-    return profiles ?? [];
+
+    // Petakan email internal (username@banksampah.id) -> username untuk ditampilkan
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: authData } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    const usernameMap = new Map(
+      (authData?.users ?? []).map((u) => {
+        const email = u.email ?? "";
+        const username = email.endsWith("@banksampah.id") ? email.replace(/@banksampah\.id$/, "") : email;
+        return [u.id, username] as const;
+      }),
+    );
+
+    return (profiles ?? []).map((p) => ({ ...p, username: usernameMap.get(p.id) ?? "-" }));
   });
 
 export const createUserAccount = createServerFn({ method: "POST" })
