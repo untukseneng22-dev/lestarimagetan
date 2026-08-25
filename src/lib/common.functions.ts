@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { z } from "zod";
 import { getPricesAtDate } from "./data.server";
 
 export const getMyAccount = createServerFn({ method: "GET" })
@@ -36,4 +37,27 @@ export const getAnnouncements = createServerFn({ method: "GET" })
       .order("published_at", { ascending: false })
       .limit(20);
     return data ?? [];
+  });
+
+export const updateMyProfile = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        phone: z.string().trim().regex(/^(\+62|62|0)8\d{7,12}$/, "Nomor WhatsApp tidak valid").optional(),
+        address: z.string().trim().min(3).max(255).optional(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        ...(data.phone ? { phone: data.phone } : {}),
+        ...(data.address ? { address: data.address } : {}),
+      })
+      .eq("id", userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });

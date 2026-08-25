@@ -69,7 +69,7 @@ function ProfilPage() {
           </div>
           <div className="flex items-center gap-2 text-sm">
             <Home className="h-4 w-4 text-primary" />
-            <span>RT/RW: {account.rtRw ?? "-"}</span>
+            <span>RT/RW: {account.rt ?? "-"}</span>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="phone" className="flex items-center gap-1.5">
