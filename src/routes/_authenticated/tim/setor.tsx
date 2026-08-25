@@ -179,6 +179,9 @@ function SetorPage() {
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && void doSearch()}
             />
+            <Button variant="outline" onClick={() => setScanOpen(true)} size="icon" aria-label="Pindai QR dengan kamera">
+              <ScanLine className="h-4 w-4" />
+            </Button>
             <Button onClick={() => void doSearch()} disabled={searching} size="icon" aria-label="Cari warga">
               {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             </Button>
@@ -236,7 +239,7 @@ function SetorPage() {
                           <SelectValue placeholder="Jenis sampah" />
                         </SelectTrigger>
                         <SelectContent>
-                          {(categories ?? []).map((c) => (
+                          {categories.map((c) => (
                             <SelectItem key={c.category_id} value={c.category_id}>
                               {c.name} — {formatRupiah(c.price_per_kg)}/{c.unit}
                             </SelectItem>
@@ -290,6 +293,18 @@ function SetorPage() {
           </Card>
         </>
       )}
+
+      <Dialog open={scanOpen} onOpenChange={setScanOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Pindai QR Warga</DialogTitle>
+          </DialogHeader>
+          <div id="qr-reader" className="min-h-64 w-full overflow-hidden rounded-xl bg-black" />
+          <p className="text-center text-xs text-muted-foreground">
+            Arahkan kamera ke kartu QR yang ditempel di rumah warga.
+          </p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

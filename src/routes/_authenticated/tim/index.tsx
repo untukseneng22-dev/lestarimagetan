@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Scale, Truck, ClipboardList, ArrowRight } from "lucide-react";
+import { Scale, Truck, ClipboardList, ArrowRight, CalendarClock, MapPin } from "lucide-react";
 import { getDailyRecap, listPickupTasks } from "@/lib/tim.functions";
+import { getAppSettings } from "@/lib/common.functions";
 import { useMyAccount } from "@/lib/use-account";
 import { formatNumber, formatRupiah, todayISO } from "@/lib/format";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,7 +17,9 @@ export const Route = createFileRoute("/_authenticated/tim/")({
 function TimDashboard() {
   const recapFn = useServerFn(getDailyRecap);
   const tasksFn = useServerFn(listPickupTasks);
+  const settingsFn = useServerFn(getAppSettings);
   const { data: account } = useMyAccount();
+  const { data: settings } = useQuery({ queryKey: ["app-settings"], queryFn: () => settingsFn() });
   const { data: recap } = useQuery({
     queryKey: ["recap", todayISO()],
     queryFn: () => recapFn({ data: { date: todayISO() } }),
@@ -35,6 +38,20 @@ function TimDashboard() {
         <h2 className="text-xl font-bold">Halo, {account.fullName.split(" ")[0]}!</h2>
         <p className="text-sm text-muted-foreground">Siap melayani warga hari ini.</p>
       </div>
+
+      {settings && (
+        <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3.5">
+          <p className="flex items-center gap-1.5 text-xs font-semibold text-primary">
+            <CalendarClock className="h-3.5 w-3.5" /> Jadwal rutin
+          </p>
+          <p className="mt-1 text-sm font-medium">{settings.pickupSchedule}</p>
+          {settings.dropoffInfo && (
+            <p className="mt-1 flex items-start gap-1.5 text-xs text-muted-foreground">
+              <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {settings.dropoffInfo}
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <Link to="/tim/setor">

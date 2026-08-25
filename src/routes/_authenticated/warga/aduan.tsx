@@ -6,6 +6,7 @@ import { Camera, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { createComplaint, getMyComplaints } from "@/lib/warga.functions";
+import { compressImage } from "@/lib/image";
 import { useMyAccount } from "@/lib/use-account";
 import { formatTanggalWaktu } from "@/lib/format";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -45,9 +46,12 @@ function AduanPage() {
     try {
       let photoPath: string | null = null;
       if (file) {
-        const ext = file.name.split(".").pop() ?? "jpg";
-        photoPath = `${account.id}/${Date.now()}.${ext}`;
-        const { error: upErr } = await supabase.storage.from("aduan").upload(photoPath, file);
+        // Kompres otomatis agar unggahan ringan (maks 1280px, JPEG).
+        const compressed = await compressImage(file, { maxDim: 1280, quality: 0.7 });
+        photoPath = `${account.id}/${Date.now()}.jpg`;
+        const { error: upErr } = await supabase.storage
+          .from("aduan")
+          .upload(photoPath, compressed, { contentType: "image/jpeg" });
         if (upErr) throw new Error("Gagal mengunggah foto: " + upErr.message);
       }
       await createFn({ data: { title: title.trim(), description: description.trim(), photoUrl: photoPath } });
