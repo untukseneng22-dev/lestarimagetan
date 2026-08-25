@@ -40,8 +40,7 @@ export function AvatarUpload({
         .from("avatars")
         .upload(path, file, { upsert: true, contentType: file.type });
       if (error) throw error;
-      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
-      await updateFn({ data: { avatarUrl: `${pub.publicUrl}?t=${Date.now()}` } });
+      await updateFn({ data: { avatarUrl: path } });
       await queryClient.invalidateQueries({ queryKey: ["my-account"] });
       toast.success("Foto profil diperbarui");
     } catch (err) {

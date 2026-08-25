@@ -11,13 +11,21 @@ export const getMyAccount = createServerFn({ method: "GET" })
       supabase.from("profiles").select("full_name, phone, address, rt, avatar_url").eq("id", userId).single(),
       supabase.from("user_roles").select("role").eq("user_id", userId),
     ]);
+    // avatar_url menyimpan path bucket privat; buat signed URL untuk ditampilkan.
+    let avatarUrl: string | null = null;
+    if (profile?.avatar_url) {
+      const { data: signed } = await supabase.storage
+        .from("avatars")
+        .createSignedUrl(profile.avatar_url, 60 * 60 * 24 * 7);
+      avatarUrl = signed?.signedUrl ?? null;
+    }
     return {
       id: userId,
       email: (context.claims?.email as string | undefined) ?? null,
       fullName: profile?.full_name ?? "Pengguna",
       phone: profile?.phone ?? null,
       address: profile?.address ?? null,
-      avatarUrl: profile?.avatar_url ?? null,
+      avatarUrl,
       rt: profile?.rt ?? null,
       role: (roles?.[0]?.role as string | undefined) ?? null,
     };
