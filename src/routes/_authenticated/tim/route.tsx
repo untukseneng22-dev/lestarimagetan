@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { Home, Scale, Truck, ClipboardList } from "lucide-react";
+import { Home, Scale, Truck, ClipboardList, User } from "lucide-react";
 import { MobileShell } from "@/components/MobileShell";
 import { RoleGate } from "@/components/RoleGate";
 
