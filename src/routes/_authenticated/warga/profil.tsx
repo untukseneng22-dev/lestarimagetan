@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AvatarUpload } from "@/components/AvatarUpload";
 import { LogoutButton } from "@/components/LogoutButton";
+import { AppVersion } from "@/components/AppVersion";
 
 export const Route = createFileRoute("/_authenticated/warga/profil")({
   head: () => ({ meta: [{ title: "Profil — LESTARI MAGETAN" }] }),
@@ -77,6 +78,8 @@ function ProfilPage() {
       </Card>
 
       <LogoutButton variant="destructive" />
+
+      <AppVersion />
     </div>
   );
 }

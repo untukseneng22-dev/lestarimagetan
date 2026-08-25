@@ -8,6 +8,7 @@ import {
 import { RoleGate } from "@/components/RoleGate";
 import { useMyAccount } from "@/lib/use-account";
 import { LogoutButton } from "@/components/LogoutButton";
+import { AppVersion } from "@/components/AppVersion";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -137,6 +138,9 @@ function AdminLayout() {
           <div className="border-t border-sidebar-border p-3">
             <p className="mb-2 truncate px-1 text-xs text-muted-foreground">{account?.fullName}</p>
             <LogoutButton />
+            <div className="mt-3">
+              <AppVersion />
+            </div>
           </div>
         </aside>
         <main className="ml-64 flex-1 p-6">
