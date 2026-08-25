@@ -1,9 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2, UserPlus } from "lucide-react";
+import { Loader2, Printer, UserPlus } from "lucide-react";
 import { createUserAccount, listUsers } from "@/lib/admin.functions";
 import { formatTanggal } from "@/lib/format";
 import { Card, CardContent } from "@/components/ui/card";
@@ -74,10 +74,18 @@ function PenggunaPage() {
           <h1 className="text-2xl font-bold">Data Pengguna</h1>
           <p className="text-sm text-muted-foreground">Kelola akun warga dan tim bank sampah.</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button><UserPlus className="h-4 w-4" /> Tambah Akun</Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-2">
+          {tab === "warga" && (
+            <Button variant="outline" asChild>
+              <Link to="/kartu" search={{ semua: true }}>
+                <Printer className="h-4 w-4" /> Cetak Kartu QR
+              </Link>
+            </Button>
+          )}
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button><UserPlus className="h-4 w-4" /> Tambah Akun</Button>
+            </DialogTrigger>
           <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Buat Akun Baru</DialogTitle>
@@ -135,7 +143,8 @@ function PenggunaPage() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as RoleTab)}>
