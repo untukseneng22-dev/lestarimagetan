@@ -36,24 +36,24 @@ function TimDashboard() {
         <p className="text-sm text-muted-foreground">Siap melayani warga hari ini.</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-2 gap-3">
         <Link to="/tim/setor">
-          <Card className="border-primary/30 bg-primary/5 transition-colors hover:bg-primary/10">
-            <CardContent className="p-4">
-              <Scale className="h-6 w-6 text-primary" />
-              <p className="mt-2 text-sm font-semibold">Setor Sampah</p>
-              <p className="text-xs text-muted-foreground">Scan QR / cari warga</p>
-            </CardContent>
-          </Card>
+          <div className="rounded-3xl border border-border bg-card p-4 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-elegant">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-primary text-primary-foreground shadow-elegant">
+              <Scale className="h-6 w-6" />
+            </span>
+            <p className="mt-3 text-sm font-bold">Setor Sampah</p>
+            <p className="text-xs text-muted-foreground">Scan QR / cari warga</p>
+          </div>
         </Link>
         <Link to="/tim/pickup">
-          <Card className="border-accent/30 bg-accent/5 transition-colors hover:bg-accent/10">
-            <CardContent className="p-4">
-              <Truck className="h-6 w-6 text-accent" />
-              <p className="mt-2 text-sm font-semibold">Penjemputan</p>
-              <p className="text-xs text-muted-foreground">{activeTasks.length} tugas aktif</p>
-            </CardContent>
-          </Card>
+          <div className="rounded-3xl border border-border bg-card p-4 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-elegant">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-accent text-accent-foreground shadow-glow">
+              <Truck className="h-6 w-6" />
+            </span>
+            <p className="mt-3 text-sm font-bold">Penjemputan</p>
+            <p className="text-xs text-muted-foreground">{activeTasks.length} tugas aktif</p>
+          </div>
         </Link>
       </div>
 

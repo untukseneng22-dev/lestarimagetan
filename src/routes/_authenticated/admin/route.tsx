@@ -34,8 +34,8 @@ function AdminLayout() {
     <RoleGate role="admin">
       <div className="flex min-h-screen bg-background">
         <aside className="fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-sidebar-border bg-sidebar">
-          <div className="flex items-center gap-2.5 border-b border-sidebar-border px-5 py-4">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
+          <div className="flex items-center gap-2.5 border-b border-sidebar-border px-5 py-5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-primary shadow-elegant">
               <Recycle className="h-5 w-5 text-primary-foreground" />
             </div>
             <div>

@@ -54,7 +54,14 @@
 }
 
 :root {
-  --radius: 0.75rem;
+  --radius: 1rem;
+  --primary-glow: oklch(0.62 0.15 230);
+  --gradient-primary: linear-gradient(135deg, oklch(0.5 0.17 257) 0%, oklch(0.56 0.16 240) 55%, oklch(0.62 0.16 190) 100%);
+  --gradient-hero: radial-gradient(120% 120% at 15% 0%, oklch(0.62 0.16 230) 0%, oklch(0.5 0.17 257) 55%, oklch(0.42 0.14 268) 100%);
+  --gradient-accent: linear-gradient(135deg, oklch(0.62 0.16 158) 0%, oklch(0.55 0.15 175) 100%);
+  --shadow-elegant: 0 16px 40px -16px oklch(0.5 0.17 257 / 0.35);
+  --shadow-glow: 0 8px 28px -8px oklch(0.62 0.16 158 / 0.45);
+  --shadow-card: 0 6px 24px -10px oklch(0.4 0.08 260 / 0.18);
   --background: oklch(0.98 0.006 250);
   --foreground: oklch(0.27 0.05 260);
   --card: oklch(1 0 0);
@@ -134,4 +141,28 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
   }
+}
+
+@utility bg-gradient-primary {
+  background-image: var(--gradient-primary);
+}
+
+@utility bg-gradient-hero {
+  background-image: var(--gradient-hero);
+}
+
+@utility bg-gradient-accent {
+  background-image: var(--gradient-accent);
+}
+
+@utility shadow-elegant {
+  box-shadow: var(--shadow-elegant);
+}
+
+@utility shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+
+@utility shadow-card {
+  box-shadow: var(--shadow-card);
 }
