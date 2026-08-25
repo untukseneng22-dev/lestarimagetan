@@ -46,14 +46,7 @@ export function MobileShell({
           </div>
         </header>
 
-        <main className="flex-1 px-4 pb-32 pt-5">
-          {children}
-          <p className="mt-8 text-center text-[11px] leading-relaxed text-muted-foreground/70">
-            © 2026 LESTARI MAGETAN
-            <br />
-            Dikembangkan oleh Tim Kreatif SMAS PGRI Maospati
-          </p>
-        </main>
+        <main className="flex-1 px-4 pb-32 pt-5">{children}</main>
 
         {/* Navigasi bawah mengambang bergaya e-wallet */}
         <nav className="fixed bottom-3 left-1/2 z-40 w-[calc(100%-1.5rem)] max-w-[26rem] -translate-x-1/2">
