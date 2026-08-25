@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/_authenticated/kartu")({
   validateSearch: (search: Record<string, unknown>) => ({
-    semua: search.semua === true || search.semua === "1",
+    semua: search["semua"] === true || search["semua"] === "1",
   }),
   head: () => ({
     meta: [
