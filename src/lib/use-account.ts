@@ -8,8 +8,6 @@ export function roleHome(role: string | null | undefined): string {
       return "/admin";
     case "tim":
       return "/tim";
-    case "rt":
-      return "/rt";
     default:
       return "/warga";
   }

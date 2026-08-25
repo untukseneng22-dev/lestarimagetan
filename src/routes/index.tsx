@@ -12,7 +12,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Aplikasi Bank Sampah Digital untuk warga, tim lapangan, RT, dan admin: setoran sampah, tabungan saldo, harga terkini, penjemputan, dan notifikasi WhatsApp.",
+          "Aplikasi Bank Sampah Digital untuk warga, tim lapangan, dan admin: setoran sampah, tabungan saldo, harga terkini, penjemputan, dan notifikasi WhatsApp.",
       },
       { property: "og:title", content: "Bank Sampah Digital" },
       {

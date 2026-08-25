@@ -208,51 +208,6 @@ export type Database = {
         }
         Relationships: []
       }
-      registration_requests: {
-        Row: {
-          account_created: boolean
-          address: string
-          created_at: string
-          decided_at: string | null
-          decided_by: string | null
-          full_name: string
-          id: string
-          reason: string | null
-          rt: string | null
-          rt_user_id: string
-          status: string
-          whatsapp_number: string
-        }
-        Insert: {
-          account_created?: boolean
-          address: string
-          created_at?: string
-          decided_at?: string | null
-          decided_by?: string | null
-          full_name: string
-          id?: string
-          reason?: string | null
-          rt?: string | null
-          rt_user_id: string
-          status?: string
-          whatsapp_number: string
-        }
-        Update: {
-          account_created?: boolean
-          address?: string
-          created_at?: string
-          decided_at?: string | null
-          decided_by?: string | null
-          full_name?: string
-          id?: string
-          reason?: string | null
-          rt?: string | null
-          rt_user_id?: string
-          status?: string
-          whatsapp_number?: string
-        }
-        Relationships: []
-      }
       transaction_items: {
         Row: {
           category_id: string | null
@@ -417,7 +372,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "tim" | "rt" | "warga"
+      app_role: "admin" | "tim" | "warga"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -545,7 +500,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "tim", "rt", "warga"],
+      app_role: ["admin", "tim", "warga"],
     },
   },
 } as const

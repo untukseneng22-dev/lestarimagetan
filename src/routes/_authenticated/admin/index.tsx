@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  Users, Truck, Scale, Wallet, ClipboardCheck, Landmark,
-  MessageSquareWarning, ArrowLeftRight, UserRoundCheck, UserRoundCog,
+  Users, Truck, Scale, Wallet, Landmark,
+  MessageSquareWarning, ArrowLeftRight, UserRoundCheck,
 } from "lucide-react";
 import { getAdminStats } from "@/lib/admin.functions";
 import { formatNumber, formatRupiah } from "@/lib/format";
@@ -32,7 +32,6 @@ function AdminDashboard() {
   const stats = [
     { label: "Warga Aktif", value: formatNumber(s.totalWarga), icon: Users, tone: "text-primary" },
     { label: "Petugas Tim", value: formatNumber(s.totalTim), icon: UserRoundCheck, tone: "text-primary" },
-    { label: "Pengurus RT", value: formatNumber(s.totalRt), icon: UserRoundCog, tone: "text-primary" },
     { label: "Setoran Bulan Ini", value: formatNumber(s.setoranBulanIni), icon: ArrowLeftRight, tone: "text-primary" },
     { label: "Berat Bulan Ini", value: `${formatNumber(s.beratBulanIni)} kg`, icon: Scale, tone: "text-accent" },
     { label: "Nilai Setoran Bulan Ini", value: formatRupiah(s.nilaiBulanIni), icon: Wallet, tone: "text-accent" },
@@ -41,7 +40,6 @@ function AdminDashboard() {
   ];
 
   const alerts = [
-    { count: s.pendingRequests, label: "pengajuan pendaftaran menunggu persetujuan", to: "/admin/pengajuan", icon: ClipboardCheck },
     { count: s.pendingWithdrawals, label: "pengajuan pencairan saldo menunggu diproses", to: "/admin/kas", icon: Landmark },
     { count: s.openComplaints, label: "aduan warga belum selesai", to: "/admin/aduan", icon: MessageSquareWarning },
   ].filter((a) => a.count > 0);
