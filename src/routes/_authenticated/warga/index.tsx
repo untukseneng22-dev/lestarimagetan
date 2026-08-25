@@ -37,25 +37,28 @@ function WargaDashboard() {
         <p className="text-sm text-muted-foreground">{formatTanggalPanjang(new Date())}</p>
       </div>
 
-      <Card className="border-primary/20 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="flex items-center gap-1.5 text-xs text-primary-foreground/80">
-                <Wallet className="h-3.5 w-3.5" /> Saldo Tabungan
-              </p>
-              <p className="mt-1 text-3xl font-bold">{formatRupiah(data.balance)}</p>
-              <Link to="/warga/tabungan" className="mt-2 inline-flex items-center text-xs font-medium underline-offset-2 hover:underline">
-                Lihat tabungan <ChevronRight className="h-3 w-3" />
-              </Link>
-            </div>
-            <div className="rounded-2xl bg-white p-3">
-              <QRCode value={account.id} size={96} />
-              <p className="mt-1 text-center text-[10px] font-medium text-foreground">QR Setoran</p>
-            </div>
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-primary p-5 text-primary-foreground shadow-elegant">
+        <div className="pointer-events-none absolute -right-14 -top-14 h-44 w-44 rounded-full bg-white/10" />
+        <div className="pointer-events-none absolute -bottom-16 -left-8 h-36 w-36 rounded-full bg-accent/30" />
+        <div className="relative flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="flex items-center gap-1.5 text-xs text-primary-foreground/85">
+              <Wallet className="h-3.5 w-3.5" /> Saldo Tabungan
+            </p>
+            <p className="mt-1.5 text-3xl font-extrabold tracking-tight">{formatRupiah(data.balance)}</p>
+            <Link
+              to="/warga/tabungan"
+              className="mt-3 inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold backdrop-blur transition-colors hover:bg-white/25"
+            >
+              Lihat tabungan <ChevronRight className="h-3 w-3" />
+            </Link>
           </div>
-        </CardContent>
-      </Card>
+          <div className="shrink-0 rounded-2xl bg-white p-3 shadow-card">
+            <QRCode value={account.id} size={88} />
+            <p className="mt-1 text-center text-[10px] font-semibold text-foreground">QR Setoran</p>
+          </div>
+        </div>
+      </div>
 
       <section>
         <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
