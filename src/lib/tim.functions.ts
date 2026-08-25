@@ -11,7 +11,10 @@ export const searchResidents = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     await requireRole(supabase, userId, ["tim", "admin"]);
 
-    const { data: wargaRoles } = await supabase.from("user_roles").select("user_id").eq("role", "warga");
+    // user_roles dibatasi RLS (admin saja yang bisa baca semua), jadi lookup id warga
+    // memakai admin client setelah peran tim/admin terverifikasi
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: wargaRoles } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "warga");
     const wargaIds = (wargaRoles ?? []).map((r) => r.user_id);
     if (wargaIds.length === 0) return [];
 
