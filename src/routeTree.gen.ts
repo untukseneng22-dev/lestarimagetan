@@ -12,9 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedRtRouteRouteImport } from './routes/_authenticated/rt/route'
 import { Route as AuthenticatedTimRouteRouteImport } from './routes/_authenticated/tim/route'
 import { Route as AuthenticatedWargaRouteRouteImport } from './routes/_authenticated/warga/route'
+import { Route as AuthenticatedRtIndexRouteImport } from './routes/_authenticated/rt/index'
 import { Route as AuthenticatedTimIndexRouteImport } from './routes/_authenticated/tim/index'
 import { Route as AuthenticatedTimPickupRouteImport } from './routes/_authenticated/tim/pickup'
 import { Route as AuthenticatedTimRekapRouteImport } from './routes/_authenticated/tim/rekap'
@@ -39,6 +41,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedRtRouteRoute = AuthenticatedRtRouteRouteImport.update({
   id: '/rt',
   path: '/rt',
@@ -53,6 +60,11 @@ const AuthenticatedWargaRouteRoute = AuthenticatedWargaRouteRouteImport.update({
   id: '/warga',
   path: '/warga',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRtIndexRoute = AuthenticatedRtIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedRtRouteRoute,
 } as any)
 const AuthenticatedTimIndexRoute = AuthenticatedTimIndexRouteImport.update({
   id: '/',
@@ -105,7 +117,8 @@ const AuthenticatedWargaTabunganRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/rt': typeof AuthenticatedRtRouteRoute
+  '/admin': typeof AuthenticatedAdminRouteRoute
+  '/rt': typeof AuthenticatedRtRouteRouteWithChildren
   '/tim': typeof AuthenticatedTimRouteRouteWithChildren
   '/warga': typeof AuthenticatedWargaRouteRouteWithChildren
   '/tim/pickup': typeof AuthenticatedTimPickupRoute
@@ -115,13 +128,14 @@ export interface FileRoutesByFullPath {
   '/warga/harga': typeof AuthenticatedWargaHargaRoute
   '/warga/profil': typeof AuthenticatedWargaProfilRoute
   '/warga/tabungan': typeof AuthenticatedWargaTabunganRoute
+  '/rt/': typeof AuthenticatedRtIndexRoute
   '/tim/': typeof AuthenticatedTimIndexRoute
   '/warga/': typeof AuthenticatedWargaIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/rt': typeof AuthenticatedRtRouteRoute
+  '/admin': typeof AuthenticatedAdminRouteRoute
   '/tim/pickup': typeof AuthenticatedTimPickupRoute
   '/tim/rekap': typeof AuthenticatedTimRekapRoute
   '/tim/setor': typeof AuthenticatedTimSetorRoute
@@ -129,6 +143,7 @@ export interface FileRoutesByTo {
   '/warga/harga': typeof AuthenticatedWargaHargaRoute
   '/warga/profil': typeof AuthenticatedWargaProfilRoute
   '/warga/tabungan': typeof AuthenticatedWargaTabunganRoute
+  '/rt': typeof AuthenticatedRtIndexRoute
   '/tim': typeof AuthenticatedTimIndexRoute
   '/warga': typeof AuthenticatedWargaIndexRoute
 }
@@ -137,7 +152,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_authenticated/rt': typeof AuthenticatedRtRouteRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteRoute
+  '/_authenticated/rt': typeof AuthenticatedRtRouteRouteWithChildren
   '/_authenticated/tim': typeof AuthenticatedTimRouteRouteWithChildren
   '/_authenticated/warga': typeof AuthenticatedWargaRouteRouteWithChildren
   '/_authenticated/tim/pickup': typeof AuthenticatedTimPickupRoute
@@ -147,6 +163,7 @@ export interface FileRoutesById {
   '/_authenticated/warga/harga': typeof AuthenticatedWargaHargaRoute
   '/_authenticated/warga/profil': typeof AuthenticatedWargaProfilRoute
   '/_authenticated/warga/tabungan': typeof AuthenticatedWargaTabunganRoute
+  '/_authenticated/rt/': typeof AuthenticatedRtIndexRoute
   '/_authenticated/tim/': typeof AuthenticatedTimIndexRoute
   '/_authenticated/warga/': typeof AuthenticatedWargaIndexRoute
 }
@@ -155,6 +172,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/admin'
     | '/rt'
     | '/tim'
     | '/warga'
@@ -165,13 +183,14 @@ export interface FileRouteTypes {
     | '/warga/harga'
     | '/warga/profil'
     | '/warga/tabungan'
+    | '/rt/'
     | '/tim/'
     | '/warga/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/rt'
+    | '/admin'
     | '/tim/pickup'
     | '/tim/rekap'
     | '/tim/setor'
@@ -179,6 +198,7 @@ export interface FileRouteTypes {
     | '/warga/harga'
     | '/warga/profil'
     | '/warga/tabungan'
+    | '/rt'
     | '/tim'
     | '/warga'
   id:
@@ -186,6 +206,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/admin'
     | '/_authenticated/rt'
     | '/_authenticated/tim'
     | '/_authenticated/warga'
@@ -196,6 +217,7 @@ export interface FileRouteTypes {
     | '/_authenticated/warga/harga'
     | '/_authenticated/warga/profil'
     | '/_authenticated/warga/tabungan'
+    | '/_authenticated/rt/'
     | '/_authenticated/tim/'
     | '/_authenticated/warga/'
   fileRoutesById: FileRoutesById
@@ -229,6 +251,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/rt': {
       id: '/_authenticated/rt'
       path: '/rt'
@@ -249,6 +278,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/warga'
       preLoaderRoute: typeof AuthenticatedWargaRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/rt/': {
+      id: '/_authenticated/rt/'
+      path: '/'
+      fullPath: '/rt/'
+      preLoaderRoute: typeof AuthenticatedRtIndexRouteImport
+      parentRoute: typeof AuthenticatedRtRouteRoute
     }
     '/_authenticated/tim/': {
       id: '/_authenticated/tim/'
@@ -316,6 +352,17 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRtRouteRouteChildren {
+  AuthenticatedRtIndexRoute: typeof AuthenticatedRtIndexRoute
+}
+
+const AuthenticatedRtRouteRouteChildren: AuthenticatedRtRouteRouteChildren = {
+  AuthenticatedRtIndexRoute: AuthenticatedRtIndexRoute,
+}
+
+const AuthenticatedRtRouteRouteWithChildren =
+  AuthenticatedRtRouteRoute._addFileChildren(AuthenticatedRtRouteRouteChildren)
+
 interface AuthenticatedTimRouteRouteChildren {
   AuthenticatedTimPickupRoute: typeof AuthenticatedTimPickupRoute
   AuthenticatedTimRekapRoute: typeof AuthenticatedTimRekapRoute
@@ -358,13 +405,15 @@ const AuthenticatedWargaRouteRouteWithChildren =
   )
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedRtRouteRoute: typeof AuthenticatedRtRouteRoute
+  AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRoute
+  AuthenticatedRtRouteRoute: typeof AuthenticatedRtRouteRouteWithChildren
   AuthenticatedTimRouteRoute: typeof AuthenticatedTimRouteRouteWithChildren
   AuthenticatedWargaRouteRoute: typeof AuthenticatedWargaRouteRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedRtRouteRoute: AuthenticatedRtRouteRoute,
+  AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRoute,
+  AuthenticatedRtRouteRoute: AuthenticatedRtRouteRouteWithChildren,
   AuthenticatedTimRouteRoute: AuthenticatedTimRouteRouteWithChildren,
   AuthenticatedWargaRouteRoute: AuthenticatedWargaRouteRouteWithChildren,
 }
