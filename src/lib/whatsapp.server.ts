@@ -6,7 +6,8 @@ export type NotificationEvent =
   | "status_penjemputan"
   | "pengajuan_pencairan"
   | "status_pencairan"
-  | "status_aduan";
+  | "status_aduan"
+  | "jadwal_penjemputan";
 
 export function rupiah(n: number): string {
   return "Rp" + Math.round(n).toLocaleString("id-ID");
@@ -29,6 +30,8 @@ export function buildMessage(
       return `Pengajuan pencairan saldo ${payload["jumlah"]} kini berstatus: ${payload["status"]}.${payload["catatan"] ? ` Catatan: ${payload["catatan"]}` : ""}`;
     case "status_aduan":
       return `Aduan "${payload["judul"]}" kini berstatus: ${payload["status"]}.${payload["tanggapan"] ? ` Tanggapan: ${payload["tanggapan"]}` : ""}`;
+    case "jadwal_penjemputan":
+      return `Info jadwal Bank Sampah:\nPenjemputan rutin: ${payload["jadwal"]}.\nAntar mandiri: ${payload["antar"]}.`;
     default:
       return "Notifikasi Bank Sampah Digital.";
   }
