@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { listNotificationLogs } from "@/lib/admin.functions";
 import { EVENT_LABELS, formatTanggalWaktu } from "@/lib/format";
@@ -60,9 +60,8 @@ function NotifikasiPage() {
                 <TableRow><TableCell colSpan={6} className="py-8 text-center text-muted-foreground">Belum ada notifikasi.</TableCell></TableRow>
               )}
               {(rows ?? []).map((l) => (
-                <>
+                <Fragment key={l.id}>
                   <TableRow
-                    key={l.id}
                     className="cursor-pointer"
                     onClick={() => toggle(l.id)}
                   >
