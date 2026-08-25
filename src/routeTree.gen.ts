@@ -10,33 +10,222 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
+import { Route as AuthenticatedRtRouteRouteImport } from './routes/_authenticated/rt/route'
+import { Route as AuthenticatedTimRouteRouteImport } from './routes/_authenticated/tim/route'
+import { Route as AuthenticatedWargaRouteRouteImport } from './routes/_authenticated/warga/route'
+import { Route as AuthenticatedRtIndexRouteImport } from './routes/_authenticated/rt/index'
+import { Route as AuthenticatedTimIndexRouteImport } from './routes/_authenticated/tim/index'
+import { Route as AuthenticatedTimPickupRouteImport } from './routes/_authenticated/tim/pickup'
+import { Route as AuthenticatedTimRekapRouteImport } from './routes/_authenticated/tim/rekap'
+import { Route as AuthenticatedTimSetorRouteImport } from './routes/_authenticated/tim/setor'
+import { Route as AuthenticatedWargaIndexRouteImport } from './routes/_authenticated/warga/index'
+import { Route as AuthenticatedWargaAduanRouteImport } from './routes/_authenticated/warga/aduan'
+import { Route as AuthenticatedWargaHargaRouteImport } from './routes/_authenticated/warga/harga'
+import { Route as AuthenticatedWargaProfilRouteImport } from './routes/_authenticated/warga/profil'
+import { Route as AuthenticatedWargaTabunganRouteImport } from './routes/_authenticated/warga/tabungan'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRtRouteRoute = AuthenticatedRtRouteRouteImport.update({
+  id: '/rt',
+  path: '/rt',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTimRouteRoute = AuthenticatedTimRouteRouteImport.update({
+  id: '/tim',
+  path: '/tim',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedWargaRouteRoute = AuthenticatedWargaRouteRouteImport.update({
+  id: '/warga',
+  path: '/warga',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRtIndexRoute = AuthenticatedRtIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedRtRouteRoute,
+} as any)
+const AuthenticatedTimIndexRoute = AuthenticatedTimIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedTimRouteRoute,
+} as any)
+const AuthenticatedTimPickupRoute = AuthenticatedTimPickupRouteImport.update({
+  id: '/pickup',
+  path: '/pickup',
+  getParentRoute: () => AuthenticatedTimRouteRoute,
+} as any)
+const AuthenticatedTimRekapRoute = AuthenticatedTimRekapRouteImport.update({
+  id: '/rekap',
+  path: '/rekap',
+  getParentRoute: () => AuthenticatedTimRouteRoute,
+} as any)
+const AuthenticatedTimSetorRoute = AuthenticatedTimSetorRouteImport.update({
+  id: '/setor',
+  path: '/setor',
+  getParentRoute: () => AuthenticatedTimRouteRoute,
+} as any)
+const AuthenticatedWargaIndexRoute = AuthenticatedWargaIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedWargaRouteRoute,
+} as any)
+const AuthenticatedWargaAduanRoute = AuthenticatedWargaAduanRouteImport.update({
+  id: '/aduan',
+  path: '/aduan',
+  getParentRoute: () => AuthenticatedWargaRouteRoute,
+} as any)
+const AuthenticatedWargaHargaRoute = AuthenticatedWargaHargaRouteImport.update({
+  id: '/harga',
+  path: '/harga',
+  getParentRoute: () => AuthenticatedWargaRouteRoute,
+} as any)
+const AuthenticatedWargaProfilRoute =
+  AuthenticatedWargaProfilRouteImport.update({
+    id: '/profil',
+    path: '/profil',
+    getParentRoute: () => AuthenticatedWargaRouteRoute,
+  } as any)
+const AuthenticatedWargaTabunganRoute =
+  AuthenticatedWargaTabunganRouteImport.update({
+    id: '/tabungan',
+    path: '/tabungan',
+    getParentRoute: () => AuthenticatedWargaRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/admin': typeof AuthenticatedAdminRouteRoute
+  '/rt': typeof AuthenticatedRtRouteRouteWithChildren
+  '/tim': typeof AuthenticatedTimRouteRouteWithChildren
+  '/warga': typeof AuthenticatedWargaRouteRouteWithChildren
+  '/tim/pickup': typeof AuthenticatedTimPickupRoute
+  '/tim/rekap': typeof AuthenticatedTimRekapRoute
+  '/tim/setor': typeof AuthenticatedTimSetorRoute
+  '/warga/aduan': typeof AuthenticatedWargaAduanRoute
+  '/warga/harga': typeof AuthenticatedWargaHargaRoute
+  '/warga/profil': typeof AuthenticatedWargaProfilRoute
+  '/warga/tabungan': typeof AuthenticatedWargaTabunganRoute
+  '/rt/': typeof AuthenticatedRtIndexRoute
+  '/tim/': typeof AuthenticatedTimIndexRoute
+  '/warga/': typeof AuthenticatedWargaIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/admin': typeof AuthenticatedAdminRouteRoute
+  '/tim/pickup': typeof AuthenticatedTimPickupRoute
+  '/tim/rekap': typeof AuthenticatedTimRekapRoute
+  '/tim/setor': typeof AuthenticatedTimSetorRoute
+  '/warga/aduan': typeof AuthenticatedWargaAduanRoute
+  '/warga/harga': typeof AuthenticatedWargaHargaRoute
+  '/warga/profil': typeof AuthenticatedWargaProfilRoute
+  '/warga/tabungan': typeof AuthenticatedWargaTabunganRoute
+  '/rt': typeof AuthenticatedRtIndexRoute
+  '/tim': typeof AuthenticatedTimIndexRoute
+  '/warga': typeof AuthenticatedWargaIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteRoute
+  '/_authenticated/rt': typeof AuthenticatedRtRouteRouteWithChildren
+  '/_authenticated/tim': typeof AuthenticatedTimRouteRouteWithChildren
+  '/_authenticated/warga': typeof AuthenticatedWargaRouteRouteWithChildren
+  '/_authenticated/tim/pickup': typeof AuthenticatedTimPickupRoute
+  '/_authenticated/tim/rekap': typeof AuthenticatedTimRekapRoute
+  '/_authenticated/tim/setor': typeof AuthenticatedTimSetorRoute
+  '/_authenticated/warga/aduan': typeof AuthenticatedWargaAduanRoute
+  '/_authenticated/warga/harga': typeof AuthenticatedWargaHargaRoute
+  '/_authenticated/warga/profil': typeof AuthenticatedWargaProfilRoute
+  '/_authenticated/warga/tabungan': typeof AuthenticatedWargaTabunganRoute
+  '/_authenticated/rt/': typeof AuthenticatedRtIndexRoute
+  '/_authenticated/tim/': typeof AuthenticatedTimIndexRoute
+  '/_authenticated/warga/': typeof AuthenticatedWargaIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/rt'
+    | '/tim'
+    | '/warga'
+    | '/tim/pickup'
+    | '/tim/rekap'
+    | '/tim/setor'
+    | '/warga/aduan'
+    | '/warga/harga'
+    | '/warga/profil'
+    | '/warga/tabungan'
+    | '/rt/'
+    | '/tim/'
+    | '/warga/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/tim/pickup'
+    | '/tim/rekap'
+    | '/tim/setor'
+    | '/warga/aduan'
+    | '/warga/harga'
+    | '/warga/profil'
+    | '/warga/tabungan'
+    | '/rt'
+    | '/tim'
+    | '/warga'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/admin'
+    | '/_authenticated/rt'
+    | '/_authenticated/tim'
+    | '/_authenticated/warga'
+    | '/_authenticated/tim/pickup'
+    | '/_authenticated/tim/rekap'
+    | '/_authenticated/tim/setor'
+    | '/_authenticated/warga/aduan'
+    | '/_authenticated/warga/harga'
+    | '/_authenticated/warga/profil'
+    | '/_authenticated/warga/tabungan'
+    | '/_authenticated/rt/'
+    | '/_authenticated/tim/'
+    | '/_authenticated/warga/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +237,194 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/rt': {
+      id: '/_authenticated/rt'
+      path: '/rt'
+      fullPath: '/rt'
+      preLoaderRoute: typeof AuthenticatedRtRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/tim': {
+      id: '/_authenticated/tim'
+      path: '/tim'
+      fullPath: '/tim'
+      preLoaderRoute: typeof AuthenticatedTimRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/warga': {
+      id: '/_authenticated/warga'
+      path: '/warga'
+      fullPath: '/warga'
+      preLoaderRoute: typeof AuthenticatedWargaRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/rt/': {
+      id: '/_authenticated/rt/'
+      path: '/'
+      fullPath: '/rt/'
+      preLoaderRoute: typeof AuthenticatedRtIndexRouteImport
+      parentRoute: typeof AuthenticatedRtRouteRoute
+    }
+    '/_authenticated/tim/': {
+      id: '/_authenticated/tim/'
+      path: '/'
+      fullPath: '/tim/'
+      preLoaderRoute: typeof AuthenticatedTimIndexRouteImport
+      parentRoute: typeof AuthenticatedTimRouteRoute
+    }
+    '/_authenticated/tim/pickup': {
+      id: '/_authenticated/tim/pickup'
+      path: '/pickup'
+      fullPath: '/tim/pickup'
+      preLoaderRoute: typeof AuthenticatedTimPickupRouteImport
+      parentRoute: typeof AuthenticatedTimRouteRoute
+    }
+    '/_authenticated/tim/rekap': {
+      id: '/_authenticated/tim/rekap'
+      path: '/rekap'
+      fullPath: '/tim/rekap'
+      preLoaderRoute: typeof AuthenticatedTimRekapRouteImport
+      parentRoute: typeof AuthenticatedTimRouteRoute
+    }
+    '/_authenticated/tim/setor': {
+      id: '/_authenticated/tim/setor'
+      path: '/setor'
+      fullPath: '/tim/setor'
+      preLoaderRoute: typeof AuthenticatedTimSetorRouteImport
+      parentRoute: typeof AuthenticatedTimRouteRoute
+    }
+    '/_authenticated/warga/': {
+      id: '/_authenticated/warga/'
+      path: '/'
+      fullPath: '/warga/'
+      preLoaderRoute: typeof AuthenticatedWargaIndexRouteImport
+      parentRoute: typeof AuthenticatedWargaRouteRoute
+    }
+    '/_authenticated/warga/aduan': {
+      id: '/_authenticated/warga/aduan'
+      path: '/aduan'
+      fullPath: '/warga/aduan'
+      preLoaderRoute: typeof AuthenticatedWargaAduanRouteImport
+      parentRoute: typeof AuthenticatedWargaRouteRoute
+    }
+    '/_authenticated/warga/harga': {
+      id: '/_authenticated/warga/harga'
+      path: '/harga'
+      fullPath: '/warga/harga'
+      preLoaderRoute: typeof AuthenticatedWargaHargaRouteImport
+      parentRoute: typeof AuthenticatedWargaRouteRoute
+    }
+    '/_authenticated/warga/profil': {
+      id: '/_authenticated/warga/profil'
+      path: '/profil'
+      fullPath: '/warga/profil'
+      preLoaderRoute: typeof AuthenticatedWargaProfilRouteImport
+      parentRoute: typeof AuthenticatedWargaRouteRoute
+    }
+    '/_authenticated/warga/tabungan': {
+      id: '/_authenticated/warga/tabungan'
+      path: '/tabungan'
+      fullPath: '/warga/tabungan'
+      preLoaderRoute: typeof AuthenticatedWargaTabunganRouteImport
+      parentRoute: typeof AuthenticatedWargaRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRtRouteRouteChildren {
+  AuthenticatedRtIndexRoute: typeof AuthenticatedRtIndexRoute
+}
+
+const AuthenticatedRtRouteRouteChildren: AuthenticatedRtRouteRouteChildren = {
+  AuthenticatedRtIndexRoute: AuthenticatedRtIndexRoute,
+}
+
+const AuthenticatedRtRouteRouteWithChildren =
+  AuthenticatedRtRouteRoute._addFileChildren(AuthenticatedRtRouteRouteChildren)
+
+interface AuthenticatedTimRouteRouteChildren {
+  AuthenticatedTimPickupRoute: typeof AuthenticatedTimPickupRoute
+  AuthenticatedTimRekapRoute: typeof AuthenticatedTimRekapRoute
+  AuthenticatedTimSetorRoute: typeof AuthenticatedTimSetorRoute
+  AuthenticatedTimIndexRoute: typeof AuthenticatedTimIndexRoute
+}
+
+const AuthenticatedTimRouteRouteChildren: AuthenticatedTimRouteRouteChildren = {
+  AuthenticatedTimPickupRoute: AuthenticatedTimPickupRoute,
+  AuthenticatedTimRekapRoute: AuthenticatedTimRekapRoute,
+  AuthenticatedTimSetorRoute: AuthenticatedTimSetorRoute,
+  AuthenticatedTimIndexRoute: AuthenticatedTimIndexRoute,
+}
+
+const AuthenticatedTimRouteRouteWithChildren =
+  AuthenticatedTimRouteRoute._addFileChildren(
+    AuthenticatedTimRouteRouteChildren,
+  )
+
+interface AuthenticatedWargaRouteRouteChildren {
+  AuthenticatedWargaAduanRoute: typeof AuthenticatedWargaAduanRoute
+  AuthenticatedWargaHargaRoute: typeof AuthenticatedWargaHargaRoute
+  AuthenticatedWargaProfilRoute: typeof AuthenticatedWargaProfilRoute
+  AuthenticatedWargaTabunganRoute: typeof AuthenticatedWargaTabunganRoute
+  AuthenticatedWargaIndexRoute: typeof AuthenticatedWargaIndexRoute
+}
+
+const AuthenticatedWargaRouteRouteChildren: AuthenticatedWargaRouteRouteChildren =
+  {
+    AuthenticatedWargaAduanRoute: AuthenticatedWargaAduanRoute,
+    AuthenticatedWargaHargaRoute: AuthenticatedWargaHargaRoute,
+    AuthenticatedWargaProfilRoute: AuthenticatedWargaProfilRoute,
+    AuthenticatedWargaTabunganRoute: AuthenticatedWargaTabunganRoute,
+    AuthenticatedWargaIndexRoute: AuthenticatedWargaIndexRoute,
+  }
+
+const AuthenticatedWargaRouteRouteWithChildren =
+  AuthenticatedWargaRouteRoute._addFileChildren(
+    AuthenticatedWargaRouteRouteChildren,
+  )
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRoute
+  AuthenticatedRtRouteRoute: typeof AuthenticatedRtRouteRouteWithChildren
+  AuthenticatedTimRouteRoute: typeof AuthenticatedTimRouteRouteWithChildren
+  AuthenticatedWargaRouteRoute: typeof AuthenticatedWargaRouteRouteWithChildren
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRoute,
+  AuthenticatedRtRouteRoute: AuthenticatedRtRouteRouteWithChildren,
+  AuthenticatedTimRouteRoute: AuthenticatedTimRouteRouteWithChildren,
+  AuthenticatedWargaRouteRoute: AuthenticatedWargaRouteRouteWithChildren,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
