@@ -60,7 +60,7 @@ export const getAppSettings = createServerFn({ method: "GET" })
       if (typeof v === "string") return v;
       if (typeof v === "object") {
         const o = v as Record<string, unknown>;
-        return [o.days, o.time, o.address, o.hours, o.note]
+        return [o["days"], o["time"], o["address"], o["hours"], o["note"]]
           .flat()
           .filter((x): x is string => typeof x === "string" && x.length > 0)
           .join(", ");
