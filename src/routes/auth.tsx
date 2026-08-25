@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Recycle, Loader2, Leaf, Sparkles } from "lucide-react";
+import { Recycle, Loader2, Leaf } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyAccount } from "@/lib/common.functions";
@@ -13,7 +13,11 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Masuk — LESTARI MAGETAN" },
-      { name: "description", content: "Masuk ke akun LESTARI MAGETAN Anda." },
+      {
+        name: "description",
+        content:
+          "Masuk ke LESTARI MAGETAN — Layanan Elektronik Sampah, Tabungan, dan Rawat Lingkungan Magetan.",
+      },
       { property: "og:title", content: "Masuk — LESTARI MAGETAN" },
       { property: "og:type", content: "website" },
     ],
@@ -61,12 +65,10 @@ function AuthPage() {
             <Recycle className="h-10 w-10" />
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight">LESTARI MAGETAN</h1>
-          <p className="mt-2 flex items-center gap-1.5 text-sm text-primary-foreground/85">
-            <Leaf className="h-4 w-4" /> Setor sampah, pantau saldo, jaga lingkungan.
+          <p className="mt-2 flex max-w-xs items-start justify-center gap-1.5 text-sm leading-relaxed text-primary-foreground/85">
+            <Leaf className="mt-0.5 h-4 w-4 shrink-0" />
+            Layanan Elektronik Sampah, Tabungan, dan Rawat Lingkungan Magetan
           </p>
-          <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[11px] font-medium backdrop-blur">
-            <Sparkles className="h-3 w-3" /> Bank Sampah Magetan · Setor tiap Selasa & Jumat
-          </div>
         </div>
       </div>
 
@@ -119,6 +121,11 @@ function AuthPage() {
 
         <p className="mt-5 text-center text-xs text-muted-foreground">
           Belum punya akun? Hubungi pengurus Bank Sampah untuk didaftarkan.
+        </p>
+        <p className="mt-6 text-center text-[11px] leading-relaxed text-muted-foreground/80">
+          © 2026 LESTARI MAGETAN
+          <br />
+          Dikembangkan oleh Tim Kreatif SMAS PGRI Maospati
         </p>
       </div>
     </div>
