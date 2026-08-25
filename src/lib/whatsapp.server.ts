@@ -6,8 +6,7 @@ export type NotificationEvent =
   | "status_penjemputan"
   | "pengajuan_pencairan"
   | "status_pencairan"
-  | "status_aduan"
-  | "pengajuan_rt";
+  | "status_aduan";
 
 export function rupiah(n: number): string {
   return "Rp" + Math.round(n).toLocaleString("id-ID");
@@ -19,7 +18,7 @@ export function buildMessage(
 ): string {
   switch (event) {
     case "akun_baru":
-      return `Halo ${payload["nama"]}! Akun Bank Sampah Anda telah dibuat.\nLogin: ${payload["email"]}\nKata sandi: ${payload["password"]}\nTunjukkan QR di aplikasi saat menyetor sampah. Selamat bergabung!`;
+      return `Halo ${payload["nama"]}! Akun Bank Sampah Anda telah dibuat.\nUsername: ${payload["username"]}\nKata sandi: ${payload["password"]}\nTunjukkan QR di aplikasi saat menyetor sampah. Selamat bergabung!`;
     case "transaksi_setoran":
       return `Setoran ${payload["tanggal"]} berhasil dicatat.\nRincian: ${payload["rincian"]}\nTotal: ${payload["total"]}\nSaldo Anda kini: ${payload["saldo"]}. Terima kasih sudah memilah sampah!`;
     case "status_penjemputan":
@@ -30,8 +29,6 @@ export function buildMessage(
       return `Pengajuan pencairan saldo ${payload["jumlah"]} kini berstatus: ${payload["status"]}.${payload["catatan"] ? ` Catatan: ${payload["catatan"]}` : ""}`;
     case "status_aduan":
       return `Aduan "${payload["judul"]}" kini berstatus: ${payload["status"]}.${payload["tanggapan"] ? ` Tanggapan: ${payload["tanggapan"]}` : ""}`;
-    case "pengajuan_rt":
-      return `Pengajuan pendaftaran warga atas nama ${payload["nama"]} (${payload["alamat"]}) berstatus: ${payload["status"]}.${payload["alasan"] ? ` Alasan: ${payload["alasan"]}` : ""}`;
     default:
       return "Notifikasi Bank Sampah Digital.";
   }

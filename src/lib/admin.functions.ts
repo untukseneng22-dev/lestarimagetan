@@ -19,7 +19,6 @@ export const getAdminStats = createServerFn({ method: "GET" })
       { data: roles },
       { data: txMonth },
       { data: txAll },
-      { count: pendingRequests },
       { count: pendingWithdrawals },
       { count: openComplaints },
       { count: activePickups },
@@ -27,7 +26,6 @@ export const getAdminStats = createServerFn({ method: "GET" })
       supabase.from("user_roles").select("role"),
       supabase.from("transactions").select("total_amount, total_weight").gte("deposit_date", monthISO),
       supabase.from("transactions").select("total_amount"),
-      supabase.from("registration_requests").select("id", { count: "exact", head: true }).eq("status", "menunggu"),
       supabase.from("withdrawals").select("id", { count: "exact", head: true }).eq("status", "menunggu"),
       supabase.from("complaints").select("id", { count: "exact", head: true }).in("status", ["baru", "diproses"]),
       supabase.from("pickup_tasks").select("id", { count: "exact", head: true }).in("status", ["menunggu", "dijadwalkan", "dalam_perjalanan"]),
@@ -37,12 +35,10 @@ export const getAdminStats = createServerFn({ method: "GET" })
     return {
       totalWarga: countRole("warga"),
       totalTim: countRole("tim"),
-      totalRt: countRole("rt"),
       setoranBulanIni: (txMonth ?? []).length,
       beratBulanIni: (txMonth ?? []).reduce((s, t) => s + Number(t.total_weight), 0),
       nilaiBulanIni: (txMonth ?? []).reduce((s, t) => s + Number(t.total_amount), 0),
       totalSaldoWarga: (txAll ?? []).reduce((s, t) => s + Number(t.total_amount), 0),
-      pendingRequests: pendingRequests ?? 0,
       pendingWithdrawals: pendingWithdrawals ?? 0,
       openComplaints: openComplaints ?? 0,
       activePickups: activePickups ?? 0,
@@ -52,7 +48,7 @@ export const getAdminStats = createServerFn({ method: "GET" })
 // ---------- Manajemen pengguna ----------
 export const listUsers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ role: z.enum(["warga", "tim", "rt", "admin"]) }).parse(data))
+  .inputValidator((data) => z.object({ role: z.enum(["warga", "tim", "admin"]) }).parse(data))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await requireRole(supabase, userId, ["admin"]);
@@ -72,12 +68,16 @@ export const createUserAccount = createServerFn({ method: "POST" })
   .inputValidator((data) =>
     z
       .object({
-        role: z.enum(["warga", "tim", "rt"]),
+        role: z.enum(["warga", "tim"]),
         fullName: z.string().trim().min(3).max(100),
         phone: z.string().trim().regex(/^(\+62|62|0)8\d{7,12}$/, "Nomor WhatsApp tidak valid"),
         address: z.string().trim().min(3).max(255),
         rt: z.string().trim().max(20).optional(),
-        email: z.string().trim().email().max(255),
+        username: z
+          .string()
+          .trim()
+          .toLowerCase()
+          .regex(/^[a-z0-9_.]{3,30}$/, "Username 3-30 karakter: huruf kecil, angka, titik, atau garis bawah"),
         password: z.string().min(6, "Kata sandi minimal 6 karakter").max(72),
       })
       .parse(data),
@@ -86,9 +86,10 @@ export const createUserAccount = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await requireRole(supabase, userId, ["admin"]);
 
+    const email = `${data.username}@banksampah.id`;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
-      email: data.email,
+      email,
       password: data.password,
       email_confirm: true,
       user_metadata: { full_name: data.fullName },
@@ -111,138 +112,12 @@ export const createUserAccount = createServerFn({ method: "POST" })
         event: "akun_baru",
         message: buildMessage("akun_baru", {
           nama: data.fullName,
-          email: data.email,
+          username: data.username,
           password: data.password,
         }),
       });
     }
     return { ok: true, userId: created.user.id };
-  });
-
-// ---------- Antrian persetujuan pendaftaran ----------
-export const listRegistrationRequests = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    await requireRole(supabase, userId, ["admin"]);
-    const { data } = await supabase
-      .from("registration_requests")
-      .select("id, rt_user_id, full_name, address, whatsapp_number, rt, status, reason, decided_at, account_created, created_at")
-      .order("created_at", { ascending: false });
-    const rows = data ?? [];
-    const rtIds = [...new Set(rows.map((r) => r.rt_user_id))];
-    const { data: rtProfiles } = rtIds.length
-      ? await supabase.from("profiles").select("id, full_name").in("id", rtIds)
-      : { data: [] };
-    const rtMap = new Map((rtProfiles ?? []).map((p) => [p.id, p.full_name]));
-    return rows.map((r) => ({ ...r, rt_name: rtMap.get(r.rt_user_id) ?? "-" }));
-  });
-
-export const decideRegistration = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data) =>
-    z
-      .object({
-        requestId: z.string().uuid(),
-        decision: z.enum(["disetujui", "ditolak"]),
-        reason: z.string().trim().max(500).optional(),
-      })
-      .parse(data),
-  )
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    await requireRole(supabase, userId, ["admin"]);
-    if (data.decision === "ditolak" && !data.reason) {
-      throw new Error("Alasan penolakan wajib diisi");
-    }
-    const { data: req } = await supabase
-      .from("registration_requests")
-      .select("rt_user_id, full_name, address")
-      .eq("id", data.requestId)
-      .single();
-
-    const { error } = await supabase
-      .from("registration_requests")
-      .update({
-        status: data.decision,
-        reason: data.reason ?? null,
-        decided_by: userId,
-        decided_at: new Date().toISOString(),
-      })
-      .eq("id", data.requestId)
-      .eq("status", "menunggu");
-    if (error) throw new Error(error.message);
-
-    if (req?.rt_user_id) {
-      const { data: rtProfile } = await supabase
-        .from("profiles")
-        .select("full_name, phone")
-        .eq("id", req.rt_user_id)
-        .single();
-      await sendWhatsappNotification(supabase, {
-        phone: rtProfile?.phone ?? "-",
-        name: rtProfile?.full_name ?? null,
-        event: "pengajuan_rt",
-        message: buildMessage("pengajuan_rt", {
-          nama: req.full_name,
-          alamat: req.address,
-          status: data.decision === "disetujui" ? "Disetujui" : "Ditolak",
-          alasan: data.reason ?? "",
-        }),
-      });
-    }
-    return { ok: true };
-  });
-
-export const createAccountFromRequest = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ requestId: z.string().uuid() }).parse(data))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    await requireRole(supabase, userId, ["admin"]);
-
-    const { data: req } = await supabase
-      .from("registration_requests")
-      .select("*")
-      .eq("id", data.requestId)
-      .single();
-    if (!req) throw new Error("Pengajuan tidak ditemukan");
-    if (req.status !== "disetujui") throw new Error("Hanya pengajuan berstatus Disetujui yang bisa dibuatkan akun");
-    if (req.account_created) throw new Error("Akun untuk pengajuan ini sudah dibuat");
-
-    const digits = req.whatsapp_number.replace(/\D/g, "").replace(/^0/, "62");
-    const email = `wa${digits}@banksampah.id`;
-    const password = "password123";
-
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: { full_name: req.full_name },
-    });
-    if (error) throw new Error(error.message);
-
-    await supabaseAdmin.from("profiles").insert({
-      id: created.user.id,
-      full_name: req.full_name,
-      phone: req.whatsapp_number,
-      address: req.address,
-      rt: req.rt,
-    });
-    await supabaseAdmin.from("user_roles").insert({ user_id: created.user.id, role: "warga" });
-    await supabaseAdmin
-      .from("registration_requests")
-      .update({ account_created: true })
-      .eq("id", data.requestId);
-
-    await sendWhatsappNotification(supabase, {
-      phone: req.whatsapp_number,
-      name: req.full_name,
-      event: "akun_baru",
-      message: buildMessage("akun_baru", { nama: req.full_name, email, password }),
-    });
-    return { ok: true, email, password };
   });
 
 // ---------- Harga sampah ----------
