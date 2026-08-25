@@ -54,38 +54,38 @@ function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero bergaya e-wallet */}
-      <div className="relative overflow-hidden bg-gradient-hero px-6 pb-24 pt-14 text-primary-foreground">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10" />
-        <div className="pointer-events-none absolute -left-10 top-32 h-32 w-32 rounded-full bg-white/10" />
-        <div className="pointer-events-none absolute right-8 top-40 h-16 w-16 rounded-full bg-accent/40" />
-        <div className="relative mx-auto flex max-w-md flex-col items-center text-center">
-          <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-[1.75rem] bg-white/15 shadow-elegant backdrop-blur">
-            <Recycle className="h-10 w-10" />
+    <div className="flex h-screen flex-col overflow-hidden bg-background">
+      {/* Hero ringkas */}
+      <div className="relative flex shrink-0 flex-col items-center justify-center overflow-hidden bg-gradient-hero px-6 pb-8 pt-6 text-primary-foreground">
+        <div className="pointer-events-none absolute -right-14 -top-14 h-40 w-40 rounded-full bg-white/10" />
+        <div className="pointer-events-none absolute -left-8 top-20 h-24 w-24 rounded-full bg-white/10" />
+        <div className="pointer-events-none absolute right-6 top-28 h-12 w-12 rounded-full bg-accent/40" />
+        <div className="relative flex flex-col items-center text-center">
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15 shadow-elegant backdrop-blur">
+            <Recycle className="h-8 w-8" />
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight">LESTARI MAGETAN</h1>
-          <p className="mt-2 flex max-w-xs items-start justify-center gap-1.5 text-sm leading-relaxed text-primary-foreground/85">
-            <Leaf className="mt-0.5 h-4 w-4 shrink-0" />
+          <h1 className="text-2xl font-extrabold tracking-tight">LESTARI MAGETAN</h1>
+          <p className="mt-1 flex max-w-[16rem] items-start justify-center gap-1 text-xs leading-snug text-primary-foreground/85">
+            <Leaf className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             Layanan Elektronik Sampah, Tabungan, dan Rawat Lingkungan Magetan
           </p>
         </div>
       </div>
 
-      {/* Kartu login mengambang */}
-      <div className="relative mx-auto -mt-16 w-full max-w-md px-4 pb-10">
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-elegant">
-          <h2 className="text-lg font-bold">Masuk ke Akun</h2>
-          <p className="mt-0.5 text-sm text-muted-foreground">Gunakan username dan kata sandi akun Anda.</p>
+      {/* Kartu login */}
+      <div className="relative mx-auto -mt-5 w-full max-w-md flex-1 px-4">
+        <div className="h-full rounded-t-3xl border border-border bg-card p-5 shadow-elegant">
+          <h2 className="text-base font-bold">Masuk ke Akun</h2>
+          <p className="text-xs text-muted-foreground">Gunakan username dan kata sandi akun Anda.</p>
           <form
-            className="mt-5 space-y-4"
+            className="mt-4 space-y-3"
             onSubmit={(e) => {
               e.preventDefault();
               void doLogin(username, password);
             }}
           >
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="username" className="text-xs">Username</Label>
               <Input
                 id="username"
                 type="text"
@@ -94,40 +94,39 @@ function AuthPage() {
                 autoCorrect="off"
                 autoComplete="username"
                 placeholder="mis. budisantoso"
-                className="h-12 rounded-xl bg-muted/40"
+                className="h-11 rounded-xl bg-muted/40 text-sm"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Kata Sandi</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-xs">Kata Sandi</Label>
               <Input
                 id="password"
                 type="password"
                 required
                 autoComplete="current-password"
                 placeholder="••••••••"
-                className="h-12 rounded-xl bg-muted/40"
+                className="h-11 rounded-xl bg-muted/40 text-sm"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <Button type="submit" className="h-12 w-full rounded-xl bg-gradient-primary text-base font-semibold shadow-elegant" disabled={loading}>
+            <Button type="submit" className="h-11 w-full rounded-xl bg-gradient-primary text-sm font-semibold shadow-elegant" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Masuk
             </Button>
           </form>
-        </div>
 
-        <p className="mt-5 text-center text-xs text-muted-foreground">
-          Belum punya akun? Hubungi pengurus Bank Sampah untuk didaftarkan.
-        </p>
-        <p className="mt-6 text-center text-[11px] leading-relaxed text-muted-foreground/80">
-          © 2026 LESTARI MAGETAN
-          <br />
-          Dikembangkan oleh Tim Kreatif SMAS PGRI Maospati
-        </p>
+          <p className="mt-4 text-center text-[11px] text-muted-foreground">
+            Belum punya akun? Hubungi pengurus Bank Sampah untuk didaftarkan.
+          </p>
+        </div>
       </div>
+
+      <p className="shrink-0 pb-3 pt-2 text-center text-[10px] leading-tight text-muted-foreground/80">
+        © 2026 LESTARI MAGETAN — Dikembangkan oleh Tim Kreatif SMAS PGRI Maospati
+      </p>
     </div>
   );
 }
