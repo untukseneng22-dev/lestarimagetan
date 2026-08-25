@@ -54,9 +54,22 @@ export const getAppSettings = createServerFn({ method: "GET" })
       .from("app_settings")
       .select("key, value, updated_at");
     const map = new Map((data ?? []).map((r) => [r.key, r]));
+    // Nilai bisa berupa teks atau objek JSON lama — normalkan menjadi teks
+    const toText = (v: unknown): string => {
+      if (v == null) return "";
+      if (typeof v === "string") return v;
+      if (typeof v === "object") {
+        const o = v as Record<string, unknown>;
+        return [o.days, o.time, o.address, o.hours, o.note]
+          .flat()
+          .filter((x): x is string => typeof x === "string" && x.length > 0)
+          .join(", ");
+      }
+      return String(v);
+    };
     return {
-      pickupSchedule: String(map.get("pickup_schedule")?.value ?? "Jadwal belum diatur"),
-      dropoffInfo: String(map.get("dropoff_info")?.value ?? ""),
+      pickupSchedule: toText(map.get("pickup_schedule")?.value) || "Jadwal belum diatur",
+      dropoffInfo: toText(map.get("dropoff_info")?.value),
       updatedAt: map.get("pickup_schedule")?.updated_at ?? null,
     };
   });
