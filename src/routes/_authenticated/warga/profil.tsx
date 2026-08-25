@@ -77,6 +77,8 @@ function ProfilPage() {
       </Card>
 
       <LogoutButton variant="destructive" />
+
+      <AppVersion />
     </div>
   );
 }

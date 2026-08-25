@@ -49,6 +49,8 @@ function TimProfilPage() {
       </Card>
 
       <LogoutButton variant="destructive" />
+
+      <AppVersion />
     </div>
   );
 }
