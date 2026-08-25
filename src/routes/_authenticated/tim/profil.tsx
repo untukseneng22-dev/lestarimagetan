@@ -4,6 +4,7 @@ import { useMyAccount } from "@/lib/use-account";
 import { Card, CardContent } from "@/components/ui/card";
 import { AvatarUpload } from "@/components/AvatarUpload";
 import { LogoutButton } from "@/components/LogoutButton";
+import { AppVersion } from "@/components/AppVersion";
 
 export const Route = createFileRoute("/_authenticated/tim/profil")({
   head: () => ({ meta: [{ title: "Profil Petugas — LESTARI MAGETAN" }] }),
