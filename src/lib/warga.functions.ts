@@ -94,7 +94,16 @@ export const getMyComplaints = createServerFn({ method: "GET" })
       .select("id, title, description, photo_url, status, response, created_at, updated_at")
       .eq("resident_id", context.userId)
       .order("created_at", { ascending: false });
-    return data ?? [];
+    const rows = data ?? [];
+    return Promise.all(
+      rows.map(async (c) => {
+        if (!c.photo_url) return { ...c, photo_signed_url: null as string | null };
+        const { data: s } = await context.supabase.storage
+          .from("aduan")
+          .createSignedUrl(c.photo_url, 3600);
+        return { ...c, photo_signed_url: s?.signedUrl ?? null };
+      }),
+    );
   });
 
 export const createComplaint = createServerFn({ method: "POST" })
