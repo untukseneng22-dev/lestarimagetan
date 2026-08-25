@@ -30,6 +30,7 @@ import { Route as AuthenticatedAdminTransaksiRouteImport } from './routes/_authe
 import { Route as AuthenticatedRtIndexRouteImport } from './routes/_authenticated/rt/index'
 import { Route as AuthenticatedTimIndexRouteImport } from './routes/_authenticated/tim/index'
 import { Route as AuthenticatedTimPickupRouteImport } from './routes/_authenticated/tim/pickup'
+import { Route as AuthenticatedTimProfilRouteImport } from './routes/_authenticated/tim/profil'
 import { Route as AuthenticatedTimRekapRouteImport } from './routes/_authenticated/tim/rekap'
 import { Route as AuthenticatedTimSetorRouteImport } from './routes/_authenticated/tim/setor'
 import { Route as AuthenticatedWargaIndexRouteImport } from './routes/_authenticated/warga/index'
@@ -149,6 +150,11 @@ const AuthenticatedTimPickupRoute = AuthenticatedTimPickupRouteImport.update({
   path: '/pickup',
   getParentRoute: () => AuthenticatedTimRouteRoute,
 } as any)
+const AuthenticatedTimProfilRoute = AuthenticatedTimProfilRouteImport.update({
+  id: '/profil',
+  path: '/profil',
+  getParentRoute: () => AuthenticatedTimRouteRoute,
+} as any)
 const AuthenticatedTimRekapRoute = AuthenticatedTimRekapRouteImport.update({
   id: '/rekap',
   path: '/rekap',
@@ -205,6 +211,7 @@ export interface FileRoutesByFullPath {
   '/admin/pickup': typeof AuthenticatedAdminPickupRoute
   '/admin/transaksi': typeof AuthenticatedAdminTransaksiRoute
   '/tim/pickup': typeof AuthenticatedTimPickupRoute
+  '/tim/profil': typeof AuthenticatedTimProfilRoute
   '/tim/rekap': typeof AuthenticatedTimRekapRoute
   '/tim/setor': typeof AuthenticatedTimSetorRoute
   '/warga/aduan': typeof AuthenticatedWargaAduanRoute
@@ -230,6 +237,7 @@ export interface FileRoutesByTo {
   '/admin/pickup': typeof AuthenticatedAdminPickupRoute
   '/admin/transaksi': typeof AuthenticatedAdminTransaksiRoute
   '/tim/pickup': typeof AuthenticatedTimPickupRoute
+  '/tim/profil': typeof AuthenticatedTimProfilRoute
   '/tim/rekap': typeof AuthenticatedTimRekapRoute
   '/tim/setor': typeof AuthenticatedTimSetorRoute
   '/warga/aduan': typeof AuthenticatedWargaAduanRoute
@@ -261,6 +269,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/pickup': typeof AuthenticatedAdminPickupRoute
   '/_authenticated/admin/transaksi': typeof AuthenticatedAdminTransaksiRoute
   '/_authenticated/tim/pickup': typeof AuthenticatedTimPickupRoute
+  '/_authenticated/tim/profil': typeof AuthenticatedTimProfilRoute
   '/_authenticated/tim/rekap': typeof AuthenticatedTimRekapRoute
   '/_authenticated/tim/setor': typeof AuthenticatedTimSetorRoute
   '/_authenticated/warga/aduan': typeof AuthenticatedWargaAduanRoute
@@ -292,6 +301,7 @@ export interface FileRouteTypes {
     | '/admin/pickup'
     | '/admin/transaksi'
     | '/tim/pickup'
+    | '/tim/profil'
     | '/tim/rekap'
     | '/tim/setor'
     | '/warga/aduan'
@@ -317,6 +327,7 @@ export interface FileRouteTypes {
     | '/admin/pickup'
     | '/admin/transaksi'
     | '/tim/pickup'
+    | '/tim/profil'
     | '/tim/rekap'
     | '/tim/setor'
     | '/warga/aduan'
@@ -347,6 +358,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/pickup'
     | '/_authenticated/admin/transaksi'
     | '/_authenticated/tim/pickup'
+    | '/_authenticated/tim/profil'
     | '/_authenticated/tim/rekap'
     | '/_authenticated/tim/setor'
     | '/_authenticated/warga/aduan'
@@ -514,6 +526,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTimPickupRouteImport
       parentRoute: typeof AuthenticatedTimRouteRoute
     }
+    '/_authenticated/tim/profil': {
+      id: '/_authenticated/tim/profil'
+      path: '/profil'
+      fullPath: '/tim/profil'
+      preLoaderRoute: typeof AuthenticatedTimProfilRouteImport
+      parentRoute: typeof AuthenticatedTimRouteRoute
+    }
     '/_authenticated/tim/rekap': {
       id: '/_authenticated/tim/rekap'
       path: '/rekap'
@@ -613,6 +632,7 @@ const AuthenticatedRtRouteRouteWithChildren =
 
 interface AuthenticatedTimRouteRouteChildren {
   AuthenticatedTimPickupRoute: typeof AuthenticatedTimPickupRoute
+  AuthenticatedTimProfilRoute: typeof AuthenticatedTimProfilRoute
   AuthenticatedTimRekapRoute: typeof AuthenticatedTimRekapRoute
   AuthenticatedTimSetorRoute: typeof AuthenticatedTimSetorRoute
   AuthenticatedTimIndexRoute: typeof AuthenticatedTimIndexRoute
@@ -620,6 +640,7 @@ interface AuthenticatedTimRouteRouteChildren {
 
 const AuthenticatedTimRouteRouteChildren: AuthenticatedTimRouteRouteChildren = {
   AuthenticatedTimPickupRoute: AuthenticatedTimPickupRoute,
+  AuthenticatedTimProfilRoute: AuthenticatedTimProfilRoute,
   AuthenticatedTimRekapRoute: AuthenticatedTimRekapRoute,
   AuthenticatedTimSetorRoute: AuthenticatedTimSetorRoute,
   AuthenticatedTimIndexRoute: AuthenticatedTimIndexRoute,

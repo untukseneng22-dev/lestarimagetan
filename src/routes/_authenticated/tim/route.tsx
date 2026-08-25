@@ -18,6 +18,7 @@ function TimLayout() {
           { to: "/tim/setor", label: "Setor", icon: Scale },
           { to: "/tim/pickup", label: "Jemput", icon: Truck },
           { to: "/tim/rekap", label: "Rekap", icon: ClipboardList },
+          { to: "/tim/profil", label: "Profil", icon: User },
         ]}
       >
         <Outlet />
