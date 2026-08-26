@@ -7,6 +7,7 @@ import { PackageSearch, Store, Truck } from "lucide-react";
 import { adminListOrders, updateOrderStatus } from "@/lib/admin.functions";
 import { formatRupiah, formatTanggalWaktu } from "@/lib/format";
 import { StatusBadge } from "@/components/StatusBadge";
+import { OrderTimeline } from "@/components/OrderTimeline";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,13 +25,14 @@ export const Route = createFileRoute("/_authenticated/admin/pesanan")({
 });
 
 const NEXT_STATUS = [
-  { value: "dikonfirmasi", label: "Konfirmasi" },
+  { value: "dibayar", label: "Tandai Dibayar" },
   { value: "diproses", label: "Proses" },
-  { value: "selesai", label: "Selesai" },
+  { value: "dikirim", label: "Kirim" },
+  { value: "diterima", label: "Diterima" },
   { value: "dibatalkan", label: "Batalkan" },
 ] as const;
 
-const FILTERS = ["semua", "menunggu", "dikonfirmasi", "diproses", "selesai", "dibatalkan"];
+const FILTERS = ["semua", "menunggu", "dibayar", "diproses", "dikirim", "diterima", "dibatalkan"];
 
 function PesananPage() {
   const listFn = useServerFn(adminListOrders);
@@ -61,7 +63,7 @@ function PesananPage() {
       <div>
         <h1 className="text-xl font-bold">Pesanan Marketplace</h1>
         <p className="text-xs text-muted-foreground">
-          Saldo warga terpotong saat pesanan dikonfirmasi; sisa tagihan dibayar tunai saat barang diterima.
+          Saldo & stok warga dikunci sejak pesanan dibuat; dikembalikan hanya bila pesanan dibatalkan.
         </p>
       </div>
 
@@ -147,7 +149,30 @@ function PesananPage() {
                   <p className="text-xs text-muted-foreground">Catatan: {o.admin_note}</p>
                 )}
 
+                <div className="rounded-lg bg-muted/40 p-2.5">
+                  <p className="mb-1.5 text-xs font-semibold">Pelacakan</p>
+                  <OrderTimeline events={o.market_order_events ?? []} status={o.status} />
+                </div>
+
+                {o.proof_signed_url && (
+                  <a
+                    href={o.proof_signed_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block overflow-hidden rounded-lg border border-border"
+                  >
+                    <img src={o.proof_signed_url} alt="Bukti terima warga" className="h-32 w-full object-cover" />
+                  </a>
+                )}
+
+                {o.locked && (
+                  <p className="text-xs font-medium text-muted-foreground">
+                    Pesanan terkunci — stok & saldo sudah final.
+                  </p>
+                )}
+
                 <Input
+                  disabled={o.locked}
                   value={notes[o.id] ?? ""}
                   onChange={(e) => setNotes({ ...notes, [o.id]: e.target.value })}
                   placeholder="Catatan untuk warga (opsional)"
@@ -159,7 +184,7 @@ function PesananPage() {
                       key={s.value}
                       size="sm"
                       variant={s.value === "dibatalkan" ? "outline" : "secondary"}
-                      disabled={o.status === s.value}
+                      disabled={o.status === s.value || o.locked}
                       onClick={() => setStatus(o.id, s.value)}
                     >
                       {s.label}
