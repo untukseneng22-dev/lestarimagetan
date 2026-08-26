@@ -341,8 +341,8 @@ function Row({
 }: {
   label: string;
   value: string;
-  bold?: boolean;
-  tone?: "warning";
+  bold?: boolean | undefined;
+  tone?: "warning" | undefined;
 }) {
   return (
     <div className="flex justify-between">
