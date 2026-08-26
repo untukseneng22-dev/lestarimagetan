@@ -43,3 +43,32 @@ export async function signProductPhotos<T extends ProductRow>(
     }),
   );
 }
+
+export const ADMIN_ORDER_SELECT =
+  "id, resident_id, method, address, shipping_fee, items_total, total_amount, paid_from_balance, cash_due, status, admin_note, proof_url, received_at, locked, created_at, market_order_items(product_name, unit, price, qty, subtotal), market_order_events(status, note, created_at)";
+
+export const ORDER_STATUS_TEXT: Record<string, string> = {
+  menunggu: "Menunggu",
+  dibayar: "Dibayar",
+  diproses: "Diproses",
+  dikirim: "Dikirim",
+  diterima: "Diterima",
+  dibatalkan: "Dibatalkan",
+};
+
+export async function withResidentInfo(
+  supabase: SupabaseClient,
+  rows: { resident_id: string }[],
+) {
+  const ids = [...new Set(rows.map((o) => o.resident_id))];
+  const { data: profiles } = ids.length
+    ? await supabase.from("profiles").select("id, full_name, phone").in("id", ids)
+    : { data: [] as { id: string; full_name: string; phone: string | null }[] };
+  const map = new Map((profiles ?? []).map((p) => [p.id, p]));
+  return rows.map((o) => ({
+    ...o,
+    resident_name: map.get(o.resident_id)?.full_name ?? "-",
+    resident_phone: map.get(o.resident_id)?.phone ?? null,
+  }));
+}
+
