@@ -80,7 +80,11 @@ export const STATUS_LABELS: Record<string, string> = {
   baru: "Baru",
   diproses: "Diproses",
   dikonfirmasi: "Dikonfirmasi",
+  dibayar: "Dibayar",
+  dikirim: "Dikirim",
+  diterima: "Diterima",
   terkirim: "Terkirim",
+
   tercatat: "Tercatat (Mock)",
   gagal: "Gagal",
 };
