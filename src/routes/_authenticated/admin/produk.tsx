@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Loader2, Pencil, Plus, ShoppingBasket, Trash2, Truck } from "lucide-react";
-import { adminListProducts, saveProduct, deleteProduct, updateShippingFee } from "@/lib/admin.functions";
+import { adminListProducts, saveProduct, deleteProduct, updateShippingFee, updateMarketLimits } from "@/lib/admin.functions";
 import { formatRupiah } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,6 +54,7 @@ function ProdukPage() {
   const saveFn = useServerFn(saveProduct);
   const deleteFn = useServerFn(deleteProduct);
   const feeFn = useServerFn(updateShippingFee);
+  const limitFn = useServerFn(updateMarketLimits);
   const queryClient = useQueryClient();
 
   const { data } = useQuery({ queryKey: ["admin-products"], queryFn: () => listFn() });
@@ -61,8 +62,12 @@ function ProdukPage() {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [fee, setFee] = useState<string | null>(null);
+  const [maxQty, setMaxQty] = useState<string | null>(null);
+  const [maxOrders, setMaxOrders] = useState<string | null>(null);
 
   const feeValue = fee ?? String(data?.shippingFee ?? 0);
+  const maxQtyValue = maxQty ?? String(data?.limits.maxQtyPerProduct ?? 5);
+  const maxOrdersValue = maxOrders ?? String(data?.limits.maxActiveOrders ?? 3);
 
   async function refresh() {
     await queryClient.invalidateQueries({ queryKey: ["admin-products"] });
@@ -111,6 +116,21 @@ function ProdukPage() {
       await refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Gagal menyimpan ongkir");
+    }
+  }
+
+  async function saveLimits() {
+    try {
+      await limitFn({
+        data: {
+          maxQtyPerProduct: Math.max(1, Number(maxQtyValue) || 1),
+          maxActiveOrders: Math.max(1, Number(maxOrdersValue) || 1),
+        },
+      });
+      toast.success("Batas pembelian warga disimpan.");
+      await refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal menyimpan batas pembelian");
     }
   }
 
@@ -205,6 +225,26 @@ function ProdukPage() {
           <Button variant="secondary" onClick={saveFee}>Simpan Ongkir</Button>
           <p className="text-xs text-muted-foreground">
             Berlaku untuk pesanan yang diantar petugas ke rumah warga.
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm">Batas Pembelian per Warga</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-wrap items-end gap-3">
+          <div className="grid w-44 gap-1.5">
+            <Label className="text-xs">Maks qty per produk</Label>
+            <Input type="number" min={1} value={maxQtyValue} onChange={(e) => setMaxQty(e.target.value)} />
+          </div>
+          <div className="grid w-44 gap-1.5">
+            <Label className="text-xs">Maks pesanan aktif</Label>
+            <Input type="number" min={1} value={maxOrdersValue} onChange={(e) => setMaxOrders(e.target.value)} />
+          </div>
+          <Button variant="secondary" onClick={saveLimits}>Simpan Batas</Button>
+          <p className="text-xs text-muted-foreground">
+            Mencegah stok diborong satu warga dan menumpuknya pesanan yang belum diterima.
           </p>
         </CardContent>
       </Card>

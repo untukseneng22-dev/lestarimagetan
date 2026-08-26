@@ -6,7 +6,15 @@ import { toast } from "sonner";
 import {
   ShoppingBasket, Plus, Minus, Wallet, Truck, Store, Loader2, PackageSearch, Search,
 } from "lucide-react";
-import { getMarketCatalog, getMyOrders, createMarketOrder } from "@/lib/market.functions";
+import {
+  getMarketCatalog,
+  getMyOrders,
+  createMarketOrder,
+  confirmOrderReceived,
+} from "@/lib/market.functions";
+import { OrderTimeline } from "@/components/OrderTimeline";
+import { compressImage } from "@/lib/image";
+import { supabase } from "@/integrations/supabase/client";
 import { formatRupiah, formatTanggalWaktu } from "@/lib/format";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,6 +42,7 @@ function MarketplacePage() {
   const catalogFn = useServerFn(getMarketCatalog);
   const ordersFn = useServerFn(getMyOrders);
   const orderFn = useServerFn(createMarketOrder);
+  const confirmFn = useServerFn(confirmOrderReceived);
   const queryClient = useQueryClient();
 
   const { data } = useQuery({ queryKey: ["market-catalog"], queryFn: () => catalogFn() });
@@ -46,6 +55,38 @@ function MarketplacePage() {
   const [address, setAddress] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [addressTouched, setAddressTouched] = useState(false);
+  const [confirming, setConfirming] = useState<string | null>(null);
+  const [proofs, setProofs] = useState<Record<string, File | null>>({});
+
+  const maxQty = data?.limits.maxQtyPerProduct ?? 5;
+
+  async function confirmReceived(orderId: string, file: File | null) {
+    setConfirming(orderId);
+    try {
+      let proofUrl: string | null = null;
+      if (file) {
+        const compressed = await compressImage(file, { maxDim: 1280, quality: 0.7 });
+        const { data: auth } = await supabase.auth.getUser();
+        const uid = auth.user?.id;
+        if (uid) {
+          const path = `${uid}/pesanan-${orderId}-${Date.now()}.jpg`;
+          const { error } = await supabase.storage
+            .from("aduan")
+            .upload(path, compressed, { contentType: "image/jpeg" });
+          if (error) throw new Error("Gagal mengunggah bukti: " + error.message);
+          proofUrl = path;
+        }
+      }
+      await confirmFn({ data: { orderId, proofUrl } });
+      toast.success("Terima kasih! Pesanan ditandai diterima dan dikunci.");
+      await queryClient.invalidateQueries({ queryKey: ["market-orders"] });
+      await queryClient.invalidateQueries({ queryKey: ["market-catalog"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal mengonfirmasi pesanan");
+    } finally {
+      setConfirming(null);
+    }
+  }
 
   const products = data?.products ?? [];
   const categories = useMemo(
@@ -73,7 +114,7 @@ function MarketplacePage() {
   function setQty(id: string, qty: number, stock: number) {
     setCart((c) => {
       const next = { ...c };
-      const clamped = Math.max(0, Math.min(qty, stock));
+      const clamped = Math.max(0, Math.min(qty, stock, maxQty));
       if (clamped === 0) delete next[id];
       else next[id] = clamped;
       return next;
@@ -172,7 +213,7 @@ function MarketplacePage() {
                       <span className="text-xs font-normal text-muted-foreground">/{p.unit}</span>
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {habis ? "Stok habis" : `Stok ${p.stock}`}
+                      {habis ? "Stok habis" : `Stok ${p.stock} · maks ${maxQty}/warga`}
                     </p>
                     {qty === 0 ? (
                       <Button
@@ -321,6 +362,42 @@ function MarketplacePage() {
                   {o.admin_note && (
                     <p className="rounded-lg bg-muted p-2 text-xs text-muted-foreground">
                       Catatan admin: {o.admin_note}
+                    </p>
+                  )}
+
+                  <div className="rounded-xl bg-muted/50 p-3">
+                    <p className="mb-2 text-xs font-semibold">Pelacakan Pesanan</p>
+                    <OrderTimeline events={o.market_order_events ?? []} status={o.status} />
+                  </div>
+
+                  {["diproses", "dikirim"].includes(o.status) && !o.locked && (
+                    <div className="space-y-2 rounded-xl border border-dashed border-primary/40 p-3">
+                      <p className="text-xs font-semibold">Barang sudah sampai?</p>
+                      <p className="text-xs text-muted-foreground">
+                        Unggah foto bukti terima (opsional), lalu konfirmasi. Setelah dikonfirmasi
+                        pesanan dikunci dan tidak bisa diubah.
+                      </p>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        className="text-xs"
+                        onChange={(e) => setProofs((s) => ({ ...s, [o.id]: e.target.files?.[0] ?? null }))}
+                      />
+                      <Button
+                        size="sm"
+                        className="w-full"
+                        disabled={confirming === o.id}
+                        onClick={() => confirmReceived(o.id, proofs[o.id] ?? null)}
+                      >
+                        {confirming === o.id && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Konfirmasi Barang Diterima
+                      </Button>
+                    </div>
+                  )}
+
+                  {o.locked && o.received_at && (
+                    <p className="text-xs text-muted-foreground">
+                      Diterima pada {formatTanggalWaktu(o.received_at)} · pesanan terkunci.
                     </p>
                   )}
                 </CardContent>

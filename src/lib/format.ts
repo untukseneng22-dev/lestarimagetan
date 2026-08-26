@@ -80,7 +80,11 @@ export const STATUS_LABELS: Record<string, string> = {
   baru: "Baru",
   diproses: "Diproses",
   dikonfirmasi: "Dikonfirmasi",
+  dibayar: "Dibayar",
+  dikirim: "Dikirim",
+  diterima: "Diterima",
   terkirim: "Terkirim",
+
   tercatat: "Tercatat (Mock)",
   gagal: "Gagal",
 };
@@ -109,7 +113,9 @@ export function statusTone(s: string | null | undefined): BadgeTone {
     case "selesai":
     case "dicairkan":
     case "terkirim":
+    case "diterima":
       return "green";
+
     case "menunggu":
     case "baru":
     case "dijadwalkan":
@@ -121,8 +127,11 @@ export function statusTone(s: string | null | undefined): BadgeTone {
       return "red";
     case "diproses":
     case "dikonfirmasi":
+    case "dibayar":
+    case "dikirim":
     case "dalam_perjalanan":
       return "blue";
+
     default:
       return "gray";
   }
