@@ -95,6 +95,41 @@ export type Database = {
         }
         Relationships: []
       }
+      market_order_events: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          order_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          order_id: string
+          status: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          order_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_order_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "market_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       market_order_items: {
         Row: {
           created_at: string
@@ -154,10 +189,13 @@ export type Database = {
           created_at: string
           id: string
           items_total: number
+          locked: boolean
           method: string
           paid_from_balance: number
           processed_at: string | null
           processed_by: string | null
+          proof_url: string | null
+          received_at: string | null
           resident_id: string
           shipping_fee: number
           status: string
@@ -171,10 +209,13 @@ export type Database = {
           created_at?: string
           id?: string
           items_total?: number
+          locked?: boolean
           method?: string
           paid_from_balance?: number
           processed_at?: string | null
           processed_by?: string | null
+          proof_url?: string | null
+          received_at?: string | null
           resident_id: string
           shipping_fee?: number
           status?: string
@@ -188,10 +229,13 @@ export type Database = {
           created_at?: string
           id?: string
           items_total?: number
+          locked?: boolean
           method?: string
           paid_from_balance?: number
           processed_at?: string | null
           processed_by?: string | null
+          proof_url?: string | null
+          received_at?: string | null
           resident_id?: string
           shipping_fee?: number
           status?: string
