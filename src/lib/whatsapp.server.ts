@@ -8,7 +8,9 @@ export type NotificationEvent =
   | "status_pencairan"
   | "status_aduan"
   | "jadwal_penjemputan"
-  | "reset_sandi";
+  | "reset_sandi"
+  | "pesanan_marketplace"
+  | "status_pesanan";
 
 export function rupiah(n: number): string {
   return "Rp" + Math.round(n).toLocaleString("id-ID");
@@ -35,6 +37,10 @@ export function buildMessage(
       return `Info jadwal Bank Sampah:\nPenjemputan rutin: ${payload["jadwal"]}.\nAntar mandiri: ${payload["antar"]}.`;
     case "reset_sandi":
       return `Halo ${payload["nama"]}! Kata sandi akun Bank Sampah Anda telah direset oleh admin.\nUsername: ${payload["username"]}\nKata sandi baru: ${payload["password"]}\nSimpan baik-baik kredensial ini.`;
+    case "pesanan_marketplace":
+      return `Pesanan sembako Anda telah kami terima.\nRincian: ${payload["rincian"]}\nTotal: ${payload["total"]} (saldo ${payload["saldo"]}, tunai ${payload["tunai"]})\nPengambilan: ${payload["metode"]}. Menunggu konfirmasi admin.`;
+    case "status_pesanan":
+      return `Pesanan sembako Anda (${payload["kode"]}) kini berstatus: ${payload["status"]}.${payload["catatan"] ? ` Catatan: ${payload["catatan"]}` : ""}`;
     default:
       return "Notifikasi LESTARI MAGETAN.";
   }

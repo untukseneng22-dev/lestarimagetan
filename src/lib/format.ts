@@ -79,6 +79,7 @@ export const STATUS_LABELS: Record<string, string> = {
   dibatalkan: "Dibatalkan",
   baru: "Baru",
   diproses: "Diproses",
+  dikonfirmasi: "Dikonfirmasi",
   terkirim: "Terkirim",
   tercatat: "Tercatat (Mock)",
   gagal: "Gagal",
@@ -91,6 +92,8 @@ export const EVENT_LABELS: Record<string, string> = {
   pengajuan_pencairan: "Pengajuan Pencairan",
   status_pencairan: "Status Pencairan",
   status_aduan: "Status Aduan",
+  pesanan_marketplace: "Pesanan Marketplace",
+  status_pesanan: "Status Pesanan",
   
 };
 
@@ -117,6 +120,7 @@ export function statusTone(s: string | null | undefined): BadgeTone {
     case "gagal":
       return "red";
     case "diproses":
+    case "dikonfirmasi":
     case "dalam_perjalanan":
       return "blue";
     default:
