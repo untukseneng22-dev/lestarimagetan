@@ -21,13 +21,31 @@ export async function getProfile(supabase: SupabaseClient, userId: string) {
   return data;
 }
 
-/** Status pesanan marketplace yang sudah memotong saldo warga. */
-export const ORDER_CHARGED_STATUSES = ["dikonfirmasi", "diproses", "selesai"];
+/** Urutan status pesanan marketplace (timeline). */
+export const ORDER_FLOW = ["menunggu", "dibayar", "diproses", "dikirim", "diterima"] as const;
+
+/**
+ * Status pesanan yang menahan saldo & stok warga. Saldo dan stok dipesan
+ * (reserved) sejak pesanan dibuat, dan hanya dikembalikan bila dibatalkan.
+ */
+export const ORDER_CHARGED_STATUSES = [
+  "menunggu",
+  "dibayar",
+  "dikonfirmasi",
+  "diproses",
+  "dikirim",
+  "diterima",
+  "selesai",
+];
+
+/** Pesanan yang masih berjalan (belum diterima / dibatalkan). */
+export const ORDER_ACTIVE_STATUSES = ["menunggu", "dibayar", "dikonfirmasi", "diproses", "dikirim"];
 
 /**
  * Saldo = total setoran - pencairan yang disetujui/dicairkan
- *       - porsi saldo pada pesanan marketplace yang sudah dikonfirmasi.
+ *       - porsi saldo pada pesanan marketplace yang aktif/selesai.
  */
+
 export async function getBalance(
   supabase: SupabaseClient,
   residentId: string,
