@@ -1,14 +1,13 @@
 import { useEffect, type ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Loader2, Recycle } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { BrandLogo } from "./BrandLogo";
 import { roleHome, useMyAccount } from "@/lib/use-account";
 
 export function LoadingScreen({ label = "Memuat..." }: { label?: string }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary">
-        <Recycle className="h-7 w-7 text-primary-foreground" />
-      </div>
+      <BrandLogo className="h-16 w-16" />
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Loader2 className="h-4 w-4 animate-spin" />
         {label}

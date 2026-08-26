@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Recycle, Loader2, Leaf } from "lucide-react";
+import { Loader2, Leaf } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyAccount } from "@/lib/common.functions";
@@ -61,9 +62,7 @@ function AuthPage() {
         <div className="pointer-events-none absolute -left-8 top-20 h-24 w-24 rounded-full bg-white/10" />
         <div className="pointer-events-none absolute right-6 top-28 h-12 w-12 rounded-full bg-accent/40" />
         <div className="relative flex flex-col items-center text-center">
-          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15 shadow-elegant backdrop-blur">
-            <Recycle className="h-8 w-8" />
-          </div>
+          <BrandLogo className="mb-3 h-20 w-20 drop-shadow-lg" />
           <h1 className="text-2xl font-extrabold tracking-tight">LESTARI MAGETAN</h1>
           <p className="mt-1 flex max-w-[16rem] items-start justify-center gap-1 text-xs leading-snug text-primary-foreground/85">
             <Leaf className="mt-0.5 h-3.5 w-3.5 shrink-0" />

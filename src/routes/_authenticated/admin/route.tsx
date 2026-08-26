@@ -2,9 +2,10 @@ import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-r
 import { useState, type ComponentType } from "react";
 import {
   LayoutDashboard, Users, Tag, ArrowLeftRight, Truck,
-  MessageSquareWarning, Megaphone, Landmark, FileBarChart, BellRing, Recycle, CalendarClock,
+  MessageSquareWarning, Megaphone, Landmark, FileBarChart, BellRing, CalendarClock,
   ChevronDown, Database, ClipboardList, HeartHandshake, Settings2, Info,
 } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 import { RoleGate } from "@/components/RoleGate";
 import { useMyAccount } from "@/lib/use-account";
 import { LogoutButton } from "@/components/LogoutButton";
@@ -121,9 +122,7 @@ function AdminLayout() {
       <div className="flex min-h-screen bg-background">
         <aside className="fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-sidebar-border bg-sidebar">
           <div className="flex items-center gap-2.5 border-b border-sidebar-border px-5 py-5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-primary shadow-elegant">
-              <Recycle className="h-5 w-5 text-primary-foreground" />
-            </div>
+            <BrandLogo className="h-10 w-10" />
             <div>
               <p className="text-sm font-bold text-sidebar-foreground">LESTARI MAGETAN</p>
               <p className="text-xs text-muted-foreground">Panel Admin</p>
