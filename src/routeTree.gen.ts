@@ -25,6 +25,7 @@ import { Route as AuthenticatedAdminLaporanRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminNotifikasiRouteImport } from './routes/_authenticated/admin/notifikasi'
 import { Route as AuthenticatedAdminPenggunaRouteImport } from './routes/_authenticated/admin/pengguna'
 import { Route as AuthenticatedAdminPengumumanRouteImport } from './routes/_authenticated/admin/pengumuman'
+import { Route as AuthenticatedAdminPesananRouteImport } from './routes/_authenticated/admin/pesanan'
 import { Route as AuthenticatedAdminPickupRouteImport } from './routes/_authenticated/admin/pickup'
 import { Route as AuthenticatedAdminProdukRouteImport } from './routes/_authenticated/admin/produk'
 import { Route as AuthenticatedAdminTentangRouteImport } from './routes/_authenticated/admin/tentang'
@@ -124,6 +125,12 @@ const AuthenticatedAdminPengumumanRoute =
     path: '/pengumuman',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminPesananRoute =
+  AuthenticatedAdminPesananRouteImport.update({
+    id: '/pesanan',
+    path: '/pesanan',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminPickupRoute =
   AuthenticatedAdminPickupRouteImport.update({
     id: '/pickup',
@@ -217,6 +224,7 @@ export interface FileRoutesByFullPath {
   '/admin/notifikasi': typeof AuthenticatedAdminNotifikasiRoute
   '/admin/pengguna': typeof AuthenticatedAdminPenggunaRoute
   '/admin/pengumuman': typeof AuthenticatedAdminPengumumanRoute
+  '/admin/pesanan': typeof AuthenticatedAdminPesananRoute
   '/admin/pickup': typeof AuthenticatedAdminPickupRoute
   '/admin/produk': typeof AuthenticatedAdminProdukRoute
   '/admin/tentang': typeof AuthenticatedAdminTentangRoute
@@ -245,6 +253,7 @@ export interface FileRoutesByTo {
   '/admin/notifikasi': typeof AuthenticatedAdminNotifikasiRoute
   '/admin/pengguna': typeof AuthenticatedAdminPenggunaRoute
   '/admin/pengumuman': typeof AuthenticatedAdminPengumumanRoute
+  '/admin/pesanan': typeof AuthenticatedAdminPesananRoute
   '/admin/pickup': typeof AuthenticatedAdminPickupRoute
   '/admin/produk': typeof AuthenticatedAdminProdukRoute
   '/admin/tentang': typeof AuthenticatedAdminTentangRoute
@@ -278,6 +287,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/notifikasi': typeof AuthenticatedAdminNotifikasiRoute
   '/_authenticated/admin/pengguna': typeof AuthenticatedAdminPenggunaRoute
   '/_authenticated/admin/pengumuman': typeof AuthenticatedAdminPengumumanRoute
+  '/_authenticated/admin/pesanan': typeof AuthenticatedAdminPesananRoute
   '/_authenticated/admin/pickup': typeof AuthenticatedAdminPickupRoute
   '/_authenticated/admin/produk': typeof AuthenticatedAdminProdukRoute
   '/_authenticated/admin/tentang': typeof AuthenticatedAdminTentangRoute
@@ -311,6 +321,7 @@ export interface FileRouteTypes {
     | '/admin/notifikasi'
     | '/admin/pengguna'
     | '/admin/pengumuman'
+    | '/admin/pesanan'
     | '/admin/pickup'
     | '/admin/produk'
     | '/admin/tentang'
@@ -339,6 +350,7 @@ export interface FileRouteTypes {
     | '/admin/notifikasi'
     | '/admin/pengguna'
     | '/admin/pengumuman'
+    | '/admin/pesanan'
     | '/admin/pickup'
     | '/admin/produk'
     | '/admin/tentang'
@@ -371,6 +383,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/notifikasi'
     | '/_authenticated/admin/pengguna'
     | '/_authenticated/admin/pengumuman'
+    | '/_authenticated/admin/pesanan'
     | '/_authenticated/admin/pickup'
     | '/_authenticated/admin/produk'
     | '/_authenticated/admin/tentang'
@@ -508,6 +521,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminPengumumanRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/pesanan': {
+      id: '/_authenticated/admin/pesanan'
+      path: '/pesanan'
+      fullPath: '/admin/pesanan'
+      preLoaderRoute: typeof AuthenticatedAdminPesananRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/pickup': {
       id: '/_authenticated/admin/pickup'
       path: '/pickup'
@@ -618,6 +638,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminNotifikasiRoute: typeof AuthenticatedAdminNotifikasiRoute
   AuthenticatedAdminPenggunaRoute: typeof AuthenticatedAdminPenggunaRoute
   AuthenticatedAdminPengumumanRoute: typeof AuthenticatedAdminPengumumanRoute
+  AuthenticatedAdminPesananRoute: typeof AuthenticatedAdminPesananRoute
   AuthenticatedAdminPickupRoute: typeof AuthenticatedAdminPickupRoute
   AuthenticatedAdminProdukRoute: typeof AuthenticatedAdminProdukRoute
   AuthenticatedAdminTentangRoute: typeof AuthenticatedAdminTentangRoute
@@ -635,6 +656,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminNotifikasiRoute: AuthenticatedAdminNotifikasiRoute,
     AuthenticatedAdminPenggunaRoute: AuthenticatedAdminPenggunaRoute,
     AuthenticatedAdminPengumumanRoute: AuthenticatedAdminPengumumanRoute,
+    AuthenticatedAdminPesananRoute: AuthenticatedAdminPesananRoute,
     AuthenticatedAdminPickupRoute: AuthenticatedAdminPickupRoute,
     AuthenticatedAdminProdukRoute: AuthenticatedAdminProdukRoute,
     AuthenticatedAdminTentangRoute: AuthenticatedAdminTentangRoute,
