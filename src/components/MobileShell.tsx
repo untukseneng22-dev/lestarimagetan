@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Recycle, type LucideIcon } from "lucide-react";
+import { type LucideIcon } from "lucide-react";
+import { BrandLogo } from "./BrandLogo";
 import { cn } from "@/lib/utils";
 import { LiveClock } from "./LiveClock";
 
@@ -34,9 +35,7 @@ export function MobileShell({
           <div className="pointer-events-none absolute -left-8 bottom-0 h-24 w-24 rounded-full bg-white/10" />
           <div className="relative flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 shadow-card backdrop-blur">
-                <Recycle className="h-5 w-5" />
-              </div>
+              <BrandLogo className="h-11 w-11 drop-shadow" />
               <div>
                 <h1 className="text-lg font-bold leading-tight">{title}</h1>
                 {subtitle && <p className="text-xs text-primary-foreground/80">{subtitle}</p>}

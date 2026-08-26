@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  Recycle, QrCode, Wallet, Truck, Tag, MessageSquareWarning, FileBarChart, BellRing,
+  QrCode, Wallet, Truck, Tag, MessageSquareWarning, FileBarChart, BellRing,
   GraduationCap, MapPin, Leaf,
 } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const Route = createFileRoute("/_authenticated/admin/tentang")({
@@ -31,9 +32,7 @@ function TentangPage() {
     <div className="mx-auto max-w-3xl space-y-6">
       <Card className="overflow-hidden">
         <div className="bg-gradient-primary px-8 py-10 text-center text-primary-foreground">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-white/15 backdrop-blur">
-            <Recycle className="h-8 w-8" />
-          </div>
+          <BrandLogo className="mx-auto mb-4 h-20 w-20 drop-shadow-lg" />
           <h1 className="text-3xl font-bold tracking-tight">LESTARI MAGETAN</h1>
           <p className="mx-auto mt-2 max-w-md text-sm text-primary-foreground/85">
             Layanan Elektronik Sampah, Tabungan, dan Rawat Lingkungan Magetan

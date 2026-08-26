@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef } from "react";
 import QRCode from "react-qr-code";
-import { ArrowLeft, Printer, Recycle } from "lucide-react";
+import { ArrowLeft, Printer } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 import { listUsers } from "@/lib/admin.functions";
 import { useMyAccount } from "@/lib/use-account";
 import { Button } from "@/components/ui/button";
@@ -75,7 +76,7 @@ function KartuPage() {
                 className="break-inside-avoid rounded-2xl border-2 border-foreground/70 bg-white p-4 text-center text-foreground"
               >
                 <div className="flex items-center justify-center gap-1.5 border-b border-dashed border-foreground/40 pb-2">
-                  <Recycle className="h-4 w-4 text-primary" />
+                  <BrandLogo className="h-5 w-5" />
                   <p className="text-xs font-extrabold tracking-wide">KARTU ANGGOTA BANK SAMPAH</p>
                 </div>
                 <div className="mx-auto mt-3 w-fit rounded-lg bg-white p-2">
