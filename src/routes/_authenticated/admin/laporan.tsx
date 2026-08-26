@@ -3,8 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { FileSpreadsheet, FileText, MessageSquareWarning, Scale, Wallet } from "lucide-react";
-import { getReportData } from "@/lib/admin.functions";
+import { FileSpreadsheet, FileText, MessageSquareWarning, Scale, ShoppingBasket, Wallet } from "lucide-react";
+import { getMarketReport, getReportData } from "@/lib/admin.functions";
 import { exportExcel, exportPdf } from "@/lib/export";
 import { formatNumber, formatRupiah, formatTanggal, formatTanggalWaktu, statusLabel, todayISO } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,12 +36,19 @@ function ExportButtons({ onPdf, onExcel }: { onPdf: () => void; onExcel: () => v
 
 function LaporanPage() {
   const reportFn = useServerFn(getReportData);
+  const marketFn = useServerFn(getMarketReport);
   const [from, setFrom] = useState(monthStartISO());
   const [to, setTo] = useState(todayISO());
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-report", from, to],
     queryFn: () => reportFn({ data: { from, to } }),
+    enabled: Boolean(from && to),
+  });
+
+  const { data: market } = useQuery({
+    queryKey: ["admin-market-report", from, to],
+    queryFn: () => marketFn({ data: { from, to } }),
     enabled: Boolean(from && to),
   });
 
@@ -124,6 +131,43 @@ function LaporanPage() {
     toast.success(`File ${kind.toUpperCase()} laporan aduan diunduh.`);
   }
 
+  function exportMarket(kind: "pdf" | "excel") {
+    if (!market || market.orders.length === 0) {
+      toast.error("Tidak ada pesanan marketplace pada rentang ini");
+      return;
+    }
+    const columns = [
+      { header: "Tanggal", key: "tanggal" },
+      { header: "Kode", key: "kode" },
+      { header: "Warga", key: "warga" },
+      { header: "Item", key: "item" },
+      { header: "Metode", key: "metode" },
+      { header: "Status", key: "status" },
+      { header: "Ongkir (Rp)", key: "ongkir" },
+      { header: "Total (Rp)", key: "total" },
+      { header: "Potong Saldo (Rp)", key: "saldo" },
+      { header: "Tunai (Rp)", key: "tunai" },
+    ];
+    const rows = market.orders.map((o) => ({
+      tanggal: formatTanggalWaktu(o.date),
+      kode: o.id.slice(0, 8).toUpperCase(),
+      warga: o.residentName,
+      item: o.items,
+      metode: o.method === "antar" ? "Diantar" : "Ambil di kantor",
+      status: statusLabel(o.status),
+      ongkir: formatNumber(o.shippingFee),
+      total: formatNumber(o.totalAmount),
+      saldo: formatNumber(o.paidFromBalance),
+      tunai: formatNumber(o.cashDue),
+    }));
+    if (kind === "pdf") {
+      exportPdf({ title: "Rekap Pesanan Marketplace Sembako", subtitle, columns, rows, filename: `laporan-marketplace-${from}-${to}.pdf` });
+    } else {
+      exportExcel({ sheetName: "Marketplace", columns, rows, filename: `laporan-marketplace-${from}-${to}.xlsx` });
+    }
+    toast.success(`File ${kind.toUpperCase()} rekap marketplace diunduh.`);
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -182,6 +226,55 @@ function LaporanPage() {
                       <TableCell>{t.itemCount}</TableCell>
                       <TableCell className="text-right">{formatNumber(t.totalWeight)} kg</TableCell>
                       <TableCell className="text-right font-medium text-accent">{formatRupiah(t.totalAmount)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <ShoppingBasket className="h-4 w-4 text-primary" />
+                  Rekap Marketplace ({market?.orders.length ?? 0})
+                </CardTitle>
+                {market && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Omzet {formatRupiah(market.totals.omzet)} · saldo {formatRupiah(market.totals.saldo)} ·
+                    tunai {formatRupiah(market.totals.tunai)} · ongkir {formatRupiah(market.totals.ongkir)}
+                  </p>
+                )}
+              </div>
+              <ExportButtons onPdf={() => exportMarket("pdf")} onExcel={() => exportMarket("excel")} />
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tanggal</TableHead>
+                    <TableHead>Warga</TableHead>
+                    <TableHead>Item</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Saldo</TableHead>
+                    <TableHead className="text-right">Tunai</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {(market?.orders.length ?? 0) === 0 && (
+                    <TableRow><TableCell colSpan={7} className="py-6 text-center text-muted-foreground">Tidak ada pesanan marketplace.</TableCell></TableRow>
+                  )}
+                  {(market?.orders ?? []).map((o) => (
+                    <TableRow key={o.id}>
+                      <TableCell>{formatTanggal(o.date)}</TableCell>
+                      <TableCell className="font-medium">{o.residentName}</TableCell>
+                      <TableCell className="max-w-[18rem] truncate">{o.items}</TableCell>
+                      <TableCell>{statusLabel(o.status)}</TableCell>
+                      <TableCell className="text-right">{formatRupiah(o.paidFromBalance)}</TableCell>
+                      <TableCell className="text-right">{formatRupiah(o.cashDue)}</TableCell>
+                      <TableCell className="text-right font-medium text-primary">{formatRupiah(o.totalAmount)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
