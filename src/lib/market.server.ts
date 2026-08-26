@@ -56,10 +56,10 @@ export const ORDER_STATUS_TEXT: Record<string, string> = {
   dibatalkan: "Dibatalkan",
 };
 
-export async function withResidentInfo(
+export async function withResidentInfo<T extends { resident_id: string }>(
   supabase: SupabaseClient,
-  rows: { resident_id: string }[],
-) {
+  rows: T[],
+): Promise<(T & { resident_name: string; resident_phone: string | null })[]> {
   const ids = [...new Set(rows.map((o) => o.resident_id))];
   const { data: profiles } = ids.length
     ? await supabase.from("profiles").select("id, full_name, phone").in("id", ids)
