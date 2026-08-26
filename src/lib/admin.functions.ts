@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { getBalance, getPricesAtDate, ORDER_CHARGED_STATUSES, requireRole } from "./data.server";
-import { ADMIN_ORDER_SELECT, getShippingFee, ORDER_STATUS_TEXT, signProductPhotos, withResidentInfo } from "./market.server";
+import { ADMIN_ORDER_SELECT, getMarketLimits, getShippingFee, ORDER_STATUS_TEXT, signProductPhotos, withResidentInfo } from "./market.server";
 import { buildMessage, rupiah, sendWhatsappNotification } from "./whatsapp.server";
 
 // ---------- Statistik dashboard ----------
@@ -794,17 +794,19 @@ export const adminListProducts = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     await requireRole(supabase, userId, ["admin"]);
-    const [{ data: products }, shippingFee] = await Promise.all([
+    const [{ data: products }, shippingFee, limits] = await Promise.all([
       supabase
         .from("market_products")
         .select("id, name, category, unit, price, stock, photo_url, is_active, updated_at")
         .order("category", { ascending: true })
         .order("name", { ascending: true }),
       getShippingFee(supabase),
+      getMarketLimits(supabase),
     ]);
     return {
       products: await signProductPhotos(supabase, products ?? []),
       shippingFee,
+      limits,
     };
   });
 
