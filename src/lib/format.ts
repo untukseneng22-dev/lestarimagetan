@@ -127,8 +127,11 @@ export function statusTone(s: string | null | undefined): BadgeTone {
       return "red";
     case "diproses":
     case "dikonfirmasi":
+    case "dibayar":
+    case "dikirim":
     case "dalam_perjalanan":
       return "blue";
+
     default:
       return "gray";
   }
