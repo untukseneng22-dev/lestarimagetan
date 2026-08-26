@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { getPricesAtDate, requireRole } from "./data.server";
+import { getBalance, getPricesAtDate, ORDER_CHARGED_STATUSES, requireRole } from "./data.server";
+import { getShippingFee, signProductPhotos } from "./market.server";
 import { buildMessage, rupiah, sendWhatsappNotification } from "./whatsapp.server";
 
 // ---------- Statistik dashboard ----------
@@ -783,6 +784,197 @@ export const updateAppSettings = createServerFn({ method: "POST" })
           });
         }
       }
+    }
+    return { ok: true };
+  });
+
+// ---------- Marketplace: produk ----------
+export const adminListProducts = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    await requireRole(supabase, userId, ["admin"]);
+    const [{ data: products }, shippingFee] = await Promise.all([
+      supabase
+        .from("market_products")
+        .select("id, name, category, unit, price, stock, photo_url, is_active, updated_at")
+        .order("category", { ascending: true })
+        .order("name", { ascending: true }),
+      getShippingFee(supabase),
+    ]);
+    return {
+      products: await signProductPhotos(supabase, products ?? []),
+      shippingFee,
+    };
+  });
+
+export const saveProduct = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        id: z.string().uuid().optional().nullable(),
+        name: z.string().trim().min(2, "Nama produk minimal 2 karakter").max(120),
+        category: z.string().trim().min(2).max(40),
+        unit: z.string().trim().min(1).max(20),
+        price: z.number().nonnegative().max(100_000_000),
+        stock: z.number().int().nonnegative().max(100_000),
+        photoUrl: z.string().trim().max(500).optional().nullable(),
+        isActive: z.boolean(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireRole(supabase, userId, ["admin"]);
+    const payload = {
+      name: data.name,
+      category: data.category,
+      unit: data.unit,
+      price: data.price,
+      stock: data.stock,
+      photo_url: data.photoUrl ?? null,
+      is_active: data.isActive,
+    };
+    const { error } = data.id
+      ? await supabase.from("market_products").update(payload).eq("id", data.id)
+      : await supabase.from("market_products").insert(payload);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deleteProduct = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ id: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireRole(supabase, userId, ["admin"]);
+    const { error } = await supabase.from("market_products").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const updateShippingFee = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ fee: z.number().nonnegative().max(1_000_000) }).parse(data))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireRole(supabase, userId, ["admin"]);
+    const { error } = await supabase
+      .from("app_settings")
+      .upsert([{ key: "market_shipping_fee", value: String(data.fee), updated_by: userId }]);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// ---------- Marketplace: pesanan ----------
+export const adminListOrders = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    await requireRole(supabase, userId, ["admin"]);
+    const { data: orders } = await supabase
+      .from("market_orders")
+      .select(
+        "id, resident_id, method, address, shipping_fee, items_total, total_amount, paid_from_balance, cash_due, status, admin_note, created_at, market_order_items(product_name, unit, price, qty, subtotal)",
+      )
+      .order("created_at", { ascending: false });
+    const rows = orders ?? [];
+    const ids = [...new Set(rows.map((o) => o.resident_id))];
+    const { data: profiles } = ids.length
+      ? await supabase.from("profiles").select("id, full_name, phone").in("id", ids)
+      : { data: [] };
+    const map = new Map((profiles ?? []).map((p) => [p.id, p]));
+    return rows.map((o) => ({
+      ...o,
+      resident_name: map.get(o.resident_id)?.full_name ?? "-",
+      resident_phone: map.get(o.resident_id)?.phone ?? null,
+    }));
+  });
+
+export const updateOrderStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        orderId: z.string().uuid(),
+        status: z.enum(["menunggu", "dikonfirmasi", "diproses", "selesai", "dibatalkan"]),
+        note: z.string().trim().max(300).optional().nullable(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireRole(supabase, userId, ["admin"]);
+
+    const { data: order } = await supabase
+      .from("market_orders")
+      .select(
+        "id, resident_id, status, paid_from_balance, total_amount, market_order_items(product_id, qty)",
+      )
+      .eq("id", data.orderId)
+      .single();
+    if (!order) throw new Error("Pesanan tidak ditemukan");
+
+    const wasCharged = ORDER_CHARGED_STATUSES.includes(order.status);
+    const willCharge = ORDER_CHARGED_STATUSES.includes(data.status);
+
+    // Saat pertama dikonfirmasi: pastikan saldo warga masih mencukupi.
+    if (!wasCharged && willCharge && Number(order.paid_from_balance) > 0) {
+      const balance = await getBalance(supabase, order.resident_id);
+      if (balance < Number(order.paid_from_balance)) {
+        throw new Error(
+          `Saldo warga tidak lagi mencukupi (tersisa ${rupiah(balance)}). Batalkan atau minta warga memesan ulang.`,
+        );
+      }
+    }
+
+    // Stok berkurang saat dikonfirmasi, kembali saat dibatalkan.
+    const items = order.market_order_items ?? [];
+    const delta = !wasCharged && willCharge ? -1 : wasCharged && !willCharge ? 1 : 0;
+    if (delta !== 0) {
+      for (const it of items) {
+        if (!it.product_id) continue;
+        const { data: p } = await supabase
+          .from("market_products")
+          .select("stock")
+          .eq("id", it.product_id)
+          .single();
+        if (!p) continue;
+        await supabase
+          .from("market_products")
+          .update({ stock: Math.max(0, Number(p.stock) + delta * it.qty) })
+          .eq("id", it.product_id);
+      }
+    }
+
+    const { error } = await supabase
+      .from("market_orders")
+      .update({
+        status: data.status,
+        admin_note: data.note ?? null,
+        processed_by: userId,
+        processed_at: new Date().toISOString(),
+      })
+      .eq("id", data.orderId);
+    if (error) throw new Error(error.message);
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name, phone")
+      .eq("id", order.resident_id)
+      .single();
+    if (profile?.phone) {
+      await sendWhatsappNotification(supabase, {
+        phone: profile.phone,
+        name: profile.full_name,
+        event: "status_pesanan",
+        message: buildMessage("status_pesanan", {
+          kode: order.id.slice(0, 8).toUpperCase(),
+          status: data.status,
+          catatan: data.note ?? "",
+        }),
+      });
     }
     return { ok: true };
   });

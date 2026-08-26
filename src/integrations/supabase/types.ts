@@ -95,6 +95,150 @@ export type Database = {
         }
         Relationships: []
       }
+      market_order_items: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string
+          price: number
+          product_id: string | null
+          product_name: string
+          qty: number
+          subtotal: number
+          unit: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id: string
+          price: number
+          product_id?: string | null
+          product_name: string
+          qty: number
+          subtotal: number
+          unit?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string
+          price?: number
+          product_id?: string | null
+          product_name?: string
+          qty?: number
+          subtotal?: number
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "market_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "market_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_orders: {
+        Row: {
+          address: string | null
+          admin_note: string | null
+          cash_due: number
+          created_at: string
+          id: string
+          items_total: number
+          method: string
+          paid_from_balance: number
+          processed_at: string | null
+          processed_by: string | null
+          resident_id: string
+          shipping_fee: number
+          status: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          admin_note?: string | null
+          cash_due?: number
+          created_at?: string
+          id?: string
+          items_total?: number
+          method?: string
+          paid_from_balance?: number
+          processed_at?: string | null
+          processed_by?: string | null
+          resident_id: string
+          shipping_fee?: number
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          admin_note?: string | null
+          cash_due?: number
+          created_at?: string
+          id?: string
+          items_total?: number
+          method?: string
+          paid_from_balance?: number
+          processed_at?: string | null
+          processed_by?: string | null
+          resident_id?: string
+          shipping_fee?: number
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      market_products: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          photo_url: string | null
+          price: number
+          stock: number
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          photo_url?: string | null
+          price?: number
+          stock?: number
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          photo_url?: string | null
+          price?: number
+          stock?: number
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notification_logs: {
         Row: {
           created_at: string

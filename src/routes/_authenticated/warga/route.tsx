@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { Home, Wallet, Tag, MessageSquareWarning, User } from "lucide-react";
+import { Home, Wallet, ShoppingBasket, MessageSquareWarning, User } from "lucide-react";
 import { MobileShell } from "@/components/MobileShell";
 import { RoleGate } from "@/components/RoleGate";
 
@@ -16,10 +16,11 @@ function WargaLayout() {
         items={[
           { to: "/warga", label: "Beranda", icon: Home, exact: true },
           { to: "/warga/tabungan", label: "Tabungan", icon: Wallet },
-          { to: "/warga/harga", label: "Harga", icon: Tag },
+          { to: "/warga/marketplace", label: "Marketplace", icon: ShoppingBasket },
           { to: "/warga/aduan", label: "Aduan", icon: MessageSquareWarning },
           { to: "/warga/profil", label: "Profil", icon: User },
         ]}
+
       >
         <Outlet />
       </MobileShell>

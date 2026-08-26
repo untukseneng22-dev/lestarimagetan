@@ -2,11 +2,19 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import QRCode from "react-qr-code";
-import { Megaphone, Truck, Wallet, ChevronRight, CalendarClock, MapPin, Trophy } from "lucide-react";
+import { Megaphone, Truck, Wallet, ChevronRight, CalendarClock, MapPin, Trophy, Tag } from "lucide-react";
 import { getWargaDashboard } from "@/lib/warga.functions";
-import { getAppSettings, getLeaderboard } from "@/lib/common.functions";
+import { getAppSettings, getLeaderboard, getCategoriesWithPrices } from "@/lib/common.functions";
 import { useMyAccount } from "@/lib/use-account";
-import { formatNumber, formatRupiah, formatTanggalPanjang, formatTanggal } from "@/lib/format";
+import { formatNumber, formatRupiah, formatTanggalPanjang, formatTanggal, formatTanggalWaktu } from "@/lib/format";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,9 +28,11 @@ function WargaDashboard() {
   const dashboardFn = useServerFn(getWargaDashboard);
   const settingsFn = useServerFn(getAppSettings);
   const leaderboardFn = useServerFn(getLeaderboard);
+  const pricesFn = useServerFn(getCategoriesWithPrices);
   const { data } = useQuery({ queryKey: ["warga-dashboard"], queryFn: () => dashboardFn() });
   const { data: settings } = useQuery({ queryKey: ["app-settings"], queryFn: () => settingsFn() });
   const { data: leaderboard } = useQuery({ queryKey: ["leaderboard"], queryFn: () => leaderboardFn() });
+  const { data: prices } = useQuery({ queryKey: ["prices"], queryFn: () => pricesFn() });
   const { data: account } = useMyAccount();
 
   if (!data || !account) {
@@ -64,6 +74,41 @@ function WargaDashboard() {
           </div>
         </div>
       </div>
+
+      <section>
+        <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
+          <Tag className="h-4 w-4 text-primary" /> Harga Sampah Hari Ini
+        </h3>
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Jenis Sampah</TableHead>
+                  <TableHead className="text-right">Harga</TableHead>
+                  <TableHead className="w-14 text-right">Satuan</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(prices?.categories ?? []).map((c) => (
+                  <TableRow key={c.category_id}>
+                    <TableCell className="font-medium">{c.name}</TableCell>
+                    <TableCell className="text-right font-semibold text-primary">
+                      {formatRupiah(c.price_per_kg)}
+                    </TableCell>
+                    <TableCell className="text-right text-muted-foreground">/{c.unit}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+        {prices?.lastUpdatedAt && (
+          <p className="mt-1.5 text-xs italic text-muted-foreground">
+            Harga terakhir diperbarui oleh Admin pada {formatTanggalWaktu(prices.lastUpdatedAt)}.
+          </p>
+        )}
+      </section>
 
       <section>
         <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">

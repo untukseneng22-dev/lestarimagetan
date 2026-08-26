@@ -3,7 +3,7 @@ import { useState, type ComponentType } from "react";
 import {
   LayoutDashboard, Users, Tag, ArrowLeftRight, Truck,
   MessageSquareWarning, Megaphone, Landmark, FileBarChart, BellRing, CalendarClock,
-  ChevronDown, Database, ClipboardList, HeartHandshake, Settings2, Info,
+  ChevronDown, Database, ClipboardList, HeartHandshake, Settings2, Info, ShoppingBasket, PackageSearch,
 } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { RoleGate } from "@/components/RoleGate";
@@ -37,6 +37,14 @@ const MENU_GROUPS: MenuGroup[] = [
       { to: "/admin/transaksi", label: "Transaksi", icon: ArrowLeftRight },
       { to: "/admin/pickup", label: "Penjemputan", icon: Truck },
       { to: "/admin/jadwal", label: "Jadwal Layanan", icon: CalendarClock },
+    ],
+  },
+  {
+    label: "Marketplace",
+    icon: ShoppingBasket,
+    items: [
+      { to: "/admin/produk", label: "Produk Sembako", icon: ShoppingBasket },
+      { to: "/admin/pesanan", label: "Pesanan Warga", icon: PackageSearch },
     ],
   },
   {

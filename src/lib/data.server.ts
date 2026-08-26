@@ -21,23 +21,36 @@ export async function getProfile(supabase: SupabaseClient, userId: string) {
   return data;
 }
 
-/** Saldo = total setoran - pencairan yang disetujui/dicairkan. */
+/** Status pesanan marketplace yang sudah memotong saldo warga. */
+export const ORDER_CHARGED_STATUSES = ["dikonfirmasi", "diproses", "selesai"];
+
+/**
+ * Saldo = total setoran - pencairan yang disetujui/dicairkan
+ *       - porsi saldo pada pesanan marketplace yang sudah dikonfirmasi.
+ */
 export async function getBalance(
   supabase: SupabaseClient,
   residentId: string,
 ): Promise<number> {
-  const [{ data: tx }, { data: wd }] = await Promise.all([
+  const [{ data: tx }, { data: wd }, { data: orders }] = await Promise.all([
     supabase.from("transactions").select("total_amount").eq("resident_id", residentId),
     supabase
       .from("withdrawals")
       .select("amount")
       .eq("resident_id", residentId)
       .in("status", ["disetujui", "dicairkan"]),
+    supabase
+      .from("market_orders")
+      .select("paid_from_balance")
+      .eq("resident_id", residentId)
+      .in("status", ORDER_CHARGED_STATUSES),
   ]);
   const masuk = (tx ?? []).reduce((s, t) => s + Number(t.total_amount), 0);
   const keluar = (wd ?? []).reduce((s, w) => s + Number(w.amount), 0);
-  return masuk - keluar;
+  const belanja = (orders ?? []).reduce((s, o) => s + Number(o.paid_from_balance), 0);
+  return masuk - keluar - belanja;
 }
+
 
 export type LockedPrice = {
   category_id: string;
