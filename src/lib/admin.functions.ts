@@ -868,6 +868,34 @@ export const updateShippingFee = createServerFn({ method: "POST" })
   });
 
 // ---------- Marketplace: pesanan ----------
+const ADMIN_ORDER_SELECT =
+  "id, resident_id, method, address, shipping_fee, items_total, total_amount, paid_from_balance, cash_due, status, admin_note, proof_url, received_at, locked, created_at, market_order_items(product_name, unit, price, qty, subtotal), market_order_events(status, note, created_at)";
+
+const ORDER_STATUS_TEXT: Record<string, string> = {
+  menunggu: "Menunggu",
+  dibayar: "Dibayar",
+  diproses: "Diproses",
+  dikirim: "Dikirim",
+  diterima: "Diterima",
+  dibatalkan: "Dibatalkan",
+};
+
+async function withResidentInfo(
+  supabase: Parameters<typeof getBalance>[0],
+  rows: { resident_id: string }[],
+) {
+  const ids = [...new Set(rows.map((o) => o.resident_id))];
+  const { data: profiles } = ids.length
+    ? await supabase.from("profiles").select("id, full_name, phone").in("id", ids)
+    : { data: [] as { id: string; full_name: string; phone: string | null }[] };
+  const map = new Map((profiles ?? []).map((p) => [p.id, p]));
+  return rows.map((o) => ({
+    ...o,
+    resident_name: map.get(o.resident_id)?.full_name ?? "-",
+    resident_phone: map.get(o.resident_id)?.phone ?? null,
+  }));
+}
+
 export const adminListOrders = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -875,21 +903,28 @@ export const adminListOrders = createServerFn({ method: "GET" })
     await requireRole(supabase, userId, ["admin"]);
     const { data: orders } = await supabase
       .from("market_orders")
-      .select(
-        "id, resident_id, method, address, shipping_fee, items_total, total_amount, paid_from_balance, cash_due, status, admin_note, created_at, market_order_items(product_name, unit, price, qty, subtotal)",
-      )
+      .select(ADMIN_ORDER_SELECT)
       .order("created_at", { ascending: false });
-    const rows = orders ?? [];
-    const ids = [...new Set(rows.map((o) => o.resident_id))];
-    const { data: profiles } = ids.length
-      ? await supabase.from("profiles").select("id, full_name, phone").in("id", ids)
-      : { data: [] };
-    const map = new Map((profiles ?? []).map((p) => [p.id, p]));
-    return rows.map((o) => ({
-      ...o,
-      resident_name: map.get(o.resident_id)?.full_name ?? "-",
-      resident_phone: map.get(o.resident_id)?.phone ?? null,
-    }));
+
+    const withProof = await Promise.all(
+      (orders ?? []).map(async (o) => {
+        let proof_signed_url: string | null = null;
+        if (o.proof_url) {
+          const { data } = await supabase.storage
+            .from("aduan")
+            .createSignedUrl(o.proof_url, 60 * 60 * 6);
+          proof_signed_url = data?.signedUrl ?? null;
+        }
+        return {
+          ...o,
+          proof_signed_url,
+          market_order_events: [...(o.market_order_events ?? [])].sort(
+            (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+          ),
+        };
+      }),
+    );
+    return withResidentInfo(supabase, withProof);
   });
 
 export const updateOrderStatus = createServerFn({ method: "POST" })
@@ -898,7 +933,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
     z
       .object({
         orderId: z.string().uuid(),
-        status: z.enum(["menunggu", "dikonfirmasi", "diproses", "selesai", "dibatalkan"]),
+        status: z.enum(["menunggu", "dibayar", "diproses", "dikirim", "diterima", "dibatalkan"]),
         note: z.string().trim().max(300).optional().nullable(),
       })
       .parse(data),
@@ -909,31 +944,18 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
 
     const { data: order } = await supabase
       .from("market_orders")
-      .select(
-        "id, resident_id, status, paid_from_balance, total_amount, market_order_items(product_id, qty)",
-      )
+      .select("id, resident_id, status, locked, paid_from_balance, market_order_items(product_id, qty)")
       .eq("id", data.orderId)
       .single();
     if (!order) throw new Error("Pesanan tidak ditemukan");
-
-    const wasCharged = ORDER_CHARGED_STATUSES.includes(order.status);
-    const willCharge = ORDER_CHARGED_STATUSES.includes(data.status);
-
-    // Saat pertama dikonfirmasi: pastikan saldo warga masih mencukupi.
-    if (!wasCharged && willCharge && Number(order.paid_from_balance) > 0) {
-      const balance = await getBalance(supabase, order.resident_id);
-      if (balance < Number(order.paid_from_balance)) {
-        throw new Error(
-          `Saldo warga tidak lagi mencukupi (tersisa ${rupiah(balance)}). Batalkan atau minta warga memesan ulang.`,
-        );
-      }
+    if (order.locked) {
+      throw new Error("Pesanan sudah terkunci (diterima/dibatalkan) dan tidak bisa diubah lagi.");
     }
+    if (order.status === data.status) throw new Error("Status pesanan sudah sama.");
 
-    // Stok berkurang saat dikonfirmasi, kembali saat dibatalkan.
-    const items = order.market_order_items ?? [];
-    const delta = !wasCharged && willCharge ? -1 : wasCharged && !willCharge ? 1 : 0;
-    if (delta !== 0) {
-      for (const it of items) {
+    // Stok & saldo dikunci sejak pesanan dibuat; hanya dikembalikan bila dibatalkan.
+    if (data.status === "dibatalkan") {
+      for (const it of order.market_order_items ?? []) {
         if (!it.product_id) continue;
         const { data: p } = await supabase
           .from("market_products")
@@ -943,11 +965,12 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
         if (!p) continue;
         await supabase
           .from("market_products")
-          .update({ stock: Math.max(0, Number(p.stock) + delta * it.qty) })
+          .update({ stock: Number(p.stock) + it.qty })
           .eq("id", it.product_id);
       }
     }
 
+    const locking = data.status === "dibatalkan" || data.status === "diterima";
     const { error } = await supabase
       .from("market_orders")
       .update({
@@ -955,9 +978,18 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
         admin_note: data.note ?? null,
         processed_by: userId,
         processed_at: new Date().toISOString(),
+        locked: locking,
+        ...(data.status === "diterima" ? { received_at: new Date().toISOString() } : {}),
       })
       .eq("id", data.orderId);
     if (error) throw new Error(error.message);
+
+    await supabase.from("market_order_events").insert({
+      order_id: data.orderId,
+      status: data.status,
+      note: data.note ?? null,
+      created_by: userId,
+    });
 
     const { data: profile } = await supabase
       .from("profiles")
@@ -971,10 +1003,94 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
         event: "status_pesanan",
         message: buildMessage("status_pesanan", {
           kode: order.id.slice(0, 8).toUpperCase(),
-          status: data.status,
+          status: ORDER_STATUS_TEXT[data.status] ?? data.status,
           catatan: data.note ?? "",
         }),
       });
     }
     return { ok: true };
   });
+
+/** Rekap pesanan marketplace untuk ekspor Excel/PDF admin. */
+export const getMarketReport = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z.object({ from: z.string().min(10), to: z.string().min(10) }).parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireRole(supabase, userId, ["admin"]);
+
+    const { data: orders } = await supabase
+      .from("market_orders")
+      .select(
+        "id, resident_id, method, status, shipping_fee, items_total, total_amount, paid_from_balance, cash_due, created_at, received_at, market_order_items(product_name, qty, subtotal)",
+      )
+      .gte("created_at", `${data.from}T00:00:00.000+07:00`)
+      .lte("created_at", `${data.to}T23:59:59.999+07:00`)
+      .order("created_at", { ascending: false });
+
+    const rows = await withResidentInfo(supabase, orders ?? []);
+
+    const active = rows.filter((o) => o.status !== "dibatalkan");
+    const productMap = new Map<string, { qty: number; amount: number }>();
+    for (const o of active) {
+      for (const it of o.market_order_items ?? []) {
+        const cur = productMap.get(it.product_name) ?? { qty: 0, amount: 0 };
+        productMap.set(it.product_name, {
+          qty: cur.qty + it.qty,
+          amount: cur.amount + Number(it.subtotal),
+        });
+      }
+    }
+
+    return {
+      orders: rows.map((o) => ({
+        id: o.id,
+        date: o.created_at,
+        residentName: o.resident_name,
+        method: o.method,
+        status: o.status,
+        items: (o.market_order_items ?? []).map((i) => `${i.product_name} x${i.qty}`).join(", "),
+        itemsTotal: Number(o.items_total),
+        shippingFee: Number(o.shipping_fee),
+        totalAmount: Number(o.total_amount),
+        paidFromBalance: Number(o.paid_from_balance),
+        cashDue: Number(o.cash_due),
+        receivedAt: o.received_at,
+      })),
+      products: [...productMap.entries()]
+        .map(([name, v]) => ({ name, qty: v.qty, amount: v.amount }))
+        .sort((a, b) => b.amount - a.amount),
+      totals: {
+        orders: rows.length,
+        omzet: active.reduce((s, o) => s + Number(o.total_amount), 0),
+        saldo: active.reduce((s, o) => s + Number(o.paid_from_balance), 0),
+        tunai: active.reduce((s, o) => s + Number(o.cash_due), 0),
+        ongkir: active.reduce((s, o) => s + Number(o.shipping_fee), 0),
+      },
+    };
+  });
+
+/** Batas pembelian marketplace per warga. */
+export const updateMarketLimits = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        maxQtyPerProduct: z.number().int().min(1).max(999),
+        maxActiveOrders: z.number().int().min(1).max(99),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireRole(supabase, userId, ["admin"]);
+    const { error } = await supabase.from("app_settings").upsert([
+      { key: "market_max_qty_per_product", value: String(data.maxQtyPerProduct), updated_by: userId },
+      { key: "market_max_active_orders", value: String(data.maxActiveOrders), updated_by: userId },
+    ]);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
