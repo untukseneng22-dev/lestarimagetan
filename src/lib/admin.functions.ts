@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { getBalance, getPricesAtDate, ORDER_CHARGED_STATUSES, requireRole } from "./data.server";
-import { getShippingFee, signProductPhotos } from "./market.server";
+import { ADMIN_ORDER_SELECT, getShippingFee, ORDER_STATUS_TEXT, signProductPhotos, withResidentInfo } from "./market.server";
 import { buildMessage, rupiah, sendWhatsappNotification } from "./whatsapp.server";
 
 // ---------- Statistik dashboard ----------
@@ -868,34 +868,6 @@ export const updateShippingFee = createServerFn({ method: "POST" })
   });
 
 // ---------- Marketplace: pesanan ----------
-const ADMIN_ORDER_SELECT =
-  "id, resident_id, method, address, shipping_fee, items_total, total_amount, paid_from_balance, cash_due, status, admin_note, proof_url, received_at, locked, created_at, market_order_items(product_name, unit, price, qty, subtotal), market_order_events(status, note, created_at)";
-
-const ORDER_STATUS_TEXT: Record<string, string> = {
-  menunggu: "Menunggu",
-  dibayar: "Dibayar",
-  diproses: "Diproses",
-  dikirim: "Dikirim",
-  diterima: "Diterima",
-  dibatalkan: "Dibatalkan",
-};
-
-async function withResidentInfo(
-  supabase: Parameters<typeof getBalance>[0],
-  rows: { resident_id: string }[],
-) {
-  const ids = [...new Set(rows.map((o) => o.resident_id))];
-  const { data: profiles } = ids.length
-    ? await supabase.from("profiles").select("id, full_name, phone").in("id", ids)
-    : { data: [] as { id: string; full_name: string; phone: string | null }[] };
-  const map = new Map((profiles ?? []).map((p) => [p.id, p]));
-  return rows.map((o) => ({
-    ...o,
-    resident_name: map.get(o.resident_id)?.full_name ?? "-",
-    resident_phone: map.get(o.resident_id)?.phone ?? null,
-  }));
-}
-
 export const adminListOrders = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
