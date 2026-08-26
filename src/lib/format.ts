@@ -113,7 +113,9 @@ export function statusTone(s: string | null | undefined): BadgeTone {
     case "selesai":
     case "dicairkan":
     case "terkirim":
+    case "diterima":
       return "green";
+
     case "menunggu":
     case "baru":
     case "dijadwalkan":
