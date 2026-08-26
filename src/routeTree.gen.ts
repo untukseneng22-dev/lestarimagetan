@@ -36,6 +36,7 @@ import { Route as AuthenticatedTimSetorRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedWargaIndexRouteImport } from './routes/_authenticated/warga/index'
 import { Route as AuthenticatedWargaAduanRouteImport } from './routes/_authenticated/warga/aduan'
 import { Route as AuthenticatedWargaHargaRouteImport } from './routes/_authenticated/warga/harga'
+import { Route as AuthenticatedWargaMarketplaceRouteImport } from './routes/_authenticated/warga/marketplace'
 import { Route as AuthenticatedWargaProfilRouteImport } from './routes/_authenticated/warga/profil'
 import { Route as AuthenticatedWargaTabunganRouteImport } from './routes/_authenticated/warga/tabungan'
 
@@ -181,6 +182,12 @@ const AuthenticatedWargaHargaRoute = AuthenticatedWargaHargaRouteImport.update({
   path: '/harga',
   getParentRoute: () => AuthenticatedWargaRouteRoute,
 } as any)
+const AuthenticatedWargaMarketplaceRoute =
+  AuthenticatedWargaMarketplaceRouteImport.update({
+    id: '/marketplace',
+    path: '/marketplace',
+    getParentRoute: () => AuthenticatedWargaRouteRoute,
+  } as any)
 const AuthenticatedWargaProfilRoute =
   AuthenticatedWargaProfilRouteImport.update({
     id: '/profil',
@@ -218,6 +225,7 @@ export interface FileRoutesByFullPath {
   '/tim/setor': typeof AuthenticatedTimSetorRoute
   '/warga/aduan': typeof AuthenticatedWargaAduanRoute
   '/warga/harga': typeof AuthenticatedWargaHargaRoute
+  '/warga/marketplace': typeof AuthenticatedWargaMarketplaceRoute
   '/warga/profil': typeof AuthenticatedWargaProfilRoute
   '/warga/tabungan': typeof AuthenticatedWargaTabunganRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -245,6 +253,7 @@ export interface FileRoutesByTo {
   '/tim/setor': typeof AuthenticatedTimSetorRoute
   '/warga/aduan': typeof AuthenticatedWargaAduanRoute
   '/warga/harga': typeof AuthenticatedWargaHargaRoute
+  '/warga/marketplace': typeof AuthenticatedWargaMarketplaceRoute
   '/warga/profil': typeof AuthenticatedWargaProfilRoute
   '/warga/tabungan': typeof AuthenticatedWargaTabunganRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -277,6 +286,7 @@ export interface FileRoutesById {
   '/_authenticated/tim/setor': typeof AuthenticatedTimSetorRoute
   '/_authenticated/warga/aduan': typeof AuthenticatedWargaAduanRoute
   '/_authenticated/warga/harga': typeof AuthenticatedWargaHargaRoute
+  '/_authenticated/warga/marketplace': typeof AuthenticatedWargaMarketplaceRoute
   '/_authenticated/warga/profil': typeof AuthenticatedWargaProfilRoute
   '/_authenticated/warga/tabungan': typeof AuthenticatedWargaTabunganRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -309,6 +319,7 @@ export interface FileRouteTypes {
     | '/tim/setor'
     | '/warga/aduan'
     | '/warga/harga'
+    | '/warga/marketplace'
     | '/warga/profil'
     | '/warga/tabungan'
     | '/admin/'
@@ -336,6 +347,7 @@ export interface FileRouteTypes {
     | '/tim/setor'
     | '/warga/aduan'
     | '/warga/harga'
+    | '/warga/marketplace'
     | '/warga/profil'
     | '/warga/tabungan'
     | '/admin'
@@ -367,6 +379,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tim/setor'
     | '/_authenticated/warga/aduan'
     | '/_authenticated/warga/harga'
+    | '/_authenticated/warga/marketplace'
     | '/_authenticated/warga/profil'
     | '/_authenticated/warga/tabungan'
     | '/_authenticated/admin/'
@@ -571,6 +584,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWargaHargaRouteImport
       parentRoute: typeof AuthenticatedWargaRouteRoute
     }
+    '/_authenticated/warga/marketplace': {
+      id: '/_authenticated/warga/marketplace'
+      path: '/marketplace'
+      fullPath: '/warga/marketplace'
+      preLoaderRoute: typeof AuthenticatedWargaMarketplaceRouteImport
+      parentRoute: typeof AuthenticatedWargaRouteRoute
+    }
     '/_authenticated/warga/profil': {
       id: '/_authenticated/warga/profil'
       path: '/profil'
@@ -648,6 +668,7 @@ const AuthenticatedTimRouteRouteWithChildren =
 interface AuthenticatedWargaRouteRouteChildren {
   AuthenticatedWargaAduanRoute: typeof AuthenticatedWargaAduanRoute
   AuthenticatedWargaHargaRoute: typeof AuthenticatedWargaHargaRoute
+  AuthenticatedWargaMarketplaceRoute: typeof AuthenticatedWargaMarketplaceRoute
   AuthenticatedWargaProfilRoute: typeof AuthenticatedWargaProfilRoute
   AuthenticatedWargaTabunganRoute: typeof AuthenticatedWargaTabunganRoute
   AuthenticatedWargaIndexRoute: typeof AuthenticatedWargaIndexRoute
@@ -657,6 +678,7 @@ const AuthenticatedWargaRouteRouteChildren: AuthenticatedWargaRouteRouteChildren
   {
     AuthenticatedWargaAduanRoute: AuthenticatedWargaAduanRoute,
     AuthenticatedWargaHargaRoute: AuthenticatedWargaHargaRoute,
+    AuthenticatedWargaMarketplaceRoute: AuthenticatedWargaMarketplaceRoute,
     AuthenticatedWargaProfilRoute: AuthenticatedWargaProfilRoute,
     AuthenticatedWargaTabunganRoute: AuthenticatedWargaTabunganRoute,
     AuthenticatedWargaIndexRoute: AuthenticatedWargaIndexRoute,
