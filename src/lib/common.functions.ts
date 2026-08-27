@@ -71,6 +71,16 @@ export const getAppSettings = createServerFn({ method: "GET" })
       pickupSchedule: toText(map.get("pickup_schedule")?.value) || "Jadwal belum diatur",
       dropoffInfo: toText(map.get("dropoff_info")?.value),
       updatedAt: map.get("pickup_schedule")?.updated_at ?? null,
+      // Identitas lembaga untuk kop dokumen laporan bulanan
+      org: {
+        name: toText(map.get("org_name")?.value) || "Bank Sampah LESTARI MAGETAN",
+        address: toText(map.get("org_address")?.value),
+        phone: toText(map.get("org_phone")?.value),
+        headName: toText(map.get("org_head_name")?.value),
+        treasurerName: toText(map.get("org_treasurer_name")?.value),
+        city: toText(map.get("org_city")?.value) || "Magetan",
+        updatedAt: map.get("org_name")?.updated_at ?? null,
+      },
     };
   });
 
