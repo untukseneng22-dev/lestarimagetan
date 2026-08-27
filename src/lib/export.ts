@@ -19,6 +19,12 @@ function rowsToArrays(columns: ExportColumn[], rows: Record<string, unknown>[]):
   return rows.map((row) => columns.map((c) => String(row[c.key] ?? "-")));
 }
 
+/** Nama kop dokumen: huruf kapital dan selalu diawali "BANK SAMPAH". */
+export function formatKopName(name: string | undefined): string {
+  const upper = (name ?? "").trim().toUpperCase() || "LESTARI MAGETAN";
+  return upper.startsWith("BANK SAMPAH") ? upper : `BANK SAMPAH ${upper}`;
+}
+
 function tanggalPanjang(): string {
   return new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 }
