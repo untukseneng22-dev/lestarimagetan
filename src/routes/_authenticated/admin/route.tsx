@@ -1,4 +1,5 @@
-import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
+import {
+  ScrollText, createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useState, type ComponentType } from "react";
 import {
   LayoutDashboard, Users, Tag, ArrowLeftRight, Truck,
@@ -62,6 +63,7 @@ const MENU_GROUPS: MenuGroup[] = [
     items: [
       { to: "/admin/laporan", label: "Laporan", icon: FileBarChart },
       { to: "/admin/notifikasi", label: "Notifikasi WA", icon: BellRing },
+      { to: "/admin/audit", label: "Audit Log", icon: ScrollText },
       { to: "/admin/tentang", label: "Tentang Aplikasi", icon: Info },
     ],
   },

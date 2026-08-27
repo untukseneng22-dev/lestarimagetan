@@ -16,6 +16,7 @@ import {
 import { OrderTimeline } from "@/components/OrderTimeline";
 import { compressImage } from "@/lib/image";
 import { supabase } from "@/integrations/supabase/client";
+import produkPlaceholder from "@/assets/produk-placeholder.jpg";
 import { formatRupiah, formatTanggalWaktu } from "@/lib/format";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -222,12 +223,17 @@ function MarketplacePage() {
               const habis = p.stock <= 0;
               return (
                 <Card key={p.id} className="overflow-hidden">
-                  <div className="flex h-24 items-center justify-center bg-muted">
-                    {p.photo_signed_url ? (
-                      <img src={p.photo_signed_url} alt={p.name} className="h-full w-full object-cover" />
-                    ) : (
-                      <ShoppingBasket className="h-8 w-8 text-muted-foreground/50" />
-                    )}
+                  <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
+                    <img
+                      src={p.photo_signed_url ?? produkPlaceholder}
+                      alt={p.name}
+                      loading="lazy"
+                      decoding="async"
+                      width={512}
+                      height={384}
+                      onError={(e) => { e.currentTarget.src = produkPlaceholder; }}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                   <CardContent className="space-y-1.5 p-3">
                     <p className="line-clamp-2 min-h-[2.2rem] text-xs font-semibold leading-snug">{p.name}</p>
