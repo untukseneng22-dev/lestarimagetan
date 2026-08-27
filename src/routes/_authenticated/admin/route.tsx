@@ -130,6 +130,7 @@ function AdminLayout() {
 
   return (
     <RoleGate role="admin">
+      <LandscapeGate>
       <div className="flex min-h-screen bg-background">
         <aside className="fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-sidebar-border bg-sidebar">
           <div className="flex items-center gap-2.5 border-b border-sidebar-border px-5 py-5">
