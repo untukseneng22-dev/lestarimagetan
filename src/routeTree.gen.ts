@@ -20,6 +20,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminAduanRouteImport } from './routes/_authenticated/admin/aduan'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
 import { Route as AuthenticatedAdminHargaRouteImport } from './routes/_authenticated/admin/harga'
+import { Route as AuthenticatedAdminIdentitasRouteImport } from './routes/_authenticated/admin/identitas'
 import { Route as AuthenticatedAdminJadwalRouteImport } from './routes/_authenticated/admin/jadwal'
 import { Route as AuthenticatedAdminKasRouteImport } from './routes/_authenticated/admin/kas'
 import { Route as AuthenticatedAdminLaporanRouteImport } from './routes/_authenticated/admin/laporan'
@@ -96,6 +97,12 @@ const AuthenticatedAdminHargaRoute = AuthenticatedAdminHargaRouteImport.update({
   path: '/harga',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminIdentitasRoute =
+  AuthenticatedAdminIdentitasRouteImport.update({
+    id: '/identitas',
+    path: '/identitas',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminJadwalRoute =
   AuthenticatedAdminJadwalRouteImport.update({
     id: '/jadwal',
@@ -225,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/admin/aduan': typeof AuthenticatedAdminAduanRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/harga': typeof AuthenticatedAdminHargaRoute
+  '/admin/identitas': typeof AuthenticatedAdminIdentitasRoute
   '/admin/jadwal': typeof AuthenticatedAdminJadwalRoute
   '/admin/kas': typeof AuthenticatedAdminKasRoute
   '/admin/laporan': typeof AuthenticatedAdminLaporanRoute
@@ -255,6 +263,7 @@ export interface FileRoutesByTo {
   '/admin/aduan': typeof AuthenticatedAdminAduanRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/harga': typeof AuthenticatedAdminHargaRoute
+  '/admin/identitas': typeof AuthenticatedAdminIdentitasRoute
   '/admin/jadwal': typeof AuthenticatedAdminJadwalRoute
   '/admin/kas': typeof AuthenticatedAdminKasRoute
   '/admin/laporan': typeof AuthenticatedAdminLaporanRoute
@@ -290,6 +299,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/aduan': typeof AuthenticatedAdminAduanRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/harga': typeof AuthenticatedAdminHargaRoute
+  '/_authenticated/admin/identitas': typeof AuthenticatedAdminIdentitasRoute
   '/_authenticated/admin/jadwal': typeof AuthenticatedAdminJadwalRoute
   '/_authenticated/admin/kas': typeof AuthenticatedAdminKasRoute
   '/_authenticated/admin/laporan': typeof AuthenticatedAdminLaporanRoute
@@ -325,6 +335,7 @@ export interface FileRouteTypes {
     | '/admin/aduan'
     | '/admin/audit'
     | '/admin/harga'
+    | '/admin/identitas'
     | '/admin/jadwal'
     | '/admin/kas'
     | '/admin/laporan'
@@ -355,6 +366,7 @@ export interface FileRouteTypes {
     | '/admin/aduan'
     | '/admin/audit'
     | '/admin/harga'
+    | '/admin/identitas'
     | '/admin/jadwal'
     | '/admin/kas'
     | '/admin/laporan'
@@ -389,6 +401,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/aduan'
     | '/_authenticated/admin/audit'
     | '/_authenticated/admin/harga'
+    | '/_authenticated/admin/identitas'
     | '/_authenticated/admin/jadwal'
     | '/_authenticated/admin/kas'
     | '/_authenticated/admin/laporan'
@@ -496,6 +509,13 @@ declare module '@tanstack/react-router' {
       path: '/harga'
       fullPath: '/admin/harga'
       preLoaderRoute: typeof AuthenticatedAdminHargaRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/identitas': {
+      id: '/_authenticated/admin/identitas'
+      path: '/identitas'
+      fullPath: '/admin/identitas'
+      preLoaderRoute: typeof AuthenticatedAdminIdentitasRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/admin/jadwal': {
@@ -652,6 +672,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAduanRoute: typeof AuthenticatedAdminAduanRoute
   AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
   AuthenticatedAdminHargaRoute: typeof AuthenticatedAdminHargaRoute
+  AuthenticatedAdminIdentitasRoute: typeof AuthenticatedAdminIdentitasRoute
   AuthenticatedAdminJadwalRoute: typeof AuthenticatedAdminJadwalRoute
   AuthenticatedAdminKasRoute: typeof AuthenticatedAdminKasRoute
   AuthenticatedAdminLaporanRoute: typeof AuthenticatedAdminLaporanRoute
@@ -671,6 +692,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminAduanRoute: AuthenticatedAdminAduanRoute,
     AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
     AuthenticatedAdminHargaRoute: AuthenticatedAdminHargaRoute,
+    AuthenticatedAdminIdentitasRoute: AuthenticatedAdminIdentitasRoute,
     AuthenticatedAdminJadwalRoute: AuthenticatedAdminJadwalRoute,
     AuthenticatedAdminKasRoute: AuthenticatedAdminKasRoute,
     AuthenticatedAdminLaporanRoute: AuthenticatedAdminLaporanRoute,

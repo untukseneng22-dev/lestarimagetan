@@ -1188,3 +1188,38 @@ export const updateMarketLimits = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+
+// ---------- Identitas lembaga (kop dokumen laporan) ----------
+export const updateOrgProfile = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        name: z.string().trim().min(3, "Nama bank sampah minimal 3 karakter").max(120),
+        address: z.string().trim().max(255),
+        phone: z.string().trim().max(30),
+        city: z.string().trim().max(60),
+        headName: z.string().trim().max(120),
+        treasurerName: z.string().trim().max(120),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireRole(supabase, userId, ["admin"]);
+    const { error } = await supabase.from("app_settings").upsert([
+      { key: "org_name", value: data.name, updated_by: userId },
+      { key: "org_address", value: data.address, updated_by: userId },
+      { key: "org_phone", value: data.phone, updated_by: userId },
+      { key: "org_city", value: data.city, updated_by: userId },
+      { key: "org_head_name", value: data.headName, updated_by: userId },
+      { key: "org_treasurer_name", value: data.treasurerName, updated_by: userId },
+    ]);
+    if (error) throw new Error(error.message);
+    await logAdminAction(supabase, userId, {
+      action: "update",
+      entityType: "app_settings",
+      detail: `Memperbarui identitas lembaga: ${data.name}`,
+    });
+    return { ok: true };
+  });

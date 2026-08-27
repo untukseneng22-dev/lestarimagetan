@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { FileSpreadsheet, FileText, MessageSquareWarning, Scale, ShoppingBasket, Wallet } from "lucide-react";
 import { getMarketReport, getReportData } from "@/lib/admin.functions";
+import { getAppSettings } from "@/lib/common.functions";
 import { exportExcel, exportPdf } from "@/lib/export";
 import { formatNumber, formatRupiah, formatTanggal, formatTanggalWaktu, statusLabel, todayISO } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,6 +37,7 @@ function ExportButtons({ onPdf, onExcel }: { onPdf: () => void; onExcel: () => v
 
 function LaporanPage() {
   const reportFn = useServerFn(getReportData);
+  const settingsFn = useServerFn(getAppSettings);
   const marketFn = useServerFn(getMarketReport);
   const [from, setFrom] = useState(monthStartISO());
   const [to, setTo] = useState(todayISO());
@@ -51,6 +53,9 @@ function LaporanPage() {
     queryFn: () => marketFn({ data: { from, to } }),
     enabled: Boolean(from && to),
   });
+
+  const { data: settings } = useQuery({ queryKey: ["app-settings"], queryFn: () => settingsFn() });
+  const org = settings?.org;
 
   const subtitle = `Periode ${formatTanggal(from)} s.d. ${formatTanggal(to)}`;
 
@@ -74,9 +79,9 @@ function LaporanPage() {
       nilai: formatNumber(t.totalAmount),
     }));
     if (kind === "pdf") {
-      exportPdf({ title: "Laporan Rekap Transaksi Bank Sampah", subtitle, columns, rows, filename: `laporan-transaksi-${from}-${to}.pdf` });
+      exportPdf({ title: "Laporan Rekap Transaksi Bank Sampah", subtitle, columns, rows, filename: `laporan-transaksi-${from}-${to}.pdf`, org });
     } else {
-      exportExcel({ sheetName: "Transaksi", columns, rows, filename: `laporan-transaksi-${from}-${to}.xlsx` });
+      exportExcel({ sheetName: "Transaksi", columns, rows, filename: `laporan-transaksi-${from}-${to}.xlsx`, org, title: "Transaksi", subtitle });
     }
     toast.success(`File ${kind.toUpperCase()} laporan transaksi diunduh.`);
   }
@@ -99,9 +104,9 @@ function LaporanPage() {
       nilai: formatNumber(c.amount),
     }));
     if (kind === "pdf") {
-      exportPdf({ title: "Laporan Berat Sampah per Kategori", subtitle, columns, rows, filename: `laporan-kategori-${from}-${to}.pdf` });
+      exportPdf({ title: "Laporan Berat Sampah per Kategori", subtitle, columns, rows, filename: `laporan-kategori-${from}-${to}.pdf`, org });
     } else {
-      exportExcel({ sheetName: "Per Kategori", columns, rows, filename: `laporan-kategori-${from}-${to}.xlsx` });
+      exportExcel({ sheetName: "Per Kategori", columns, rows, filename: `laporan-kategori-${from}-${to}.xlsx`, org, title: "Per Kategori", subtitle });
     }
     toast.success(`File ${kind.toUpperCase()} laporan kategori diunduh.`);
   }
@@ -124,9 +129,9 @@ function LaporanPage() {
       status: statusLabel(c.status),
     }));
     if (kind === "pdf") {
-      exportPdf({ title: "Laporan Aduan Warga", subtitle, columns, rows, filename: `laporan-aduan-${from}-${to}.pdf` });
+      exportPdf({ title: "Laporan Aduan Warga", subtitle, columns, rows, filename: `laporan-aduan-${from}-${to}.pdf`, org });
     } else {
-      exportExcel({ sheetName: "Aduan", columns, rows, filename: `laporan-aduan-${from}-${to}.xlsx` });
+      exportExcel({ sheetName: "Aduan", columns, rows, filename: `laporan-aduan-${from}-${to}.xlsx`, org, title: "Aduan", subtitle });
     }
     toast.success(`File ${kind.toUpperCase()} laporan aduan diunduh.`);
   }
@@ -161,9 +166,9 @@ function LaporanPage() {
       tunai: formatNumber(o.cashDue),
     }));
     if (kind === "pdf") {
-      exportPdf({ title: "Rekap Pesanan Marketplace Sembako", subtitle, columns, rows, filename: `laporan-marketplace-${from}-${to}.pdf` });
+      exportPdf({ title: "Rekap Pesanan Marketplace Sembako", subtitle, columns, rows, filename: `laporan-marketplace-${from}-${to}.pdf`, org });
     } else {
-      exportExcel({ sheetName: "Marketplace", columns, rows, filename: `laporan-marketplace-${from}-${to}.xlsx` });
+      exportExcel({ sheetName: "Marketplace", columns, rows, filename: `laporan-marketplace-${from}-${to}.xlsx`, org, title: "Marketplace", subtitle });
     }
     toast.success(`File ${kind.toUpperCase()} rekap marketplace diunduh.`);
   }
