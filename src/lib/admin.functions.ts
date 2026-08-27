@@ -959,7 +959,9 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
 
     const { data: order } = await supabase
       .from("market_orders")
-      .select("id, resident_id, status, locked, paid_from_balance, market_order_items(product_id, qty)")
+      .select(
+        "id, resident_id, status, locked, method, shipping_fee, items_total, paid_from_balance, market_order_items(product_id, qty)",
+      )
       .eq("id", data.orderId)
       .single();
     if (!order) throw new Error("Pesanan tidak ditemukan");
@@ -969,35 +971,39 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
     if (order.status === data.status) throw new Error("Status pesanan sudah sama.");
 
     // Stok & saldo dikunci sejak pesanan dibuat; hanya dikembalikan bila dibatalkan.
+    let cancelNote = "";
+    let cancelPatch: Record<string, number> = {};
     if (data.status === "dibatalkan") {
-      for (const it of order.market_order_items ?? []) {
-        if (!it.product_id) continue;
-        const { data: p } = await supabase
-          .from("market_products")
-          .select("stock")
-          .eq("id", it.product_id)
-          .single();
-        if (!p) continue;
-        await supabase
-          .from("market_products")
-          .update({ stock: Number(p.stock) + it.qty })
-          .eq("id", it.product_id);
-      }
+      await restoreStock(supabase, order.market_order_items ?? []);
+      const calc = computeCancellation(order);
+      cancelNote = `${calc.reason} Saldo dikembalikan ${rupiah(calc.refundedBalance)}${
+        calc.shippingRetained > 0 ? `, ongkir ditahan ${rupiah(calc.shippingRetained)}` : ""
+      }.`;
+      cancelPatch = {
+        items_total: 0,
+        shipping_fee: calc.shippingRetained,
+        total_amount: calc.shippingRetained,
+        paid_from_balance: calc.shippingRetained,
+        cash_due: 0,
+      };
     }
 
     const locking = data.status === "dibatalkan" || data.status === "diterima";
+    const noteText = [data.note ?? "", cancelNote].filter(Boolean).join(" ") || null;
     const { error } = await supabase
       .from("market_orders")
       .update({
         status: data.status,
-        admin_note: data.note ?? null,
+        admin_note: noteText,
         processed_by: userId,
         processed_at: new Date().toISOString(),
         locked: locking,
+        ...cancelPatch,
         ...(data.status === "diterima" ? { received_at: new Date().toISOString() } : {}),
       })
       .eq("id", data.orderId);
     if (error) throw new Error(error.message);
+
 
     await supabase.from("market_order_events").insert({
       order_id: data.orderId,
