@@ -78,10 +78,14 @@ export const getAppSettings = createServerFn({ method: "GET" })
 // security-definer (hanya mengembalikan total, bukan detail transaksi).
 export const getLeaderboard = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { data } = await context.supabase.rpc("monthly_leaderboard", { limit_n: 5 });
+  .handler(async () => {
+    // Dipanggil server-side dengan service role: fungsi SQL tidak lagi dapat
+    // dipanggil langsung oleh klien yang login.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin.rpc("monthly_leaderboard", { limit_n: 5 });
     return data ?? [];
   });
+
 
 export const getAnnouncements = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
