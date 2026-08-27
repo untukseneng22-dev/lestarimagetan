@@ -43,11 +43,15 @@ type FormState = {
   price: string;
   stock: string;
   isActive: boolean;
+  photoUrl: string | null;
+  photoPreview: string | null;
 };
 
 const EMPTY: FormState = {
   id: null, name: "", category: "Sembako", unit: "pcs", price: "", stock: "0", isActive: true,
+  photoUrl: null, photoPreview: null,
 };
+
 
 function ProdukPage() {
   const listFn = useServerFn(adminListProducts);
