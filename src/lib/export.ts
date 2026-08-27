@@ -194,24 +194,29 @@ export function buildPdf(opts: PdfOptions) {
       doc.addPage();
       sy = 24;
     }
-    const leftX = margin + 6;
-    const rightX = pageWidth - margin - 60;
+    const colWidth = 62;
+    const leftCenter = margin + 6 + colWidth / 2;
+    const rightCenter = pageWidth - margin - 6 - colWidth / 2;
     doc.setFont("times", "normal");
     doc.setFontSize(11);
     doc.setTextColor(40);
-    doc.text(`${org.city || "Magetan"}, ${tanggalPanjang()}`, rightX, sy);
-    doc.text("Mengetahui,", leftX, sy + 7);
-    doc.text("Ketua Bank Sampah", leftX, sy + 13);
-    doc.text("Bendahara", rightX, sy + 13);
+    doc.text(`${org.city || "Magetan"}, ${tanggalPanjang()}`, rightCenter, sy, { align: "center" });
+    doc.text("Mengetahui,", leftCenter, sy + 7, { align: "center" });
+    doc.text("Ketua Bank Sampah", leftCenter, sy + 13, { align: "center" });
+    doc.text("Bendahara", rightCenter, sy + 13, { align: "center" });
     doc.setFont("times", "bold");
     doc.setTextColor(20);
-    doc.text(org.headName || "........................", leftX, sy + 36);
-    doc.text(org.treasurerName || "........................", rightX, sy + 36);
+    doc.text((org.headName || "........................").toUpperCase(), leftCenter, sy + 36, {
+      align: "center",
+    });
+    doc.text((org.treasurerName || "........................").toUpperCase(), rightCenter, sy + 36, {
+      align: "center",
+    });
     doc.setFont("times", "normal");
     doc.setDrawColor(120);
     doc.setLineWidth(0.2);
-    doc.line(leftX, sy + 37.5, leftX + 55, sy + 37.5);
-    doc.line(rightX, sy + 37.5, rightX + 55, sy + 37.5);
+    doc.line(leftCenter - colWidth / 2, sy + 37.5, leftCenter + colWidth / 2, sy + 37.5);
+    doc.line(rightCenter - colWidth / 2, sy + 37.5, rightCenter + colWidth / 2, sy + 37.5);
   }
 
   return doc;
