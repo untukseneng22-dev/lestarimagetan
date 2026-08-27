@@ -673,11 +673,52 @@ export const listNotificationLogs = createServerFn({ method: "GET" })
     await requireRole(supabase, userId, ["admin"]);
     const { data } = await supabase
       .from("notification_logs")
-      .select("id, event_type, recipient_name, recipient_phone, message, provider, status, created_at")
+      .select(
+        "id, event_type, recipient_name, recipient_phone, message, provider, status, error_message, attempt_count, last_attempt_at, created_at",
+      )
       .order("created_at", { ascending: false })
       .limit(200);
     return data ?? [];
   });
+
+/**
+ * Kirim ulang satu notifikasi yang gagal. Percobaan dicatat pada baris log
+ * yang sama (attempt_count, last_attempt_at, error_message) agar admin bisa
+ * melacak riwayat kegagalan tanpa membanjiri log dengan duplikat.
+ */
+export const retryNotification = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ id: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireRole(supabase, userId, ["admin"]);
+
+    const { data: log } = await supabase
+      .from("notification_logs")
+      .select("id, recipient_phone, message, status, attempt_count")
+      .eq("id", data.id)
+      .single();
+    if (!log) throw new Error("Log notifikasi tidak ditemukan.");
+    if (log.status === "terkirim") throw new Error("Notifikasi ini sudah berhasil terkirim.");
+    if ((log.attempt_count ?? 1) >= 5) {
+      throw new Error("Batas 5 percobaan kirim sudah tercapai. Periksa nomor atau konfigurasi provider.");
+    }
+
+    const result = await deliverWhatsapp({ phone: log.recipient_phone, message: log.message });
+    const { error } = await supabase
+      .from("notification_logs")
+      .update({
+        status: result.status,
+        provider: result.provider,
+        error_message: result.error,
+        attempt_count: (log.attempt_count ?? 1) + 1,
+        last_attempt_at: new Date().toISOString(),
+      })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { status: result.status, error: result.error };
+  });
+
 
 // ---------- Penjemputan ----------
 export const listPickupsAdmin = createServerFn({ method: "GET" })
