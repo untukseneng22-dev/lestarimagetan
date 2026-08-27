@@ -1,10 +1,11 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useState, type ComponentType } from "react";
 import {
-  LayoutDashboard, Users, Tag, ArrowLeftRight, Truck,
+  LayoutDashboard, Users, Tag, ArrowLeftRight, Truck, ScrollText,
   MessageSquareWarning, Megaphone, Landmark, FileBarChart, BellRing, CalendarClock,
   ChevronDown, Database, ClipboardList, HeartHandshake, Settings2, Info, ShoppingBasket, PackageSearch,
 } from "lucide-react";
+
 import { BrandLogo } from "@/components/BrandLogo";
 import { RoleGate } from "@/components/RoleGate";
 import { useMyAccount } from "@/lib/use-account";
@@ -62,6 +63,7 @@ const MENU_GROUPS: MenuGroup[] = [
     items: [
       { to: "/admin/laporan", label: "Laporan", icon: FileBarChart },
       { to: "/admin/notifikasi", label: "Notifikasi WA", icon: BellRing },
+      { to: "/admin/audit", label: "Audit Log", icon: ScrollText },
       { to: "/admin/tentang", label: "Tentang Aplikasi", icon: Info },
     ],
   },

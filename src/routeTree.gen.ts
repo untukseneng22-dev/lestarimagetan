@@ -18,6 +18,7 @@ import { Route as AuthenticatedTimRouteRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedWargaRouteRouteImport } from './routes/_authenticated/warga/route'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminAduanRouteImport } from './routes/_authenticated/admin/aduan'
+import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
 import { Route as AuthenticatedAdminHargaRouteImport } from './routes/_authenticated/admin/harga'
 import { Route as AuthenticatedAdminJadwalRouteImport } from './routes/_authenticated/admin/jadwal'
 import { Route as AuthenticatedAdminKasRouteImport } from './routes/_authenticated/admin/kas'
@@ -83,6 +84,11 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
 const AuthenticatedAdminAduanRoute = AuthenticatedAdminAduanRouteImport.update({
   id: '/aduan',
   path: '/aduan',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
 const AuthenticatedAdminHargaRoute = AuthenticatedAdminHargaRouteImport.update({
@@ -217,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/warga': typeof AuthenticatedWargaRouteRouteWithChildren
   '/kartu': typeof AuthenticatedKartuRoute
   '/admin/aduan': typeof AuthenticatedAdminAduanRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/harga': typeof AuthenticatedAdminHargaRoute
   '/admin/jadwal': typeof AuthenticatedAdminJadwalRoute
   '/admin/kas': typeof AuthenticatedAdminKasRoute
@@ -246,6 +253,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/kartu': typeof AuthenticatedKartuRoute
   '/admin/aduan': typeof AuthenticatedAdminAduanRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/harga': typeof AuthenticatedAdminHargaRoute
   '/admin/jadwal': typeof AuthenticatedAdminJadwalRoute
   '/admin/kas': typeof AuthenticatedAdminKasRoute
@@ -280,6 +288,7 @@ export interface FileRoutesById {
   '/_authenticated/warga': typeof AuthenticatedWargaRouteRouteWithChildren
   '/_authenticated/kartu': typeof AuthenticatedKartuRoute
   '/_authenticated/admin/aduan': typeof AuthenticatedAdminAduanRoute
+  '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/harga': typeof AuthenticatedAdminHargaRoute
   '/_authenticated/admin/jadwal': typeof AuthenticatedAdminJadwalRoute
   '/_authenticated/admin/kas': typeof AuthenticatedAdminKasRoute
@@ -314,6 +323,7 @@ export interface FileRouteTypes {
     | '/warga'
     | '/kartu'
     | '/admin/aduan'
+    | '/admin/audit'
     | '/admin/harga'
     | '/admin/jadwal'
     | '/admin/kas'
@@ -343,6 +353,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/kartu'
     | '/admin/aduan'
+    | '/admin/audit'
     | '/admin/harga'
     | '/admin/jadwal'
     | '/admin/kas'
@@ -376,6 +387,7 @@ export interface FileRouteTypes {
     | '/_authenticated/warga'
     | '/_authenticated/kartu'
     | '/_authenticated/admin/aduan'
+    | '/_authenticated/admin/audit'
     | '/_authenticated/admin/harga'
     | '/_authenticated/admin/jadwal'
     | '/_authenticated/admin/kas'
@@ -470,6 +482,13 @@ declare module '@tanstack/react-router' {
       path: '/aduan'
       fullPath: '/admin/aduan'
       preLoaderRoute: typeof AuthenticatedAdminAduanRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/audit': {
+      id: '/_authenticated/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/admin/harga': {
@@ -631,6 +650,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAduanRoute: typeof AuthenticatedAdminAduanRoute
+  AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
   AuthenticatedAdminHargaRoute: typeof AuthenticatedAdminHargaRoute
   AuthenticatedAdminJadwalRoute: typeof AuthenticatedAdminJadwalRoute
   AuthenticatedAdminKasRoute: typeof AuthenticatedAdminKasRoute
@@ -649,6 +669,7 @@ interface AuthenticatedAdminRouteRouteChildren {
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
     AuthenticatedAdminAduanRoute: AuthenticatedAdminAduanRoute,
+    AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
     AuthenticatedAdminHargaRoute: AuthenticatedAdminHargaRoute,
     AuthenticatedAdminJadwalRoute: AuthenticatedAdminJadwalRoute,
     AuthenticatedAdminKasRoute: AuthenticatedAdminKasRoute,
