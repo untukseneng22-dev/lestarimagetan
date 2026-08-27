@@ -88,6 +88,21 @@ function MarketplacePage() {
     }
   }
 
+  async function cancelOrder(orderId: string) {
+    setCancelling(orderId);
+    try {
+      const res = await cancelFn({ data: { orderId, reason: null } });
+      toast.success(`Pesanan dibatalkan. Saldo ${formatRupiah(res.refunded)} kembali ke tabungan.`);
+      await queryClient.invalidateQueries({ queryKey: ["market-orders"] });
+      await queryClient.invalidateQueries({ queryKey: ["market-catalog"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal membatalkan pesanan");
+    } finally {
+      setCancelling(null);
+    }
+  }
+
+
   const products = data?.products ?? [];
   const categories = useMemo(
     () => ["Semua", ...new Set(products.map((p) => p.category))],
