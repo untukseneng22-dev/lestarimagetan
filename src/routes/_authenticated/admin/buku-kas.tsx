@@ -6,8 +6,7 @@ import { ArrowDownCircle, ArrowUpCircle, FileSpreadsheet, FileText, Scale, Walle
 import { getCashBook } from "@/lib/admin.functions";
 import { getAppSettings } from "@/lib/common.functions";
 import { formatRupiah, formatTanggal } from "@/lib/format";
-import { exportExcel, type PdfOptions } from "@/lib/export";
-import { PdfPreviewDialog } from "@/components/PdfPreviewDialog";
+import { exportExcel, printPdf } from "@/lib/export";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +36,6 @@ function BukuKasPage() {
   const settingsFn = useServerFn(getAppSettings);
   const [from, setFrom] = useState(firstOfMonth());
   const [to, setTo] = useState(today());
-  const [preview, setPreview] = useState<PdfOptions | null>(null);
 
   const { data, isFetching } = useQuery({
     queryKey: ["admin-cashbook", from, to],
@@ -92,7 +90,7 @@ function BukuKasPage() {
   function doExport(kind: "pdf" | "xlsx") {
     const all = [...rows, ...ringkasanRows];
     if (kind === "pdf") {
-      setPreview({ title: "Buku Kas & Rekap Keuangan", subtitle, columns, rows: all, filename: `buku-kas-${from}-${to}.pdf`, org });
+      printPdf({ title: "Buku Kas & Rekap Keuangan", subtitle, columns, rows: all, filename: `buku-kas-${from}-${to}.pdf`, org });
     } else {
       exportExcel({ sheetName: "Buku Kas", columns, rows: all, filename: `buku-kas-${from}-${to}.xlsx`, org, title: "Buku Kas & Rekap Keuangan", subtitle });
     }
@@ -100,7 +98,6 @@ function BukuKasPage() {
 
   return (
     <div className="space-y-5">
-      <PdfPreviewDialog options={preview} onClose={() => setPreview(null)} />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Buku Kas & Rekap Keuangan</h1>
@@ -118,7 +115,7 @@ function BukuKasPage() {
             <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-9" />
           </div>
           <Button variant="outline" className="h-9" onClick={() => doExport("pdf")} disabled={!data}>
-            <FileText className="mr-1.5 size-4" /> Pratinjau & Cetak PDF
+            <FileText className="mr-1.5 size-4" /> Cetak PDF
           </Button>
           <Button className="h-9" onClick={() => doExport("xlsx")} disabled={!data}>
             <FileSpreadsheet className="mr-1.5 size-4" /> Excel

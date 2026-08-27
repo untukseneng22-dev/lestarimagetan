@@ -123,6 +123,31 @@ export function exportPdf(opts: PdfOptions) {
   buildPdf(opts).save(opts.filename);
 }
 
+/** Mencetak dokumen PDF langsung tanpa pratinjau (print preview bawaan browser). */
+export function printPdf(opts: PdfOptions) {
+  const blob = buildPdf(opts).output("blob");
+  const url = URL.createObjectURL(blob);
+  const iframe = document.createElement("iframe");
+  iframe.style.position = "fixed";
+  iframe.style.top = "-1000px";
+  iframe.style.left = "-1000px";
+  iframe.style.width = "0";
+  iframe.style.height = "0";
+  iframe.src = url;
+  iframe.onload = () => {
+    const win = iframe.contentWindow;
+    if (win) {
+      win.focus();
+      win.print();
+    }
+    setTimeout(() => {
+      if (iframe.parentNode) document.body.removeChild(iframe);
+      URL.revokeObjectURL(url);
+    }, 1000);
+  };
+  document.body.appendChild(iframe);
+}
+
 export function exportExcel(opts: {
   sheetName: string;
   columns: ExportColumn[];
