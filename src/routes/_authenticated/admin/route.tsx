@@ -63,6 +63,7 @@ const MENU_GROUPS: MenuGroup[] = [
     icon: Settings2,
     items: [
       { to: "/admin/laporan", label: "Laporan", icon: FileBarChart },
+      { to: "/admin/identitas", label: "Identitas Lembaga", icon: Building2 },
       { to: "/admin/notifikasi", label: "Notifikasi WA", icon: BellRing },
       { to: "/admin/audit", label: "Audit Log", icon: ScrollText },
       { to: "/admin/tentang", label: "Tentang Aplikasi", icon: Info },
