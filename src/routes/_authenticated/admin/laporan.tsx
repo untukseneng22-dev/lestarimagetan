@@ -42,6 +42,7 @@ function LaporanPage() {
   const marketFn = useServerFn(getMarketReport);
   const [from, setFrom] = useState(monthStartISO());
   const [to, setTo] = useState(todayISO());
+  const [preview, setPreview] = useState<PdfOptions | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-report", from, to],
