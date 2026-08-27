@@ -123,30 +123,27 @@ export function exportPdf(opts: PdfOptions) {
   buildPdf(opts).save(opts.filename);
 }
 
-/** Mencetak dokumen PDF langsung tanpa pratinjau (print preview bawaan browser). */
+/** Mencetak dokumen PDF langsung (dialog cetak bawaan browser). */
 export function printPdf(opts: PdfOptions) {
-  const blob = buildPdf(opts).output("blob");
+  const doc = buildPdf(opts);
+  // Sisipkan aksi cetak otomatis di dalam PDF-nya
+  doc.autoPrint();
+  const blob = doc.output("blob");
   const url = URL.createObjectURL(blob);
-  const iframe = document.createElement("iframe");
-  iframe.style.position = "fixed";
-  iframe.style.top = "-1000px";
-  iframe.style.left = "-1000px";
-  iframe.style.width = "0";
-  iframe.style.height = "0";
-  iframe.src = url;
-  iframe.onload = () => {
-    const win = iframe.contentWindow;
-    if (win) {
-      win.focus();
-      win.print();
-    }
-    setTimeout(() => {
-      if (iframe.parentNode) document.body.removeChild(iframe);
-      URL.revokeObjectURL(url);
-    }, 1000);
-  };
-  document.body.appendChild(iframe);
+
+  const win = window.open(url, "_blank");
+  if (!win) {
+    // Popup diblokir → fallback unduh berkas
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = opts.filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
+
 
 export function exportExcel(opts: {
   sheetName: string;
