@@ -24,11 +24,11 @@ function tanggalPanjang(): string {
 
 export function exportPdf(opts: {
   title: string;
-  subtitle?: string;
+  subtitle?: string | undefined;
   columns: ExportColumn[];
   rows: Record<string, unknown>[];
   filename: string;
-  org?: OrgIdentity;
+  org?: OrgIdentity | undefined;
 }) {
   const doc = new jsPDF({ orientation: "landscape" });
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -113,9 +113,9 @@ export function exportExcel(opts: {
   columns: ExportColumn[];
   rows: Record<string, unknown>[];
   filename: string;
-  org?: OrgIdentity;
-  title?: string;
-  subtitle?: string;
+  org?: OrgIdentity | undefined;
+  title?: string | undefined;
+  subtitle?: string | undefined;
 }) {
   const head: string[][] = [];
   if (opts.org) {
