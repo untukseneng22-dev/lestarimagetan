@@ -28,21 +28,41 @@ export async function getMarketLimits(supabase: SupabaseClient): Promise<{
 
 type ProductRow = { photo_url?: string | null } & Record<string, unknown>;
 
+/**
+ * Cache signed URL foto produk di memori worker. Tabel produk besar memicu
+ * puluhan permintaan tanda tangan per render; URL berlaku 24 jam sehingga
+ * aman dipakai ulang selama 12 jam.
+ */
+const signedUrlCache = new Map<string, { url: string; expiresAt: number }>();
+const SIGNED_TTL_MS = 12 * 60 * 60 * 1000;
+
+export function invalidateSignedPhoto(path: string) {
+  signedUrlCache.delete(path);
+}
+
 /** Bucket produk bersifat privat — buat signed URL untuk ditampilkan. */
 export async function signProductPhotos<T extends ProductRow>(
   supabase: SupabaseClient,
   rows: T[],
 ): Promise<(T & { photo_signed_url: string | null })[]> {
+  const now = Date.now();
   return Promise.all(
     rows.map(async (r) => {
-      if (!r.photo_url) return { ...r, photo_signed_url: null };
+      const path = r.photo_url;
+      if (!path) return { ...r, photo_signed_url: null };
+      const hit = signedUrlCache.get(path);
+      if (hit && hit.expiresAt > now) return { ...r, photo_signed_url: hit.url };
       const { data } = await supabase.storage
         .from("produk")
-        .createSignedUrl(r.photo_url, 60 * 60 * 24);
+        .createSignedUrl(path, 60 * 60 * 24);
+      if (data?.signedUrl) {
+        signedUrlCache.set(path, { url: data.signedUrl, expiresAt: now + SIGNED_TTL_MS });
+      }
       return { ...r, photo_signed_url: data?.signedUrl ?? null };
     }),
   );
 }
+
 
 /**
  * Penghitungan otomatis saat pesanan dibatalkan, mengikuti posisi status di
