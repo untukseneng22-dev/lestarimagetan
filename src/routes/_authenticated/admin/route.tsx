@@ -3,7 +3,7 @@ import { useState, type ComponentType } from "react";
 import {
   LayoutDashboard, Users, Tag, ArrowLeftRight, Truck, ScrollText,
   MessageSquareWarning, Megaphone, Landmark, FileBarChart, BellRing, CalendarClock,
-  ChevronDown, Database, ClipboardList, HeartHandshake, Settings2, Info, ShoppingBasket, PackageSearch, Building2,
+  ChevronDown, Database, ClipboardList, HeartHandshake, Settings2, Info, ShoppingBasket, PackageSearch, Building2, BookOpenCheck,
 } from "lucide-react";
 
 import { BrandLogo } from "@/components/BrandLogo";
@@ -56,6 +56,7 @@ const MENU_GROUPS: MenuGroup[] = [
       { to: "/admin/aduan", label: "Aduan", icon: MessageSquareWarning },
       { to: "/admin/pengumuman", label: "Pengumuman", icon: Megaphone },
       { to: "/admin/kas", label: "Kas & Pencairan", icon: Landmark },
+      { to: "/admin/buku-kas", label: "Buku Kas & Rekap", icon: BookOpenCheck },
     ],
   },
   {

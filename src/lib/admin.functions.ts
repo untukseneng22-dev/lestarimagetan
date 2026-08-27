@@ -1223,3 +1223,153 @@ export const updateOrgProfile = createServerFn({ method: "POST" })
     });
     return { ok: true };
   });
+
+// ---------- Buku kas (rekap keuangan) ----------
+/**
+ * Rekap keuangan lengkap pada rentang tanggal: setoran sampah (kewajiban
+ * tabungan warga), pencairan tunai, dan belanja marketplace. Juga menghitung
+ * saldo tabungan warga yang masih beredar sampai akhir periode.
+ */
+export const getCashBook = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireRole(supabase, userId, ["admin"]);
+    const startTs = `${data.from}T00:00:00.000+07:00`;
+    const endTs = `${data.to}T23:59:59.999+07:00`;
+
+    const [txRes, wdRes, ordRes] = await Promise.all([
+      supabase
+        .from("transactions")
+        .select("id, resident_id, deposit_date, total_weight, total_amount, created_at")
+        .gte("deposit_date", data.from)
+        .lte("deposit_date", data.to),
+      supabase
+        .from("withdrawals")
+        .select("id, resident_id, amount, status, note, created_at, processed_at")
+        .gte("created_at", startTs)
+        .lte("created_at", endTs),
+      supabase
+        .from("market_orders")
+        .select("id, resident_id, status, items_total, shipping_fee, total_amount, paid_from_balance, cash_due, created_at")
+        .gte("created_at", startTs)
+        .lte("created_at", endTs),
+    ]);
+
+    const txRows = txRes.data ?? [];
+    const wdRows = wdRes.data ?? [];
+    const ordRows = (ordRes.data ?? []).filter((o) => o.status !== "dibatalkan");
+
+    const ids = [
+      ...new Set([
+        ...txRows.map((r) => r.resident_id),
+        ...wdRows.map((r) => r.resident_id),
+        ...ordRows.map((r) => r.resident_id),
+      ]),
+    ];
+    const { data: profiles } = ids.length
+      ? await supabase.from("profiles").select("id, full_name").in("id", ids)
+      : { data: [] };
+    const nameMap = new Map((profiles ?? []).map((p) => [p.id, p.full_name]));
+
+    type Entry = {
+      date: string;
+      type: string;
+      residentName: string;
+      description: string;
+      debit: number; // kas keluar / kewajiban bertambah
+      credit: number; // kas masuk
+      status: string;
+    };
+
+    const entries: Entry[] = [];
+    for (const t of txRows) {
+      entries.push({
+        date: t.deposit_date,
+        type: "Setoran Sampah",
+        residentName: nameMap.get(t.resident_id) ?? "-",
+        description: `Setoran ${Number(t.total_weight).toFixed(2)} kg — tabungan warga bertambah`,
+        debit: Number(t.total_amount),
+        credit: 0,
+        status: "selesai",
+      });
+    }
+    for (const w of wdRows) {
+      entries.push({
+        date: (w.processed_at ?? w.created_at).slice(0, 10),
+        type: "Pencairan Tunai",
+        residentName: nameMap.get(w.resident_id) ?? "-",
+        description: w.note ? `Pencairan saldo — ${w.note}` : "Pencairan saldo tabungan",
+        debit: w.status === "dicairkan" ? Number(w.amount) : 0,
+        credit: 0,
+        status: w.status,
+      });
+    }
+    for (const o of ordRows) {
+      entries.push({
+        date: o.created_at.slice(0, 10),
+        type: "Belanja Marketplace",
+        residentName: nameMap.get(o.resident_id) ?? "-",
+        description: `Pesanan sembako (ongkir ${Number(o.shipping_fee)})`,
+        debit: 0,
+        credit: Number(o.total_amount),
+        status: o.status,
+      });
+    }
+    entries.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+
+    const totalSetoran = txRows.reduce((s, r) => s + Number(r.total_amount), 0);
+    const totalBerat = txRows.reduce((s, r) => s + Number(r.total_weight), 0);
+    const totalPencairan = wdRows
+      .filter((w) => w.status === "dicairkan")
+      .reduce((s, w) => s + Number(w.amount), 0);
+    const pencairanMenunggu = wdRows
+      .filter((w) => w.status === "menunggu" || w.status === "disetujui")
+      .reduce((s, w) => s + Number(w.amount), 0);
+    const totalBelanja = ordRows.reduce((s, o) => s + Number(o.total_amount), 0);
+    const belanjaSaldo = ordRows.reduce((s, o) => s + Number(o.paid_from_balance), 0);
+    const belanjaTunai = ordRows.reduce((s, o) => s + Number(o.cash_due), 0);
+    const ongkir = ordRows.reduce((s, o) => s + Number(o.shipping_fee), 0);
+
+    // Saldo tabungan warga beredar (akumulasi seluruh waktu s/d akhir periode)
+    const [allTx, allWd, allOrd] = await Promise.all([
+      supabase.from("transactions").select("total_amount").lte("deposit_date", data.to),
+      supabase.from("withdrawals").select("amount, status").lte("created_at", endTs),
+      supabase.from("market_orders").select("paid_from_balance, status").lte("created_at", endTs),
+    ]);
+    const masuk = (allTx.data ?? []).reduce((s, r) => s + Number(r.total_amount), 0);
+    const keluarTunai = (allWd.data ?? [])
+      .filter((w) => w.status === "dicairkan" || w.status === "disetujui" || w.status === "menunggu")
+      .reduce((s, w) => s + Number(w.amount), 0);
+    const keluarBelanja = (allOrd.data ?? [])
+      .filter((o) => o.status !== "dibatalkan")
+      .reduce((s, o) => s + Number(o.paid_from_balance), 0);
+
+    return {
+      from: data.from,
+      to: data.to,
+      entries,
+      summary: {
+        totalSetoran,
+        totalBerat,
+        totalPencairan,
+        pencairanMenunggu,
+        totalBelanja,
+        belanjaSaldo,
+        belanjaTunai,
+        ongkir,
+        jumlahSetoran: txRows.length,
+        jumlahPencairan: wdRows.length,
+        jumlahPesanan: ordRows.length,
+        saldoBeredar: masuk - keluarTunai - keluarBelanja,
+      },
+    };
+  });
