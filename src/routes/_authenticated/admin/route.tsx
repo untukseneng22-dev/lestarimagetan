@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 
 import { BrandLogo } from "@/components/BrandLogo";
+import { LandscapeGate } from "@/components/LandscapeGate";
 import { RoleGate } from "@/components/RoleGate";
 import { useMyAccount } from "@/lib/use-account";
 import { LogoutButton } from "@/components/LogoutButton";
