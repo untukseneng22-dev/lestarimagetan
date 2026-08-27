@@ -19,6 +19,12 @@ function rowsToArrays(columns: ExportColumn[], rows: Record<string, unknown>[]):
   return rows.map((row) => columns.map((c) => String(row[c.key] ?? "-")));
 }
 
+/** Nama kop dokumen: huruf kapital dan selalu diawali "BANK SAMPAH". */
+export function formatKopName(name: string | undefined): string {
+  const upper = (name ?? "").trim().toUpperCase() || "LESTARI MAGETAN";
+  return upper.startsWith("BANK SAMPAH") ? upper : `BANK SAMPAH ${upper}`;
+}
+
 function tanggalPanjang(): string {
   return new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 }
@@ -95,7 +101,7 @@ export function buildPdf(opts: PdfOptions) {
     doc.setFont("times", "bold");
     doc.setFontSize(16);
     doc.setTextColor(20);
-    doc.text(opts.org.name.toUpperCase(), textCenter, ty, { align: "center" });
+    doc.text(formatKopName(opts.org.name), textCenter, ty, { align: "center" });
     ty += 6;
     doc.setFont("times", "normal");
     if (opts.org.address) {
@@ -174,7 +180,7 @@ export function buildPdf(opts: PdfOptions) {
       doc.setFont("times", "italic");
       doc.setFontSize(8.5);
       doc.setTextColor(130);
-      doc.text(opts.org?.name ?? "LESTARI MAGETAN", margin, pageHeight - 10);
+      doc.text(opts.org ? formatKopName(opts.org.name) : "BANK SAMPAH LESTARI MAGETAN", margin, pageHeight - 10);
       doc.text(`Halaman ${page}`, pageWidth - margin, pageHeight - 10, { align: "right" });
     },
   });
@@ -188,24 +194,29 @@ export function buildPdf(opts: PdfOptions) {
       doc.addPage();
       sy = 24;
     }
-    const leftX = margin + 6;
-    const rightX = pageWidth - margin - 60;
+    const colWidth = 62;
+    const leftCenter = margin + 6 + colWidth / 2;
+    const rightCenter = pageWidth - margin - 6 - colWidth / 2;
     doc.setFont("times", "normal");
     doc.setFontSize(11);
     doc.setTextColor(40);
-    doc.text(`${org.city || "Magetan"}, ${tanggalPanjang()}`, rightX, sy);
-    doc.text("Mengetahui,", leftX, sy + 7);
-    doc.text("Ketua Bank Sampah", leftX, sy + 13);
-    doc.text("Bendahara", rightX, sy + 13);
+    doc.text(`${org.city || "Magetan"}, ${tanggalPanjang()}`, rightCenter, sy, { align: "center" });
+    doc.text("Mengetahui,", leftCenter, sy + 7, { align: "center" });
+    doc.text("Ketua Bank Sampah", leftCenter, sy + 13, { align: "center" });
+    doc.text("Bendahara", rightCenter, sy + 13, { align: "center" });
     doc.setFont("times", "bold");
     doc.setTextColor(20);
-    doc.text(org.headName || "........................", leftX, sy + 36);
-    doc.text(org.treasurerName || "........................", rightX, sy + 36);
+    doc.text((org.headName || "........................").toUpperCase(), leftCenter, sy + 36, {
+      align: "center",
+    });
+    doc.text((org.treasurerName || "........................").toUpperCase(), rightCenter, sy + 36, {
+      align: "center",
+    });
     doc.setFont("times", "normal");
     doc.setDrawColor(120);
     doc.setLineWidth(0.2);
-    doc.line(leftX, sy + 37.5, leftX + 55, sy + 37.5);
-    doc.line(rightX, sy + 37.5, rightX + 55, sy + 37.5);
+    doc.line(leftCenter - colWidth / 2, sy + 37.5, leftCenter + colWidth / 2, sy + 37.5);
+    doc.line(rightCenter - colWidth / 2, sy + 37.5, rightCenter + colWidth / 2, sy + 37.5);
   }
 
   return doc;
@@ -255,7 +266,7 @@ export function exportExcel(opts: {
 }) {
   const head: string[][] = [];
   if (opts.org) {
-    head.push([opts.org.name]);
+    head.push([formatKopName(opts.org.name)]);
     if (opts.org.address) head.push([opts.org.address]);
     if (opts.org.phone) head.push([`Telp/WA: ${opts.org.phone}`]);
     if (opts.title) head.push([opts.title]);
@@ -272,7 +283,10 @@ export function exportExcel(opts: {
     foot.push(["Mengetahui, Ketua Bank Sampah", "Bendahara"]);
     foot.push([]);
     foot.push([]);
-    foot.push([org.headName || "........................", org.treasurerName || "........................"]);
+    foot.push([
+      (org.headName || "........................").toUpperCase(),
+      (org.treasurerName || "........................").toUpperCase(),
+    ]);
   }
 
   const data = [
