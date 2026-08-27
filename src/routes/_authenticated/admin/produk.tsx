@@ -224,6 +224,29 @@ function ProdukPage() {
                   />
                 </div>
               </div>
+              <div className="grid gap-1.5">
+                <Label>Foto produk</Label>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-muted">
+                    {form.photoPreview ? (
+                      <img src={form.photoPreview} alt={form.name || "Foto produk"} className="h-full w-full object-cover" />
+                    ) : (
+                      <ImagePlus className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="grid gap-1.5">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      disabled={uploading}
+                      onChange={(e) => handlePhoto(e.target.files?.[0] ?? null)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {uploading ? "Mengompres & mengunggah…" : "Foto otomatis dikompres (maks 1000px) agar ringan."}
+                    </p>
+                  </div>
+                </div>
+              </div>
               <div className="flex items-center justify-between rounded-lg border border-border p-3">
                 <Label className="text-sm">Tampilkan di marketplace</Label>
                 <Switch
@@ -231,6 +254,7 @@ function ProdukPage() {
                   onCheckedChange={(v) => setForm({ ...form, isActive: v })}
                 />
               </div>
+
             </div>
             <DialogFooter>
               <Button onClick={submit} disabled={saving || form.name.trim().length < 2}>
