@@ -56,6 +56,7 @@ const MENU_GROUPS: MenuGroup[] = [
       { to: "/admin/aduan", label: "Aduan", icon: MessageSquareWarning },
       { to: "/admin/pengumuman", label: "Pengumuman", icon: Megaphone },
       { to: "/admin/kas", label: "Kas & Pencairan", icon: Landmark },
+      { to: "/admin/buku-kas", label: "Buku Kas & Rekap", icon: BookOpenCheck },
     ],
   },
   {
