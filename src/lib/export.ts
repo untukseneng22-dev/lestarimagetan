@@ -4,8 +4,22 @@ import * as XLSX from "xlsx";
 
 export type ExportColumn = { header: string; key: string };
 
+/** Identitas lembaga untuk kop dan tanda tangan dokumen laporan bulanan. */
+export type OrgIdentity = {
+  name: string;
+  address?: string;
+  phone?: string;
+  city?: string;
+  headName?: string;
+  treasurerName?: string;
+};
+
 function rowsToArrays(columns: ExportColumn[], rows: Record<string, unknown>[]): string[][] {
   return rows.map((row) => columns.map((c) => String(row[c.key] ?? "-")));
+}
+
+function tanggalPanjang(): string {
+  return new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 }
 
 export function exportPdf(opts: {
@@ -14,27 +28,82 @@ export function exportPdf(opts: {
   columns: ExportColumn[];
   rows: Record<string, unknown>[];
   filename: string;
+  org?: OrgIdentity;
 }) {
   const doc = new jsPDF({ orientation: "landscape" });
-  doc.setFontSize(16);
-  doc.text(opts.title, 14, 16);
+  const pageWidth = doc.internal.pageSize.getWidth();
+  let y = 16;
+
+  if (opts.org) {
+    doc.setFontSize(14);
+    doc.setTextColor(20);
+    doc.text(opts.org.name.toUpperCase(), pageWidth / 2, y, { align: "center" });
+    y += 6;
+    const kontak = [opts.org.address, opts.org.phone ? `Telp/WA: ${opts.org.phone}` : ""]
+      .filter(Boolean)
+      .join(" · ");
+    if (kontak) {
+      doc.setFontSize(9);
+      doc.setTextColor(90);
+      doc.text(kontak, pageWidth / 2, y, { align: "center" });
+      y += 5;
+    }
+    doc.setDrawColor(22, 163, 74);
+    doc.setLineWidth(0.8);
+    doc.line(14, y, pageWidth - 14, y);
+    y += 9;
+  }
+
+  doc.setFontSize(13);
+  doc.setTextColor(20);
+  doc.text(opts.title, opts.org ? pageWidth / 2 : 14, y, opts.org ? { align: "center" } : undefined);
+  y += 6;
   if (opts.subtitle) {
     doc.setFontSize(10);
     doc.setTextColor(100);
-    doc.text(opts.subtitle, 14, 23);
+    doc.text(opts.subtitle, opts.org ? pageWidth / 2 : 14, y, opts.org ? { align: "center" } : undefined);
+    y += 5;
   }
   doc.setFontSize(9);
   doc.setTextColor(120);
-  doc.text(`Diekspor pada ${new Date().toLocaleString("id-ID")}`, 14, opts.subtitle ? 29 : 23);
+  doc.text(
+    `Diekspor pada ${new Date().toLocaleString("id-ID")}`,
+    opts.org ? pageWidth / 2 : 14,
+    y,
+    opts.org ? { align: "center" } : undefined,
+  );
+  y += 6;
 
   autoTable(doc, {
-    startY: opts.subtitle ? 34 : 29,
+    startY: y,
     head: [opts.columns.map((c) => c.header)],
     body: rowsToArrays(opts.columns, opts.rows),
     styles: { fontSize: 8, cellPadding: 2 },
-    headStyles: { fillColor: [37, 99, 235] },
-    alternateRowStyles: { fillColor: [239, 246, 255] },
+    headStyles: { fillColor: [22, 163, 74] },
+    alternateRowStyles: { fillColor: [240, 253, 244] },
   });
+
+  const org = opts.org;
+  if (org && (org.headName || org.treasurerName)) {
+    const lastY = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y;
+    let sy = lastY + 14;
+    const pageHeight = doc.internal.pageSize.getHeight();
+    if (sy + 40 > pageHeight) {
+      doc.addPage();
+      sy = 20;
+    }
+    doc.setFontSize(10);
+    doc.setTextColor(40);
+    const rightX = pageWidth - 70;
+    doc.text(`${org.city || "Magetan"}, ${tanggalPanjang()}`, rightX, sy);
+    doc.text("Mengetahui,", 30, sy + 8);
+    doc.text("Ketua Bank Sampah", 30, sy + 14);
+    doc.text("Bendahara", rightX, sy + 14);
+    doc.setFontSize(10);
+    doc.setTextColor(20);
+    doc.text(`( ${org.headName || "........................"} )`, 30, sy + 38);
+    doc.text(`( ${org.treasurerName || "........................"} )`, rightX, sy + 38);
+  }
 
   doc.save(opts.filename);
 }
@@ -44,10 +113,37 @@ export function exportExcel(opts: {
   columns: ExportColumn[];
   rows: Record<string, unknown>[];
   filename: string;
+  org?: OrgIdentity;
+  title?: string;
+  subtitle?: string;
 }) {
+  const head: string[][] = [];
+  if (opts.org) {
+    head.push([opts.org.name]);
+    if (opts.org.address) head.push([opts.org.address]);
+    if (opts.org.phone) head.push([`Telp/WA: ${opts.org.phone}`]);
+    if (opts.title) head.push([opts.title]);
+    if (opts.subtitle) head.push([opts.subtitle]);
+    head.push([`Diekspor pada ${new Date().toLocaleString("id-ID")}`]);
+    head.push([]);
+  }
+
+  const foot: string[][] = [];
+  const org = opts.org;
+  if (org && (org.headName || org.treasurerName)) {
+    foot.push([]);
+    foot.push(["", `${org.city || "Magetan"}, ${tanggalPanjang()}`]);
+    foot.push(["Mengetahui, Ketua Bank Sampah", "Bendahara"]);
+    foot.push([]);
+    foot.push([]);
+    foot.push([org.headName || "........................", org.treasurerName || "........................"]);
+  }
+
   const data = [
+    ...head,
     opts.columns.map((c) => c.header),
     ...rowsToArrays(opts.columns, opts.rows),
+    ...foot,
   ];
   const ws = XLSX.utils.aoa_to_sheet(data);
   ws["!cols"] = opts.columns.map((c) => ({
