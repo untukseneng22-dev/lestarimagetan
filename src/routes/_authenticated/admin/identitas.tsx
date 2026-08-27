@@ -164,14 +164,17 @@ function IdentitasPage() {
             <div className="rounded-xl bg-muted/50 p-3 text-xs text-muted-foreground">
               Pratinjau kop laporan:
               <div className="mt-2 rounded-lg bg-background p-3 text-center">
-                <p className="text-sm font-bold uppercase">{form.name || "Nama bank sampah"}</p>
+                <p className="text-sm font-bold uppercase">
+                  {form.name ? formatKopName(form.name) : "Nama bank sampah"}
+                </p>
                 <p className="text-xs text-muted-foreground">
                   {[form.address, form.phone ? `Telp/WA: ${form.phone}` : ""].filter(Boolean).join(" · ") ||
                     "Alamat belum diisi"}
                 </p>
                 <div className="mt-2 h-px bg-primary/60" />
                 <p className="mt-2 text-[11px]">
-                  Ketua: {form.headName || "—"} · Bendahara: {form.treasurerName || "—"}
+                  Ketua: {(form.headName || "—").toUpperCase()} · Bendahara:{" "}
+                  {(form.treasurerName || "—").toUpperCase()}
                 </p>
               </div>
             </div>
