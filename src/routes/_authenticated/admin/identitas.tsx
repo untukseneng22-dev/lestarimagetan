@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Building2, Loader2, Save, UserRound } from "lucide-react";
 import { getAppSettings } from "@/lib/common.functions";
 import { updateOrgProfile } from "@/lib/admin.functions";
+import { formatKopName } from "@/lib/export";
 import { formatTanggalWaktu } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -96,8 +97,12 @@ function IdentitasPage() {
                 id="nama"
                 value={form.name}
                 onChange={(e) => set("name", e.target.value)}
-                placeholder="Contoh: Bank Sampah Lestari Magetan"
+                placeholder="Contoh: Lestari Magetan"
               />
+              <p className="text-xs text-muted-foreground">
+                Pada kop dokumen otomatis tercetak sebagai{" "}
+                <span className="font-medium uppercase">Bank Sampah {form.name || "…"}</span>
+              </p>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="alamat">Alamat lengkap</Label>
