@@ -158,6 +158,7 @@ function AdminLayout() {
           <Outlet />
         </main>
       </div>
+      </LandscapeGate>
     </RoleGate>
   );
 }
