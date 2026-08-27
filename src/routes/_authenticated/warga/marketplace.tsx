@@ -395,6 +395,34 @@ function MarketplacePage() {
                     </div>
                   )}
 
+                  {["menunggu", "dibayar", "diproses"].includes(o.status) && !o.locked && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="sm" variant="outline" className="w-full" disabled={cancelling === o.id}>
+                          {cancelling === o.id && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          <XCircle className="mr-1.5 h-4 w-4" /> Batalkan Pesanan
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Batalkan pesanan ini?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Stok dikembalikan ke katalog dan saldo{" "}
+                            {formatRupiah(Number(o.paid_from_balance))} kembali ke tabungan Anda.
+                            Karena barang belum dikirim, ongkir tidak ditagihkan.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Tidak</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => cancelOrder(o.id)}>
+                            Ya, batalkan
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+
+
                   {o.locked && o.received_at && (
                     <p className="text-xs text-muted-foreground">
                       Diterima pada {formatTanggalWaktu(o.received_at)} · pesanan terkunci.
