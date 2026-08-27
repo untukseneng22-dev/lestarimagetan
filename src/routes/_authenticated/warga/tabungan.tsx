@@ -15,6 +15,8 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
+const MIN_WITHDRAWAL = 100_000;
+
 export const Route = createFileRoute("/_authenticated/warga/tabungan")({
   head: () => ({ meta: [{ title: "Tabungan — LESTARI MAGETAN" }] }),
   component: TabunganPage,
@@ -60,6 +62,10 @@ function TabunganPage() {
       toast.error("Masukkan nominal yang valid");
       return;
     }
+    if (value < MIN_WITHDRAWAL) {
+      toast.error("Pencairan tunai minimal Rp100.000. Saldo di bawah itu tetap bebas dipakai belanja di Marketplace.");
+      return;
+    }
     setLoading(true);
     try {
       await withdrawalFn({ data: { amount: value } });
@@ -103,13 +109,22 @@ function TabunganPage() {
                   <Input
                     id="nominal"
                     type="number"
-                    min={1}
-                    placeholder="contoh: 20000"
+                    min={MIN_WITHDRAWAL}
+                    step={1000}
+                    placeholder="contoh: 100000"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                   />
                 </div>
-                <Button className="w-full" onClick={() => void submitWithdrawal()} disabled={loading}>
+                <p className="rounded-xl bg-muted/60 p-2.5 text-xs text-muted-foreground">
+                  Minimal pencairan tunai <span className="font-semibold text-foreground">{formatRupiah(MIN_WITHDRAWAL)}</span>.
+                  Belanja di Marketplace tidak ada batas minimal — saldo berapa pun bisa dipakai.
+                </p>
+                <Button
+                  className="w-full"
+                  onClick={() => void submitWithdrawal()}
+                  disabled={loading || Number(amount) < MIN_WITHDRAWAL}
+                >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Ajukan Pencairan
                 </Button>
