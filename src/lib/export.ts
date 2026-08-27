@@ -100,14 +100,15 @@ export function buildPdf(opts: PdfOptions) {
     }
     doc.setFontSize(10);
     doc.setTextColor(40);
-    const rightX = pageWidth - 70;
+    const leftX = 20;
+    const rightX = pageWidth - 75;
     doc.text(`${org.city || "Magetan"}, ${tanggalPanjang()}`, rightX, sy);
-    doc.text("Mengetahui,", 30, sy + 8);
-    doc.text("Ketua Bank Sampah", 30, sy + 14);
+    doc.text("Mengetahui,", leftX, sy + 8);
+    doc.text("Ketua Bank Sampah", leftX, sy + 14);
     doc.text("Bendahara", rightX, sy + 14);
     doc.setFontSize(10);
     doc.setTextColor(20);
-    doc.text(`( ${org.headName || "........................"} )`, 30, sy + 38);
+    doc.text(`( ${org.headName || "........................"} )`, leftX, sy + 38);
     doc.text(`( ${org.treasurerName || "........................"} )`, rightX, sy + 38);
   }
 
