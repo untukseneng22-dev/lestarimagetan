@@ -22,15 +22,21 @@ function tanggalPanjang(): string {
   return new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 }
 
-export function exportPdf(opts: {
+export type PdfOptions = {
   title: string;
   subtitle?: string | undefined;
   columns: ExportColumn[];
   rows: Record<string, unknown>[];
   filename: string;
   org?: OrgIdentity | undefined;
-}) {
-  const doc = new jsPDF({ orientation: "landscape" });
+};
+
+/** Ukuran kertas F4 / Folio (215 x 330 mm). */
+export const F4_FORMAT: [number, number] = [215, 330];
+
+/** Membangun dokumen PDF ukuran F4 landscape tanpa langsung mengunduhnya. */
+export function buildPdf(opts: PdfOptions) {
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: F4_FORMAT });
   const pageWidth = doc.internal.pageSize.getWidth();
   let y = 16;
 
@@ -105,7 +111,16 @@ export function exportPdf(opts: {
     doc.text(`( ${org.treasurerName || "........................"} )`, rightX, sy + 38);
   }
 
-  doc.save(opts.filename);
+  return doc;
+}
+
+/** URL blob untuk pratinjau PDF di iframe. Ingat panggil URL.revokeObjectURL saat selesai. */
+export function createPdfPreviewUrl(opts: PdfOptions): string {
+  return URL.createObjectURL(buildPdf(opts).output("blob"));
+}
+
+export function exportPdf(opts: PdfOptions) {
+  buildPdf(opts).save(opts.filename);
 }
 
 export function exportExcel(opts: {
