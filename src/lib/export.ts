@@ -34,9 +34,9 @@ export type PdfOptions = {
 /** Ukuran kertas F4 / Folio (215 x 330 mm). */
 export const F4_FORMAT: [number, number] = [215, 330];
 
-/** Membangun dokumen PDF ukuran F4 landscape tanpa langsung mengunduhnya. */
+/** Membangun dokumen PDF ukuran F4 portrait tanpa langsung mengunduhnya. */
 export function buildPdf(opts: PdfOptions) {
-  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: F4_FORMAT });
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: F4_FORMAT });
   const pageWidth = doc.internal.pageSize.getWidth();
   let y = 16;
 
