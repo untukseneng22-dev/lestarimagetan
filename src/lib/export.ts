@@ -101,7 +101,7 @@ export function buildPdf(opts: PdfOptions) {
     doc.setFont("times", "bold");
     doc.setFontSize(16);
     doc.setTextColor(20);
-    doc.text(opts.org.name.toUpperCase(), textCenter, ty, { align: "center" });
+    doc.text(formatKopName(opts.org.name), textCenter, ty, { align: "center" });
     ty += 6;
     doc.setFont("times", "normal");
     if (opts.org.address) {
