@@ -1008,7 +1008,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
     await supabase.from("market_order_events").insert({
       order_id: data.orderId,
       status: data.status,
-      note: data.note ?? null,
+      note: noteText,
       created_by: userId,
     });
 
@@ -1025,10 +1025,11 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
         message: buildMessage("status_pesanan", {
           kode: order.id.slice(0, 8).toUpperCase(),
           status: ORDER_STATUS_TEXT[data.status] ?? data.status,
-          catatan: data.note ?? "",
+          catatan: noteText ?? "",
         }),
       });
     }
+
     return { ok: true };
   });
 
