@@ -29,7 +29,7 @@ function monthStartISO(): string {
 function ExportButtons({ onPdf, onExcel }: { onPdf: () => void; onExcel: () => void }) {
   return (
     <div className="flex gap-2">
-      <Button size="sm" variant="outline" onClick={onPdf}><FileText className="h-4 w-4" /> PDF</Button>
+      <Button size="sm" variant="outline" onClick={onPdf}><FileText className="h-4 w-4" /> Cetak</Button>
       <Button size="sm" variant="outline" onClick={onExcel}><FileSpreadsheet className="h-4 w-4" /> Excel</Button>
     </div>
   );
@@ -41,7 +41,6 @@ function LaporanPage() {
   const marketFn = useServerFn(getMarketReport);
   const [from, setFrom] = useState(monthStartISO());
   const [to, setTo] = useState(todayISO());
-  const [preview, setPreview] = useState<PdfOptions | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-report", from, to],
@@ -80,7 +79,7 @@ function LaporanPage() {
       nilai: formatNumber(t.totalAmount),
     }));
     if (kind === "pdf") {
-      setPreview({ title: "Laporan Rekap Transaksi Bank Sampah", subtitle, columns, rows, filename: `laporan-transaksi-${from}-${to}.pdf`, org });
+      printPdf({ title: "Laporan Rekap Transaksi Bank Sampah", subtitle, columns, rows, filename: `laporan-transaksi-${from}-${to}.pdf`, org });
     } else {
       exportExcel({ sheetName: "Transaksi", columns, rows, filename: `laporan-transaksi-${from}-${to}.xlsx`, org, title: "Transaksi", subtitle });
     }
@@ -105,7 +104,7 @@ function LaporanPage() {
       nilai: formatNumber(c.amount),
     }));
     if (kind === "pdf") {
-      setPreview({ title: "Laporan Berat Sampah per Kategori", subtitle, columns, rows, filename: `laporan-kategori-${from}-${to}.pdf`, org });
+      printPdf({ title: "Laporan Berat Sampah per Kategori", subtitle, columns, rows, filename: `laporan-kategori-${from}-${to}.pdf`, org });
     } else {
       exportExcel({ sheetName: "Per Kategori", columns, rows, filename: `laporan-kategori-${from}-${to}.xlsx`, org, title: "Per Kategori", subtitle });
     }
@@ -130,7 +129,7 @@ function LaporanPage() {
       status: statusLabel(c.status),
     }));
     if (kind === "pdf") {
-      setPreview({ title: "Laporan Aduan Warga", subtitle, columns, rows, filename: `laporan-aduan-${from}-${to}.pdf`, org });
+      printPdf({ title: "Laporan Aduan Warga", subtitle, columns, rows, filename: `laporan-aduan-${from}-${to}.pdf`, org });
     } else {
       exportExcel({ sheetName: "Aduan", columns, rows, filename: `laporan-aduan-${from}-${to}.xlsx`, org, title: "Aduan", subtitle });
     }
@@ -167,7 +166,7 @@ function LaporanPage() {
       tunai: formatNumber(o.cashDue),
     }));
     if (kind === "pdf") {
-      setPreview({ title: "Rekap Pesanan Marketplace Sembako", subtitle, columns, rows, filename: `laporan-marketplace-${from}-${to}.pdf`, org });
+      printPdf({ title: "Rekap Pesanan Marketplace Sembako", subtitle, columns, rows, filename: `laporan-marketplace-${from}-${to}.pdf`, org });
     } else {
       exportExcel({ sheetName: "Marketplace", columns, rows, filename: `laporan-marketplace-${from}-${to}.xlsx`, org, title: "Marketplace", subtitle });
     }
@@ -176,7 +175,6 @@ function LaporanPage() {
 
   return (
     <div className="space-y-6">
-      <PdfPreviewDialog options={preview} onClose={() => setPreview(null)} />
       <div>
         <h1 className="text-2xl font-bold">Laporan</h1>
         <p className="text-sm text-muted-foreground">Rekap transaksi, berat per kategori, dan aduan. Ekspor ke PDF atau Excel.</p>
