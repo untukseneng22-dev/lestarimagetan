@@ -883,6 +883,50 @@ export const saveProduct = createServerFn({ method: "POST" })
       ? await supabase.from("market_products").update(payload).eq("id", data.id)
       : await supabase.from("market_products").insert(payload);
     if (error) throw new Error(error.message);
+    await logAdminAction(supabase, userId, {
+      action: data.id ? "produk.perbarui" : "produk.tambah",
+      entityType: "market_products",
+      entityId: data.id ?? null,
+      detail: `${data.name} · ${data.category} · ${data.price} / ${data.unit} · stok ${data.stock}`,
+    });
+    return { ok: true };
+  });
+
+/**
+ * Menghapus foto produk: berkas dibuang dari storage, katalog otomatis memakai
+ * gambar placeholder, dan tindakan dicatat ke audit log admin.
+ */
+export const removeProductPhoto = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ id: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireRole(supabase, userId, ["admin"]);
+
+    const { data: product } = await supabase
+      .from("market_products")
+      .select("id, name, photo_url")
+      .eq("id", data.id)
+      .single();
+    if (!product) throw new Error("Produk tidak ditemukan.");
+    if (!product.photo_url) throw new Error("Produk ini belum punya foto.");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.storage.from("produk").remove([product.photo_url]);
+    invalidateSignedPhoto(product.photo_url);
+
+    const { error } = await supabase
+      .from("market_products")
+      .update({ photo_url: null })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+
+    await logAdminAction(supabase, userId, {
+      action: "produk.hapus_foto",
+      entityType: "market_products",
+      entityId: data.id,
+      detail: `Foto "${product.name}" dihapus (${product.photo_url}); katalog memakai gambar placeholder.`,
+    });
     return { ok: true };
   });
 
@@ -892,10 +936,37 @@ export const deleteProduct = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await requireRole(supabase, userId, ["admin"]);
+    const { data: product } = await supabase
+      .from("market_products")
+      .select("name, photo_url")
+      .eq("id", data.id)
+      .single();
     const { error } = await supabase.from("market_products").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
+    if (product?.photo_url) invalidateSignedPhoto(product.photo_url);
+    await logAdminAction(supabase, userId, {
+      action: "produk.hapus",
+      entityType: "market_products",
+      entityId: data.id,
+      detail: product?.name ?? null,
+    });
     return { ok: true };
   });
+
+/** Riwayat tindakan admin terbaru (audit log). */
+export const listAuditLogs = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    await requireRole(supabase, userId, ["admin"]);
+    const { data } = await supabase
+      .from("admin_audit_logs")
+      .select("id, actor_name, action, entity_type, entity_id, detail, created_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    return data ?? [];
+  });
+
 
 export const updateShippingFee = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
