@@ -59,7 +59,12 @@ export const getMySavings = createServerFn({ method: "GET" })
 export const requestWithdrawal = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) =>
-    z.object({ amount: z.number().positive("Nominal harus lebih dari 0").max(100_000_000) }).parse(data),
+    z.object({
+      amount: z
+        .number()
+        .min(100_000, "Pencairan tunai minimal Rp100.000. Saldo di bawah itu tetap bisa dipakai belanja di Marketplace.")
+        .max(100_000_000),
+    }).parse(data),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
