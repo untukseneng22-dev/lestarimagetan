@@ -65,6 +65,7 @@ function ProdukPage() {
   const [form, setForm] = useState<FormState>(EMPTY);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [fee, setFee] = useState<string | null>(null);
   const [maxQty, setMaxQty] = useState<string | null>(null);
   const [maxOrders, setMaxOrders] = useState<string | null>(null);
@@ -78,6 +79,27 @@ function ProdukPage() {
     await queryClient.invalidateQueries({ queryKey: ["market-catalog"] });
   }
 
+  /** Foto dikompres di browser (maks 1000px, JPEG) sebelum diunggah agar ringan. */
+  async function handlePhoto(file: File | null) {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const compressed = await compressImage(file, { maxDim: 1000, quality: 0.7 });
+      const path = `produk/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+      const { error } = await supabase.storage
+        .from("produk")
+        .upload(path, compressed, { contentType: "image/jpeg" });
+      if (error) throw new Error(error.message);
+      const { data: signed } = await supabase.storage.from("produk").createSignedUrl(path, 3600);
+      setForm((f) => ({ ...f, photoUrl: path, photoPreview: signed?.signedUrl ?? null }));
+      toast.success(`Foto siap (${Math.round(compressed.size / 1024)} KB setelah kompresi).`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal mengunggah foto");
+    } finally {
+      setUploading(false);
+    }
+  }
+
   async function submit() {
     setSaving(true);
     try {
@@ -89,9 +111,11 @@ function ProdukPage() {
           unit: form.unit.trim(),
           price: Number(form.price) || 0,
           stock: Number(form.stock) || 0,
+          photoUrl: form.photoUrl,
           isActive: form.isActive,
         },
       });
+
       toast.success(form.id ? "Produk diperbarui." : "Produk ditambahkan.");
       setOpen(false);
       setForm(EMPTY);
