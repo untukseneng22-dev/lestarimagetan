@@ -6,7 +6,8 @@ import { toast } from "sonner";
 import { FileSpreadsheet, FileText, MessageSquareWarning, Scale, ShoppingBasket, Wallet } from "lucide-react";
 import { getMarketReport, getReportData } from "@/lib/admin.functions";
 import { getAppSettings } from "@/lib/common.functions";
-import { exportExcel, exportPdf } from "@/lib/export";
+import { exportExcel, type PdfOptions } from "@/lib/export";
+import { PdfPreviewDialog } from "@/components/PdfPreviewDialog";
 import { formatNumber, formatRupiah, formatTanggal, formatTanggalWaktu, statusLabel, todayISO } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -79,11 +80,11 @@ function LaporanPage() {
       nilai: formatNumber(t.totalAmount),
     }));
     if (kind === "pdf") {
-      exportPdf({ title: "Laporan Rekap Transaksi Bank Sampah", subtitle, columns, rows, filename: `laporan-transaksi-${from}-${to}.pdf`, org });
+      setPreview({ title: "Laporan Rekap Transaksi Bank Sampah", subtitle, columns, rows, filename: `laporan-transaksi-${from}-${to}.pdf`, org });
     } else {
       exportExcel({ sheetName: "Transaksi", columns, rows, filename: `laporan-transaksi-${from}-${to}.xlsx`, org, title: "Transaksi", subtitle });
     }
-    toast.success(`File ${kind.toUpperCase()} laporan transaksi diunduh.`);
+    if (kind === "excel") toast.success(`File Excel laporan transaksi diunduh.`);
   }
 
   function exportCategories(kind: "pdf" | "excel") {
@@ -104,11 +105,11 @@ function LaporanPage() {
       nilai: formatNumber(c.amount),
     }));
     if (kind === "pdf") {
-      exportPdf({ title: "Laporan Berat Sampah per Kategori", subtitle, columns, rows, filename: `laporan-kategori-${from}-${to}.pdf`, org });
+      setPreview({ title: "Laporan Berat Sampah per Kategori", subtitle, columns, rows, filename: `laporan-kategori-${from}-${to}.pdf`, org });
     } else {
       exportExcel({ sheetName: "Per Kategori", columns, rows, filename: `laporan-kategori-${from}-${to}.xlsx`, org, title: "Per Kategori", subtitle });
     }
-    toast.success(`File ${kind.toUpperCase()} laporan kategori diunduh.`);
+    if (kind === "excel") toast.success(`File Excel laporan kategori diunduh.`);
   }
 
   function exportComplaints(kind: "pdf" | "excel") {
@@ -129,11 +130,11 @@ function LaporanPage() {
       status: statusLabel(c.status),
     }));
     if (kind === "pdf") {
-      exportPdf({ title: "Laporan Aduan Warga", subtitle, columns, rows, filename: `laporan-aduan-${from}-${to}.pdf`, org });
+      setPreview({ title: "Laporan Aduan Warga", subtitle, columns, rows, filename: `laporan-aduan-${from}-${to}.pdf`, org });
     } else {
       exportExcel({ sheetName: "Aduan", columns, rows, filename: `laporan-aduan-${from}-${to}.xlsx`, org, title: "Aduan", subtitle });
     }
-    toast.success(`File ${kind.toUpperCase()} laporan aduan diunduh.`);
+    if (kind === "excel") toast.success(`File Excel laporan aduan diunduh.`);
   }
 
   function exportMarket(kind: "pdf" | "excel") {
@@ -166,15 +167,16 @@ function LaporanPage() {
       tunai: formatNumber(o.cashDue),
     }));
     if (kind === "pdf") {
-      exportPdf({ title: "Rekap Pesanan Marketplace Sembako", subtitle, columns, rows, filename: `laporan-marketplace-${from}-${to}.pdf`, org });
+      setPreview({ title: "Rekap Pesanan Marketplace Sembako", subtitle, columns, rows, filename: `laporan-marketplace-${from}-${to}.pdf`, org });
     } else {
       exportExcel({ sheetName: "Marketplace", columns, rows, filename: `laporan-marketplace-${from}-${to}.xlsx`, org, title: "Marketplace", subtitle });
     }
-    toast.success(`File ${kind.toUpperCase()} rekap marketplace diunduh.`);
+    if (kind === "excel") toast.success(`File Excel rekap marketplace diunduh.`);
   }
 
   return (
     <div className="space-y-6">
+      <PdfPreviewDialog options={preview} onClose={() => setPreview(null)} />
       <div>
         <h1 className="text-2xl font-bold">Laporan</h1>
         <p className="text-sm text-muted-foreground">Rekap transaksi, berat per kategori, dan aduan. Ekspor ke PDF atau Excel.</p>
