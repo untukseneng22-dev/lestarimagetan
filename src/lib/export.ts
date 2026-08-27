@@ -266,7 +266,7 @@ export function exportExcel(opts: {
 }) {
   const head: string[][] = [];
   if (opts.org) {
-    head.push([opts.org.name]);
+    head.push([formatKopName(opts.org.name)]);
     if (opts.org.address) head.push([opts.org.address]);
     if (opts.org.phone) head.push([`Telp/WA: ${opts.org.phone}`]);
     if (opts.title) head.push([opts.title]);
@@ -283,7 +283,10 @@ export function exportExcel(opts: {
     foot.push(["Mengetahui, Ketua Bank Sampah", "Bendahara"]);
     foot.push([]);
     foot.push([]);
-    foot.push([org.headName || "........................", org.treasurerName || "........................"]);
+    foot.push([
+      (org.headName || "........................").toUpperCase(),
+      (org.treasurerName || "........................").toUpperCase(),
+    ]);
   }
 
   const data = [
