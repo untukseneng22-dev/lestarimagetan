@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { FileSpreadsheet, FileText, MessageSquareWarning, Scale, ShoppingBasket, Wallet } from "lucide-react";
 import { getMarketReport, getReportData } from "@/lib/admin.functions";
 import { getAppSettings } from "@/lib/common.functions";
-import { exportExcel } from "@/lib/export";
+import { exportExcel, printPdf } from "@/lib/export";
 import { formatNumber, formatRupiah, formatTanggal, formatTanggalWaktu, statusLabel, todayISO } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
