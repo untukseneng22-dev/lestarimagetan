@@ -19,6 +19,7 @@ import { Route as AuthenticatedWargaRouteRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminAduanRouteImport } from './routes/_authenticated/admin/aduan'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
+import { Route as AuthenticatedAdminBukuKasRouteImport } from './routes/_authenticated/admin/buku-kas'
 import { Route as AuthenticatedAdminHargaRouteImport } from './routes/_authenticated/admin/harga'
 import { Route as AuthenticatedAdminIdentitasRouteImport } from './routes/_authenticated/admin/identitas'
 import { Route as AuthenticatedAdminJadwalRouteImport } from './routes/_authenticated/admin/jadwal'
@@ -92,6 +93,12 @@ const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
   path: '/audit',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminBukuKasRoute =
+  AuthenticatedAdminBukuKasRouteImport.update({
+    id: '/buku-kas',
+    path: '/buku-kas',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminHargaRoute = AuthenticatedAdminHargaRouteImport.update({
   id: '/harga',
   path: '/harga',
@@ -231,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/kartu': typeof AuthenticatedKartuRoute
   '/admin/aduan': typeof AuthenticatedAdminAduanRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/admin/buku-kas': typeof AuthenticatedAdminBukuKasRoute
   '/admin/harga': typeof AuthenticatedAdminHargaRoute
   '/admin/identitas': typeof AuthenticatedAdminIdentitasRoute
   '/admin/jadwal': typeof AuthenticatedAdminJadwalRoute
@@ -262,6 +270,7 @@ export interface FileRoutesByTo {
   '/kartu': typeof AuthenticatedKartuRoute
   '/admin/aduan': typeof AuthenticatedAdminAduanRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/admin/buku-kas': typeof AuthenticatedAdminBukuKasRoute
   '/admin/harga': typeof AuthenticatedAdminHargaRoute
   '/admin/identitas': typeof AuthenticatedAdminIdentitasRoute
   '/admin/jadwal': typeof AuthenticatedAdminJadwalRoute
@@ -298,6 +307,7 @@ export interface FileRoutesById {
   '/_authenticated/kartu': typeof AuthenticatedKartuRoute
   '/_authenticated/admin/aduan': typeof AuthenticatedAdminAduanRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/_authenticated/admin/buku-kas': typeof AuthenticatedAdminBukuKasRoute
   '/_authenticated/admin/harga': typeof AuthenticatedAdminHargaRoute
   '/_authenticated/admin/identitas': typeof AuthenticatedAdminIdentitasRoute
   '/_authenticated/admin/jadwal': typeof AuthenticatedAdminJadwalRoute
@@ -334,6 +344,7 @@ export interface FileRouteTypes {
     | '/kartu'
     | '/admin/aduan'
     | '/admin/audit'
+    | '/admin/buku-kas'
     | '/admin/harga'
     | '/admin/identitas'
     | '/admin/jadwal'
@@ -365,6 +376,7 @@ export interface FileRouteTypes {
     | '/kartu'
     | '/admin/aduan'
     | '/admin/audit'
+    | '/admin/buku-kas'
     | '/admin/harga'
     | '/admin/identitas'
     | '/admin/jadwal'
@@ -400,6 +412,7 @@ export interface FileRouteTypes {
     | '/_authenticated/kartu'
     | '/_authenticated/admin/aduan'
     | '/_authenticated/admin/audit'
+    | '/_authenticated/admin/buku-kas'
     | '/_authenticated/admin/harga'
     | '/_authenticated/admin/identitas'
     | '/_authenticated/admin/jadwal'
@@ -502,6 +515,13 @@ declare module '@tanstack/react-router' {
       path: '/audit'
       fullPath: '/admin/audit'
       preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/buku-kas': {
+      id: '/_authenticated/admin/buku-kas'
+      path: '/buku-kas'
+      fullPath: '/admin/buku-kas'
+      preLoaderRoute: typeof AuthenticatedAdminBukuKasRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/admin/harga': {
@@ -671,6 +691,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAduanRoute: typeof AuthenticatedAdminAduanRoute
   AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
+  AuthenticatedAdminBukuKasRoute: typeof AuthenticatedAdminBukuKasRoute
   AuthenticatedAdminHargaRoute: typeof AuthenticatedAdminHargaRoute
   AuthenticatedAdminIdentitasRoute: typeof AuthenticatedAdminIdentitasRoute
   AuthenticatedAdminJadwalRoute: typeof AuthenticatedAdminJadwalRoute
@@ -691,6 +712,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
   {
     AuthenticatedAdminAduanRoute: AuthenticatedAdminAduanRoute,
     AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
+    AuthenticatedAdminBukuKasRoute: AuthenticatedAdminBukuKasRoute,
     AuthenticatedAdminHargaRoute: AuthenticatedAdminHargaRoute,
     AuthenticatedAdminIdentitasRoute: AuthenticatedAdminIdentitasRoute,
     AuthenticatedAdminJadwalRoute: AuthenticatedAdminJadwalRoute,
