@@ -321,10 +321,20 @@ function ProdukPage() {
                 <TableRow key={p.id}>
                   <TableCell className="font-medium">
                     <span className="flex items-center gap-2">
-                      <ShoppingBasket className="h-4 w-4 text-muted-foreground" />
+                      {p.photo_signed_url ? (
+                        <img
+                          src={p.photo_signed_url}
+                          alt={p.name}
+                          loading="lazy"
+                          className="h-9 w-9 rounded-md border border-border object-cover"
+                        />
+                      ) : (
+                        <ShoppingBasket className="h-4 w-4 text-muted-foreground" />
+                      )}
                       {p.name}
                     </span>
                   </TableCell>
+
                   <TableCell className="text-muted-foreground">{p.category}</TableCell>
                   <TableCell className="text-right font-semibold text-primary">
                     {formatRupiah(Number(p.price))}
