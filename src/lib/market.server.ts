@@ -44,8 +44,53 @@ export async function signProductPhotos<T extends ProductRow>(
   );
 }
 
+/**
+ * Penghitungan otomatis saat pesanan dibatalkan, mengikuti posisi status di
+ * timeline: sebelum barang berangkat ongkir dibatalkan penuh; setelah status
+ * "dikirim" ongkir tetap ditagih karena petugas sudah jalan.
+ */
+export function computeCancellation(order: {
+  status: string;
+  method: string;
+  shipping_fee: number | string;
+  paid_from_balance: number | string;
+}): { shippingRetained: number; refundedBalance: number; reason: string } {
+  const paid = Number(order.paid_from_balance) || 0;
+  const fee = Number(order.shipping_fee) || 0;
+  const shipped = order.status === "dikirim" && order.method === "antar";
+  const shippingRetained = shipped ? Math.min(fee, paid) : 0;
+  return {
+    shippingRetained,
+    refundedBalance: Math.max(0, paid - shippingRetained),
+    reason: shipped
+      ? "Ongkir tetap ditagih karena petugas sudah berangkat mengantar."
+      : "Ongkir dibatalkan penuh karena barang belum dikirim.",
+  };
+}
+
+/** Kembalikan stok produk yang sempat dikunci pesanan. */
+export async function restoreStock(
+  supabase: SupabaseClient,
+  items: { product_id: string | null; qty: number }[],
+): Promise<void> {
+  for (const it of items) {
+    if (!it.product_id) continue;
+    const { data: p } = await supabase
+      .from("market_products")
+      .select("stock")
+      .eq("id", it.product_id)
+      .single();
+    if (!p) continue;
+    await supabase
+      .from("market_products")
+      .update({ stock: Number(p.stock) + it.qty })
+      .eq("id", it.product_id);
+  }
+}
+
 export const ADMIN_ORDER_SELECT =
   "id, resident_id, method, address, shipping_fee, items_total, total_amount, paid_from_balance, cash_due, status, admin_note, proof_url, received_at, locked, created_at, market_order_items(product_name, unit, price, qty, subtotal), market_order_events(status, note, created_at)";
+
 
 export const ORDER_STATUS_TEXT: Record<string, string> = {
   menunggu: "Menunggu",

@@ -4,13 +4,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
-  ShoppingBasket, Plus, Minus, Wallet, Truck, Store, Loader2, PackageSearch, Search,
+  ShoppingBasket, Plus, Minus, Wallet, Truck, Store, Loader2, PackageSearch, Search, XCircle,
 } from "lucide-react";
 import {
   getMarketCatalog,
   getMyOrders,
   createMarketOrder,
   confirmOrderReceived,
+  cancelMyOrder,
 } from "@/lib/market.functions";
 import { OrderTimeline } from "@/components/OrderTimeline";
 import { compressImage } from "@/lib/image";
@@ -23,6 +24,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/warga/marketplace")({
@@ -43,6 +49,7 @@ function MarketplacePage() {
   const ordersFn = useServerFn(getMyOrders);
   const orderFn = useServerFn(createMarketOrder);
   const confirmFn = useServerFn(confirmOrderReceived);
+  const cancelFn = useServerFn(cancelMyOrder);
   const queryClient = useQueryClient();
 
   const { data } = useQuery({ queryKey: ["market-catalog"], queryFn: () => catalogFn() });
@@ -57,6 +64,7 @@ function MarketplacePage() {
   const [addressTouched, setAddressTouched] = useState(false);
   const [confirming, setConfirming] = useState<string | null>(null);
   const [proofs, setProofs] = useState<Record<string, File | null>>({});
+  const [cancelling, setCancelling] = useState<string | null>(null);
 
   const maxQty = data?.limits.maxQtyPerProduct ?? 5;
 
@@ -87,6 +95,21 @@ function MarketplacePage() {
       setConfirming(null);
     }
   }
+
+  async function cancelOrder(orderId: string) {
+    setCancelling(orderId);
+    try {
+      const res = await cancelFn({ data: { orderId, reason: null } });
+      toast.success(`Pesanan dibatalkan. Saldo ${formatRupiah(res.refunded)} kembali ke tabungan.`);
+      await queryClient.invalidateQueries({ queryKey: ["market-orders"] });
+      await queryClient.invalidateQueries({ queryKey: ["market-catalog"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal membatalkan pesanan");
+    } finally {
+      setCancelling(null);
+    }
+  }
+
 
   const products = data?.products ?? [];
   const categories = useMemo(
@@ -394,6 +417,34 @@ function MarketplacePage() {
                       </Button>
                     </div>
                   )}
+
+                  {["menunggu", "dibayar", "diproses"].includes(o.status) && !o.locked && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="sm" variant="outline" className="w-full" disabled={cancelling === o.id}>
+                          {cancelling === o.id && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          <XCircle className="mr-1.5 h-4 w-4" /> Batalkan Pesanan
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Batalkan pesanan ini?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Stok dikembalikan ke katalog dan saldo{" "}
+                            {formatRupiah(Number(o.paid_from_balance))} kembali ke tabungan Anda.
+                            Karena barang belum dikirim, ongkir tidak ditagihkan.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Tidak</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => cancelOrder(o.id)}>
+                            Ya, batalkan
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+
 
                   {o.locked && o.received_at && (
                     <p className="text-xs text-muted-foreground">

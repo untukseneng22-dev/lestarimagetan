@@ -53,6 +53,47 @@ export function buildMessage(
  * Jika belum diset, pesan dicatat sebagai mock (status "tercatat") sehingga
  * seluruh alur tetap bisa didemokan tanpa kredensial.
  */
+export type SendResult = {
+  status: "terkirim" | "tercatat" | "gagal";
+  provider: string;
+  error: string | null;
+};
+
+/** Mengirim pesan ke provider (tanpa mencatat log). */
+export async function deliverWhatsapp(input: {
+  phone: string;
+  message: string;
+}): Promise<SendResult> {
+  const apiUrl = process.env["WHATSAPP_API_URL"];
+  const apiToken = process.env["WHATSAPP_API_TOKEN"];
+  if (!apiUrl || !apiToken) {
+    return { status: "tercatat", provider: "mock", error: null };
+  }
+  try {
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiToken}`,
+      },
+      body: JSON.stringify({ to: input.phone, message: input.message }),
+    });
+    if (res.ok) return { status: "terkirim", provider: "whatsapp-api", error: null };
+    const body = (await res.text().catch(() => "")).slice(0, 300);
+    return {
+      status: "gagal",
+      provider: "whatsapp-api",
+      error: `HTTP ${res.status} ${res.statusText}${body ? ` — ${body}` : ""}`,
+    };
+  } catch (err) {
+    return {
+      status: "gagal",
+      provider: "whatsapp-api",
+      error: err instanceof Error ? err.message : "Kesalahan jaringan tidak diketahui",
+    };
+  }
+}
+
 export async function sendWhatsappNotification(
   supabase: SupabaseClient,
   input: {
@@ -62,37 +103,21 @@ export async function sendWhatsappNotification(
     message: string;
   },
 ): Promise<void> {
-  const apiUrl = process.env["WHATSAPP_API_URL"];
-  const apiToken = process.env["WHATSAPP_API_TOKEN"];
+  const result = await deliverWhatsapp({ phone: input.phone, message: input.message });
+  if (result.error) console.error("Gagal mengirim WhatsApp:", result.error);
 
-  let provider = "mock";
-  let status: "terkirim" | "tercatat" | "gagal" = "tercatat";
-
-  if (apiUrl && apiToken) {
-    provider = "whatsapp-api";
-    try {
-      const res = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiToken}`,
-        },
-        body: JSON.stringify({ to: input.phone, message: input.message }),
-      });
-      status = res.ok ? "terkirim" : "gagal";
-    } catch (err) {
-      console.error("Gagal mengirim WhatsApp:", err);
-      status = "gagal";
-    }
-  }
-
+  const now = new Date().toISOString();
   const { error } = await supabase.from("notification_logs").insert({
     event_type: input.event,
     recipient_name: input.name ?? null,
     recipient_phone: input.phone,
     message: input.message,
-    provider,
-    status,
+    provider: result.provider,
+    status: result.status,
+    error_message: result.error,
+    attempt_count: 1,
+    last_attempt_at: now,
   });
   if (error) console.error("Gagal mencatat log notifikasi:", error.message);
 }
+

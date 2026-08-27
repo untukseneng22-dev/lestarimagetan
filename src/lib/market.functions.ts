@@ -285,3 +285,92 @@ export const confirmOrderReceived = createServerFn({ method: "POST" })
     }
     return { ok: true };
   });
+
+/**
+ * Warga membatalkan pesanannya sendiri. Stok dikembalikan, saldo dilepas, dan
+ * ongkir dihitung otomatis sesuai posisi status di timeline (lihat
+ * `computeCancellation`).
+ */
+export const cancelMyOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        orderId: z.string().uuid(),
+        reason: z.string().trim().max(300).optional().nullable(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { computeCancellation, restoreStock } = await import("./market.server");
+
+    const { data: order } = await supabase
+      .from("market_orders")
+      .select(
+        "id, status, locked, method, shipping_fee, paid_from_balance, market_order_items(product_id, qty)",
+      )
+      .eq("id", data.orderId)
+      .eq("resident_id", userId)
+      .single();
+    if (!order) throw new Error("Pesanan tidak ditemukan.");
+    if (order.locked || order.status === "dibatalkan" || order.status === "diterima") {
+      throw new Error("Pesanan sudah selesai atau dibatalkan dan tidak bisa diubah lagi.");
+    }
+    if (order.status === "dikirim") {
+      throw new Error(
+        "Pesanan sedang diantar petugas. Hubungi admin bila ingin membatalkan.",
+      );
+    }
+
+    const calc = computeCancellation(order);
+
+    // Stok dikembalikan lewat service role karena warga tidak boleh menulis produk.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await restoreStock(supabaseAdmin, order.market_order_items ?? []);
+
+    const note = `Dibatalkan warga. ${calc.reason} Saldo dikembalikan ${rupiah(calc.refundedBalance)}.${
+      data.reason ? ` Alasan: ${data.reason}` : ""
+    }`;
+
+    const { error } = await supabase
+      .from("market_orders")
+      .update({
+        status: "dibatalkan",
+        locked: true,
+        items_total: 0,
+        shipping_fee: calc.shippingRetained,
+        total_amount: calc.shippingRetained,
+        paid_from_balance: calc.shippingRetained,
+        cash_due: 0,
+        admin_note: note,
+      })
+      .eq("id", data.orderId);
+    if (error) throw new Error(error.message);
+
+    await supabase.from("market_order_events").insert({
+      order_id: data.orderId,
+      status: "dibatalkan",
+      note,
+      created_by: userId,
+    });
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name, phone")
+      .eq("id", userId)
+      .single();
+    if (profile?.phone) {
+      await sendWhatsappNotification(supabase, {
+        phone: profile.phone,
+        name: profile.full_name,
+        event: "status_pesanan",
+        message: buildMessage("status_pesanan", {
+          kode: data.orderId.slice(0, 8).toUpperCase(),
+          status: "Dibatalkan",
+          catatan: note,
+        }),
+      });
+    }
+    return { ok: true, refunded: calc.refundedBalance, shippingRetained: calc.shippingRetained };
+  });

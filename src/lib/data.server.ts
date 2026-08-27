@@ -26,7 +26,9 @@ export const ORDER_FLOW = ["menunggu", "dibayar", "diproses", "dikirim", "diteri
 
 /**
  * Status pesanan yang menahan saldo & stok warga. Saldo dan stok dipesan
- * (reserved) sejak pesanan dibuat, dan hanya dikembalikan bila dibatalkan.
+ * (reserved) sejak pesanan dibuat. Saat dibatalkan, `paid_from_balance`
+ * ditulis ulang menjadi sisa tagihan (biasanya 0, atau ongkir bila petugas
+ * sudah berangkat), sehingga status "dibatalkan" tetap ikut dihitung.
  */
 export const ORDER_CHARGED_STATUSES = [
   "menunggu",
@@ -36,7 +38,9 @@ export const ORDER_CHARGED_STATUSES = [
   "dikirim",
   "diterima",
   "selesai",
+  "dibatalkan",
 ];
+
 
 /** Pesanan yang masih berjalan (belum diterima / dibatalkan). */
 export const ORDER_ACTIVE_STATUSES = ["menunggu", "dibayar", "dikonfirmasi", "diproses", "dikirim"];

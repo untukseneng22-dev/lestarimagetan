@@ -2,8 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { getBalance, getPricesAtDate, ORDER_CHARGED_STATUSES, requireRole } from "./data.server";
-import { ADMIN_ORDER_SELECT, getMarketLimits, getShippingFee, ORDER_STATUS_TEXT, signProductPhotos, withResidentInfo } from "./market.server";
-import { buildMessage, rupiah, sendWhatsappNotification } from "./whatsapp.server";
+import { ADMIN_ORDER_SELECT, computeCancellation, getMarketLimits, getShippingFee, ORDER_STATUS_TEXT, restoreStock, signProductPhotos, withResidentInfo } from "./market.server";
+import { buildMessage, deliverWhatsapp, rupiah, sendWhatsappNotification } from "./whatsapp.server";
 
 // ---------- Statistik dashboard ----------
 export const getAdminStats = createServerFn({ method: "GET" })
@@ -673,11 +673,52 @@ export const listNotificationLogs = createServerFn({ method: "GET" })
     await requireRole(supabase, userId, ["admin"]);
     const { data } = await supabase
       .from("notification_logs")
-      .select("id, event_type, recipient_name, recipient_phone, message, provider, status, created_at")
+      .select(
+        "id, event_type, recipient_name, recipient_phone, message, provider, status, error_message, attempt_count, last_attempt_at, created_at",
+      )
       .order("created_at", { ascending: false })
       .limit(200);
     return data ?? [];
   });
+
+/**
+ * Kirim ulang satu notifikasi yang gagal. Percobaan dicatat pada baris log
+ * yang sama (attempt_count, last_attempt_at, error_message) agar admin bisa
+ * melacak riwayat kegagalan tanpa membanjiri log dengan duplikat.
+ */
+export const retryNotification = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ id: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireRole(supabase, userId, ["admin"]);
+
+    const { data: log } = await supabase
+      .from("notification_logs")
+      .select("id, recipient_phone, message, status, attempt_count")
+      .eq("id", data.id)
+      .single();
+    if (!log) throw new Error("Log notifikasi tidak ditemukan.");
+    if (log.status === "terkirim") throw new Error("Notifikasi ini sudah berhasil terkirim.");
+    if ((log.attempt_count ?? 1) >= 5) {
+      throw new Error("Batas 5 percobaan kirim sudah tercapai. Periksa nomor atau konfigurasi provider.");
+    }
+
+    const result = await deliverWhatsapp({ phone: log.recipient_phone, message: log.message });
+    const { error } = await supabase
+      .from("notification_logs")
+      .update({
+        status: result.status,
+        provider: result.provider,
+        error_message: result.error,
+        attempt_count: (log.attempt_count ?? 1) + 1,
+        last_attempt_at: new Date().toISOString(),
+      })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { status: result.status, error: result.error };
+  });
+
 
 // ---------- Penjemputan ----------
 export const listPickupsAdmin = createServerFn({ method: "GET" })
@@ -918,7 +959,9 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
 
     const { data: order } = await supabase
       .from("market_orders")
-      .select("id, resident_id, status, locked, paid_from_balance, market_order_items(product_id, qty)")
+      .select(
+        "id, resident_id, status, locked, method, shipping_fee, items_total, paid_from_balance, market_order_items(product_id, qty)",
+      )
       .eq("id", data.orderId)
       .single();
     if (!order) throw new Error("Pesanan tidak ditemukan");
@@ -928,40 +971,44 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
     if (order.status === data.status) throw new Error("Status pesanan sudah sama.");
 
     // Stok & saldo dikunci sejak pesanan dibuat; hanya dikembalikan bila dibatalkan.
+    let cancelNote = "";
+    let cancelPatch: Record<string, number> = {};
     if (data.status === "dibatalkan") {
-      for (const it of order.market_order_items ?? []) {
-        if (!it.product_id) continue;
-        const { data: p } = await supabase
-          .from("market_products")
-          .select("stock")
-          .eq("id", it.product_id)
-          .single();
-        if (!p) continue;
-        await supabase
-          .from("market_products")
-          .update({ stock: Number(p.stock) + it.qty })
-          .eq("id", it.product_id);
-      }
+      await restoreStock(supabase, order.market_order_items ?? []);
+      const calc = computeCancellation(order);
+      cancelNote = `${calc.reason} Saldo dikembalikan ${rupiah(calc.refundedBalance)}${
+        calc.shippingRetained > 0 ? `, ongkir ditahan ${rupiah(calc.shippingRetained)}` : ""
+      }.`;
+      cancelPatch = {
+        items_total: 0,
+        shipping_fee: calc.shippingRetained,
+        total_amount: calc.shippingRetained,
+        paid_from_balance: calc.shippingRetained,
+        cash_due: 0,
+      };
     }
 
     const locking = data.status === "dibatalkan" || data.status === "diterima";
+    const noteText = [data.note ?? "", cancelNote].filter(Boolean).join(" ") || null;
     const { error } = await supabase
       .from("market_orders")
       .update({
         status: data.status,
-        admin_note: data.note ?? null,
+        admin_note: noteText,
         processed_by: userId,
         processed_at: new Date().toISOString(),
         locked: locking,
+        ...cancelPatch,
         ...(data.status === "diterima" ? { received_at: new Date().toISOString() } : {}),
       })
       .eq("id", data.orderId);
     if (error) throw new Error(error.message);
 
+
     await supabase.from("market_order_events").insert({
       order_id: data.orderId,
       status: data.status,
-      note: data.note ?? null,
+      note: noteText,
       created_by: userId,
     });
 
@@ -978,10 +1025,11 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
         message: buildMessage("status_pesanan", {
           kode: order.id.slice(0, 8).toUpperCase(),
           status: ORDER_STATUS_TEXT[data.status] ?? data.status,
-          catatan: data.note ?? "",
+          catatan: noteText ?? "",
         }),
       });
     }
+
     return { ok: true };
   });
 
