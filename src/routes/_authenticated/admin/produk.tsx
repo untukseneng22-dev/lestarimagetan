@@ -359,6 +359,9 @@ function ProdukPage() {
                           price: String(p.price),
                           stock: String(p.stock),
                           isActive: p.is_active,
+                          photoUrl: p.photo_url ?? null,
+                          photoPreview: p.photo_signed_url ?? null,
+
                         });
                         setOpen(true);
                       }}
