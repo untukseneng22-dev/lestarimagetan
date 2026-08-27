@@ -285,9 +285,12 @@ export type Database = {
       }
       notification_logs: {
         Row: {
+          attempt_count: number
           created_at: string
+          error_message: string | null
           event_type: string
           id: string
+          last_attempt_at: string
           message: string
           provider: string
           recipient_name: string | null
@@ -295,9 +298,12 @@ export type Database = {
           status: string
         }
         Insert: {
+          attempt_count?: number
           created_at?: string
+          error_message?: string | null
           event_type: string
           id?: string
+          last_attempt_at?: string
           message: string
           provider?: string
           recipient_name?: string | null
@@ -305,9 +311,12 @@ export type Database = {
           status?: string
         }
         Update: {
+          attempt_count?: number
           created_at?: string
+          error_message?: string | null
           event_type?: string
           id?: string
+          last_attempt_at?: string
           message?: string
           provider?: string
           recipient_name?: string | null
