@@ -4,13 +4,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
-  ShoppingBasket, Plus, Minus, Wallet, Truck, Store, Loader2, PackageSearch, Search,
+  ShoppingBasket, Plus, Minus, Wallet, Truck, Store, Loader2, PackageSearch, Search, XCircle,
 } from "lucide-react";
 import {
   getMarketCatalog,
   getMyOrders,
   createMarketOrder,
   confirmOrderReceived,
+  cancelMyOrder,
 } from "@/lib/market.functions";
 import { OrderTimeline } from "@/components/OrderTimeline";
 import { compressImage } from "@/lib/image";
@@ -23,6 +24,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/warga/marketplace")({
@@ -43,6 +49,7 @@ function MarketplacePage() {
   const ordersFn = useServerFn(getMyOrders);
   const orderFn = useServerFn(createMarketOrder);
   const confirmFn = useServerFn(confirmOrderReceived);
+  const cancelFn = useServerFn(cancelMyOrder);
   const queryClient = useQueryClient();
 
   const { data } = useQuery({ queryKey: ["market-catalog"], queryFn: () => catalogFn() });
@@ -57,6 +64,7 @@ function MarketplacePage() {
   const [addressTouched, setAddressTouched] = useState(false);
   const [confirming, setConfirming] = useState<string | null>(null);
   const [proofs, setProofs] = useState<Record<string, File | null>>({});
+  const [cancelling, setCancelling] = useState<string | null>(null);
 
   const maxQty = data?.limits.maxQtyPerProduct ?? 5;
 
