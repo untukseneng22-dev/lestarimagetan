@@ -3,8 +3,10 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Loader2, Pencil, Plus, ShoppingBasket, Trash2, Truck } from "lucide-react";
+import { ImagePlus, Loader2, Pencil, Plus, ShoppingBasket, Trash2, Truck } from "lucide-react";
 import { adminListProducts, saveProduct, deleteProduct, updateShippingFee, updateMarketLimits } from "@/lib/admin.functions";
+import { compressImage } from "@/lib/image";
+import { supabase } from "@/integrations/supabase/client";
 import { formatRupiah } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,11 +45,15 @@ type FormState = {
   price: string;
   stock: string;
   isActive: boolean;
+  photoUrl: string | null;
+  photoPreview: string | null;
 };
 
 const EMPTY: FormState = {
   id: null, name: "", category: "Sembako", unit: "pcs", price: "", stock: "0", isActive: true,
+  photoUrl: null, photoPreview: null,
 };
+
 
 function ProdukPage() {
   const listFn = useServerFn(adminListProducts);
@@ -61,6 +67,7 @@ function ProdukPage() {
   const [form, setForm] = useState<FormState>(EMPTY);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [fee, setFee] = useState<string | null>(null);
   const [maxQty, setMaxQty] = useState<string | null>(null);
   const [maxOrders, setMaxOrders] = useState<string | null>(null);
@@ -74,6 +81,27 @@ function ProdukPage() {
     await queryClient.invalidateQueries({ queryKey: ["market-catalog"] });
   }
 
+  /** Foto dikompres di browser (maks 1000px, JPEG) sebelum diunggah agar ringan. */
+  async function handlePhoto(file: File | null) {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const compressed = await compressImage(file, { maxDim: 1000, quality: 0.7 });
+      const path = `produk/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+      const { error } = await supabase.storage
+        .from("produk")
+        .upload(path, compressed, { contentType: "image/jpeg" });
+      if (error) throw new Error(error.message);
+      const { data: signed } = await supabase.storage.from("produk").createSignedUrl(path, 3600);
+      setForm((f) => ({ ...f, photoUrl: path, photoPreview: signed?.signedUrl ?? null }));
+      toast.success(`Foto siap (${Math.round(compressed.size / 1024)} KB setelah kompresi).`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal mengunggah foto");
+    } finally {
+      setUploading(false);
+    }
+  }
+
   async function submit() {
     setSaving(true);
     try {
@@ -85,9 +113,11 @@ function ProdukPage() {
           unit: form.unit.trim(),
           price: Number(form.price) || 0,
           stock: Number(form.stock) || 0,
+          photoUrl: form.photoUrl,
           isActive: form.isActive,
         },
       });
+
       toast.success(form.id ? "Produk diperbarui." : "Produk ditambahkan.");
       setOpen(false);
       setForm(EMPTY);
@@ -194,6 +224,29 @@ function ProdukPage() {
                   />
                 </div>
               </div>
+              <div className="grid gap-1.5">
+                <Label>Foto produk</Label>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-muted">
+                    {form.photoPreview ? (
+                      <img src={form.photoPreview} alt={form.name || "Foto produk"} className="h-full w-full object-cover" />
+                    ) : (
+                      <ImagePlus className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="grid gap-1.5">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      disabled={uploading}
+                      onChange={(e) => handlePhoto(e.target.files?.[0] ?? null)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {uploading ? "Mengompres & mengunggah…" : "Foto otomatis dikompres (maks 1000px) agar ringan."}
+                    </p>
+                  </div>
+                </div>
+              </div>
               <div className="flex items-center justify-between rounded-lg border border-border p-3">
                 <Label className="text-sm">Tampilkan di marketplace</Label>
                 <Switch
@@ -201,6 +254,7 @@ function ProdukPage() {
                   onCheckedChange={(v) => setForm({ ...form, isActive: v })}
                 />
               </div>
+
             </div>
             <DialogFooter>
               <Button onClick={submit} disabled={saving || form.name.trim().length < 2}>
@@ -267,10 +321,20 @@ function ProdukPage() {
                 <TableRow key={p.id}>
                   <TableCell className="font-medium">
                     <span className="flex items-center gap-2">
-                      <ShoppingBasket className="h-4 w-4 text-muted-foreground" />
+                      {p.photo_signed_url ? (
+                        <img
+                          src={p.photo_signed_url}
+                          alt={p.name}
+                          loading="lazy"
+                          className="h-9 w-9 rounded-md border border-border object-cover"
+                        />
+                      ) : (
+                        <ShoppingBasket className="h-4 w-4 text-muted-foreground" />
+                      )}
                       {p.name}
                     </span>
                   </TableCell>
+
                   <TableCell className="text-muted-foreground">{p.category}</TableCell>
                   <TableCell className="text-right font-semibold text-primary">
                     {formatRupiah(Number(p.price))}
@@ -295,6 +359,9 @@ function ProdukPage() {
                           price: String(p.price),
                           stock: String(p.stock),
                           isActive: p.is_active,
+                          photoUrl: p.photo_url ?? null,
+                          photoPreview: p.photo_signed_url ?? null,
+
                         });
                         setOpen(true);
                       }}
