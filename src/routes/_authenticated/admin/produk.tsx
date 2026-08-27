@@ -3,8 +3,9 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ImagePlus, Loader2, Pencil, Plus, ShoppingBasket, Trash2, Truck } from "lucide-react";
-import { adminListProducts, saveProduct, deleteProduct, updateShippingFee, updateMarketLimits } from "@/lib/admin.functions";
+import { ImagePlus, ImageOff, Loader2, Pencil, Plus, Trash2, Truck } from "lucide-react";
+import { adminListProducts, saveProduct, deleteProduct, removeProductPhoto, updateShippingFee, updateMarketLimits } from "@/lib/admin.functions";
+import { ProductThumb } from "@/components/ProductThumb";
 import { compressImage } from "@/lib/image";
 import { supabase } from "@/integrations/supabase/client";
 import { formatRupiah } from "@/lib/format";
@@ -59,11 +60,18 @@ function ProdukPage() {
   const listFn = useServerFn(adminListProducts);
   const saveFn = useServerFn(saveProduct);
   const deleteFn = useServerFn(deleteProduct);
+  const removePhotoFn = useServerFn(removeProductPhoto);
   const feeFn = useServerFn(updateShippingFee);
   const limitFn = useServerFn(updateMarketLimits);
   const queryClient = useQueryClient();
 
-  const { data } = useQuery({ queryKey: ["admin-products"], queryFn: () => listFn() });
+  const { data } = useQuery({
+    queryKey: ["admin-products"],
+    queryFn: () => listFn(),
+    // URL foto ditandatangani 24 jam; cache 10 menit agar tabel besar tidak
+    // memuat ulang gambar setiap kali halaman dibuka.
+    staleTime: 10 * 60 * 1000,
+  });
   const [form, setForm] = useState<FormState>(EMPTY);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -126,6 +134,17 @@ function ProdukPage() {
       toast.error(err instanceof Error ? err.message : "Gagal menyimpan produk");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function dropPhoto(id: string) {
+    try {
+      await removePhotoFn({ data: { id } });
+      setForm((f) => (f.id === id ? { ...f, photoUrl: null, photoPreview: null } : f));
+      toast.success("Foto dihapus. Katalog memakai gambar placeholder.");
+      await refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal menghapus foto");
     }
   }
 
@@ -227,13 +246,13 @@ function ProdukPage() {
               <div className="grid gap-1.5">
                 <Label>Foto produk</Label>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-muted">
-                    {form.photoPreview ? (
-                      <img src={form.photoPreview} alt={form.name || "Foto produk"} className="h-full w-full object-cover" />
-                    ) : (
+                  {form.photoPreview ? (
+                    <ProductThumb src={form.photoPreview} alt={form.name || "Foto produk"} size="lg" />
+                  ) : (
+                    <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border border-dashed border-border bg-muted">
                       <ImagePlus className="h-5 w-5 text-muted-foreground" />
-                    )}
-                  </div>
+                    </div>
+                  )}
                   <div className="grid gap-1.5">
                     <Input
                       type="file"
@@ -244,6 +263,17 @@ function ProdukPage() {
                     <p className="text-xs text-muted-foreground">
                       {uploading ? "Mengompres & mengunggah…" : "Foto otomatis dikompres (maks 1000px) agar ringan."}
                     </p>
+                    {form.id && form.photoUrl && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="w-fit"
+                        onClick={() => dropPhoto(form.id!)}
+                      >
+                        <ImageOff className="mr-1.5 h-4 w-4" /> Hapus foto (pakai placeholder)
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -320,18 +350,9 @@ function ProdukPage() {
               {data.products.map((p) => (
                 <TableRow key={p.id}>
                   <TableCell className="font-medium">
-                    <span className="flex items-center gap-2">
-                      {p.photo_signed_url ? (
-                        <img
-                          src={p.photo_signed_url}
-                          alt={p.name}
-                          loading="lazy"
-                          className="h-9 w-9 rounded-md border border-border object-cover"
-                        />
-                      ) : (
-                        <ShoppingBasket className="h-4 w-4 text-muted-foreground" />
-                      )}
-                      {p.name}
+                    <span className="flex items-center gap-2.5">
+                      <ProductThumb src={p.photo_signed_url} alt={p.name} size="sm" />
+                      <span className="min-w-0 truncate">{p.name}</span>
                     </span>
                   </TableCell>
 
