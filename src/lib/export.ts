@@ -180,7 +180,7 @@ export function buildPdf(opts: PdfOptions) {
       doc.setFont("times", "italic");
       doc.setFontSize(8.5);
       doc.setTextColor(130);
-      doc.text(opts.org?.name ?? "LESTARI MAGETAN", margin, pageHeight - 10);
+      doc.text(opts.org ? formatKopName(opts.org.name) : "BANK SAMPAH LESTARI MAGETAN", margin, pageHeight - 10);
       doc.text(`Halaman ${page}`, pageWidth - margin, pageHeight - 10, { align: "right" });
     },
   });
