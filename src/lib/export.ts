@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import logoAsset from "@/assets/logo-lestari.png.asset.json";
 
 export type ExportColumn = { header: string; key: string };
 
@@ -34,59 +35,148 @@ export type PdfOptions = {
 /** Ukuran kertas F4 / Folio (215 x 330 mm). */
 export const F4_FORMAT: [number, number] = [215, 330];
 
+let logoDataUrl: string | null = null;
+let logoPromise: Promise<string | null> | null = null;
+
+/** Memuat & mengecilkan logo untuk disisipkan di kop dokumen. */
+export function ensureLogo(): Promise<string | null> {
+  if (logoDataUrl) return Promise.resolve(logoDataUrl);
+  if (typeof window === "undefined") return Promise.resolve(null);
+  if (!logoPromise) {
+    logoPromise = new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const size = 256;
+          const canvas = document.createElement("canvas");
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return resolve(null);
+          const scale = Math.min(size / img.width, size / img.height);
+          const w = img.width * scale;
+          const h = img.height * scale;
+          ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+          logoDataUrl = canvas.toDataURL("image/png");
+          resolve(logoDataUrl);
+        } catch {
+          resolve(null);
+        }
+      };
+      img.onerror = () => resolve(null);
+      img.src = logoAsset.url;
+    });
+  }
+  return logoPromise;
+}
+
+if (typeof window !== "undefined") void ensureLogo();
+
 /** Membangun dokumen PDF ukuran F4 portrait tanpa langsung mengunduhnya. */
 export function buildPdf(opts: PdfOptions) {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: F4_FORMAT });
   const pageWidth = doc.internal.pageSize.getWidth();
-  let y = 16;
+  const margin = 16;
+  let y = 14;
 
   if (opts.org) {
-    doc.setFontSize(14);
+    const logoSize = 22;
+    if (logoDataUrl) {
+      try {
+        doc.addImage(logoDataUrl, "PNG", margin, y, logoSize, logoSize);
+      } catch {
+        /* abaikan bila logo gagal dimuat */
+      }
+    }
+    const textLeft = margin + logoSize + 6;
+    const textCenter = (textLeft + (pageWidth - margin)) / 2;
+    let ty = y + 6;
+    doc.setFont("times", "bold");
+    doc.setFontSize(16);
     doc.setTextColor(20);
-    doc.text(opts.org.name.toUpperCase(), pageWidth / 2, y, { align: "center" });
-    y += 6;
-    const kontak = [opts.org.address, opts.org.phone ? `Telp/WA: ${opts.org.phone}` : ""]
+    doc.text(opts.org.name.toUpperCase(), textCenter, ty, { align: "center" });
+    ty += 6;
+    doc.setFont("times", "normal");
+    if (opts.org.address) {
+      doc.setFontSize(10.5);
+      doc.setTextColor(60);
+      doc.text(opts.org.address, textCenter, ty, { align: "center", maxWidth: pageWidth - textLeft - margin });
+      ty += 5;
+    }
+    const kontak = [opts.org.phone ? `Telp/WA: ${opts.org.phone}` : "", opts.org.city]
       .filter(Boolean)
       .join(" · ");
     if (kontak) {
-      doc.setFontSize(9);
+      doc.setFontSize(10);
       doc.setTextColor(90);
-      doc.text(kontak, pageWidth / 2, y, { align: "center" });
-      y += 5;
+      doc.text(kontak, textCenter, ty, { align: "center" });
+      ty += 5;
     }
+    y = Math.max(y + logoSize, ty) + 2;
     doc.setDrawColor(22, 163, 74);
-    doc.setLineWidth(0.8);
-    doc.line(14, y, pageWidth - 14, y);
-    y += 9;
+    doc.setLineWidth(1.1);
+    doc.line(margin, y, pageWidth - margin, y);
+    doc.setLineWidth(0.35);
+    doc.line(margin, y + 1.4, pageWidth - margin, y + 1.4);
+    y += 12;
   }
 
+  const centered = Boolean(opts.org);
+  const titleX = centered ? pageWidth / 2 : margin;
+  const align = centered ? ({ align: "center" } as const) : undefined;
+
+  doc.setFont("times", "bold");
   doc.setFontSize(13);
   doc.setTextColor(20);
-  doc.text(opts.title, opts.org ? pageWidth / 2 : 14, y, opts.org ? { align: "center" } : undefined);
-  y += 6;
+  doc.text(opts.title.toUpperCase(), titleX, y, align);
+  y += 5.5;
+  doc.setFont("times", "normal");
   if (opts.subtitle) {
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(opts.subtitle, opts.org ? pageWidth / 2 : 14, y, opts.org ? { align: "center" } : undefined);
+    doc.setFontSize(11);
+    doc.setTextColor(70);
+    doc.text(opts.subtitle, titleX, y, align);
     y += 5;
   }
-  doc.setFontSize(9);
+  doc.setFontSize(9.5);
   doc.setTextColor(120);
-  doc.text(
-    `Diekspor pada ${new Date().toLocaleString("id-ID")}`,
-    opts.org ? pageWidth / 2 : 14,
-    y,
-    opts.org ? { align: "center" } : undefined,
-  );
-  y += 6;
+  doc.text(`Dicetak pada ${new Date().toLocaleString("id-ID")}`, titleX, y, align);
+  y += 7;
 
   autoTable(doc, {
     startY: y,
+    margin: { left: margin, right: margin, bottom: 20 },
     head: [opts.columns.map((c) => c.header)],
     body: rowsToArrays(opts.columns, opts.rows),
-    styles: { fontSize: 8, cellPadding: 2 },
-    headStyles: { fillColor: [22, 163, 74] },
-    alternateRowStyles: { fillColor: [240, 253, 244] },
+    theme: "grid",
+    styles: {
+      font: "times",
+      fontSize: 9.5,
+      cellPadding: { top: 1.8, bottom: 1.8, left: 2.4, right: 2.4 },
+      textColor: [35, 35, 35],
+      lineColor: [200, 210, 200],
+      lineWidth: 0.15,
+      valign: "middle",
+    },
+    headStyles: {
+      font: "times",
+      fontStyle: "bold",
+      fillColor: [22, 101, 52],
+      textColor: 255,
+      fontSize: 9.5,
+      halign: "center",
+      lineColor: [22, 101, 52],
+    },
+    alternateRowStyles: { fillColor: [244, 250, 244] },
+    didDrawPage: () => {
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const page = doc.getNumberOfPages();
+      doc.setFont("times", "italic");
+      doc.setFontSize(8.5);
+      doc.setTextColor(130);
+      doc.text(opts.org?.name ?? "LESTARI MAGETAN", margin, pageHeight - 10);
+      doc.text(`Halaman ${page}`, pageWidth - margin, pageHeight - 10, { align: "right" });
+    },
   });
 
   const org = opts.org;
@@ -94,22 +184,28 @@ export function buildPdf(opts: PdfOptions) {
     const lastY = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y;
     let sy = lastY + 14;
     const pageHeight = doc.internal.pageSize.getHeight();
-    if (sy + 40 > pageHeight) {
+    if (sy + 45 > pageHeight - 15) {
       doc.addPage();
-      sy = 20;
+      sy = 24;
     }
-    doc.setFontSize(10);
+    const leftX = margin + 6;
+    const rightX = pageWidth - margin - 60;
+    doc.setFont("times", "normal");
+    doc.setFontSize(11);
     doc.setTextColor(40);
-    const leftX = 20;
-    const rightX = pageWidth - 75;
     doc.text(`${org.city || "Magetan"}, ${tanggalPanjang()}`, rightX, sy);
-    doc.text("Mengetahui,", leftX, sy + 8);
-    doc.text("Ketua Bank Sampah", leftX, sy + 14);
-    doc.text("Bendahara", rightX, sy + 14);
-    doc.setFontSize(10);
+    doc.text("Mengetahui,", leftX, sy + 7);
+    doc.text("Ketua Bank Sampah", leftX, sy + 13);
+    doc.text("Bendahara", rightX, sy + 13);
+    doc.setFont("times", "bold");
     doc.setTextColor(20);
-    doc.text(`( ${org.headName || "........................"} )`, leftX, sy + 38);
-    doc.text(`( ${org.treasurerName || "........................"} )`, rightX, sy + 38);
+    doc.text(org.headName || "........................", leftX, sy + 36);
+    doc.text(org.treasurerName || "........................", rightX, sy + 36);
+    doc.setFont("times", "normal");
+    doc.setDrawColor(120);
+    doc.setLineWidth(0.2);
+    doc.line(leftX, sy + 37.5, leftX + 55, sy + 37.5);
+    doc.line(rightX, sy + 37.5, rightX + 55, sy + 37.5);
   }
 
   return doc;
@@ -120,12 +216,14 @@ export function createPdfPreviewUrl(opts: PdfOptions): string {
   return URL.createObjectURL(buildPdf(opts).output("blob"));
 }
 
-export function exportPdf(opts: PdfOptions) {
+export async function exportPdf(opts: PdfOptions) {
+  await ensureLogo();
   buildPdf(opts).save(opts.filename);
 }
 
 /** Mencetak dokumen PDF langsung (dialog cetak bawaan browser). */
-export function printPdf(opts: PdfOptions) {
+export async function printPdf(opts: PdfOptions) {
+  await ensureLogo();
   const doc = buildPdf(opts);
   // Sisipkan aksi cetak otomatis di dalam PDF-nya
   doc.autoPrint();
