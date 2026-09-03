@@ -123,9 +123,10 @@ function AuthPage() {
         </div>
       </div>
 
-      <p className="shrink-0 pb-3 pt-2 text-center text-[10px] leading-tight text-muted-foreground/80">
-        © 2026 LESTARI MAGETAN — Dikembangkan oleh Tim Kreatif SMAS PGRI Maospati
-      </p>
+      <div className="shrink-0 pb-3 pt-2 text-center text-[10px] leading-tight text-muted-foreground/80">
+        <p>© 2026 LESTARI MAGETAN — Dikembangkan oleh Tim Kreatif SMAS PGRI Maospati</p>
+        <p className="mt-0.5 text-muted-foreground/60">Versi 1.0.0</p>
+      </div>
     </div>
   );
 }
