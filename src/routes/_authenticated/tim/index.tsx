@@ -33,76 +33,81 @@ function TimDashboard() {
   if (!recap || !account) return <Skeleton className="h-64 w-full rounded-2xl" />;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-bold">Halo, {account.fullName.split(" ")[0]}!</h2>
-        <p className="text-sm text-muted-foreground">Siap melayani warga hari ini.</p>
+        <h2 className="text-lg font-bold tracking-tight">Halo, {account.fullName.split(" ")[0]}!</h2>
+        <p className="text-[12px] text-muted-foreground">Siap melayani warga hari ini.</p>
+      </div>
+
+      {/* Ringkasan hari ini bergaya kartu utama m-banking */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-primary p-5 text-primary-foreground shadow-elegant">
+        <div className="pointer-events-none absolute -right-14 -top-14 h-44 w-44 rounded-full bg-white/10" />
+        <div className="relative flex items-start justify-between">
+          <div>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-primary-foreground/80">
+              Nilai Setoran Hari Ini
+            </p>
+            <p className="mt-1.5 text-[28px] font-extrabold leading-none tracking-tight">
+              {formatRupiah(recap.totalAmount)}
+            </p>
+          </div>
+          <Link
+            to="/tim/rekap"
+            className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1.5 text-[11px] font-semibold backdrop-blur transition-colors hover:bg-white/25"
+          >
+            Rekap <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
+        <div className="relative mt-4 grid grid-cols-2 gap-2">
+          <div className="rounded-2xl bg-white/12 p-2.5 backdrop-blur">
+            <p className="text-lg font-bold leading-none">{recap.totalTransactions}</p>
+            <p className="mt-1 text-[11px] text-primary-foreground/80">Transaksi</p>
+          </div>
+          <div className="rounded-2xl bg-white/12 p-2.5 backdrop-blur">
+            <p className="text-lg font-bold leading-none">{formatNumber(recap.totalWeight)} kg</p>
+            <p className="mt-1 text-[11px] text-primary-foreground/80">Sampah</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Menu pintas ikon */}
+      <div className="rounded-3xl border border-border bg-card p-4 shadow-card">
+        <div className="grid grid-cols-4 gap-2">
+          {[
+            { to: "/tim/setor", label: "Setor", icon: Scale },
+            { to: "/tim/pickup", label: "Jemput", icon: Truck },
+            { to: "/tim/rekap", label: "Rekap", icon: ClipboardList },
+            { to: "/tim/profil", label: "Profil", icon: CalendarClock },
+          ].map((m) => (
+            <Link key={m.to} to={m.to} className="flex flex-col items-center gap-1.5">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors hover:bg-primary/15">
+                <m.icon className="h-[22px] w-[22px]" />
+              </span>
+              <span className="text-center text-[11px] font-medium leading-tight">{m.label}</span>
+            </Link>
+          ))}
+        </div>
       </div>
 
       {settings && (
         <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3.5">
-          <p className="flex items-center gap-1.5 text-xs font-semibold text-primary">
+          <p className="flex items-center gap-1.5 text-[11px] font-semibold text-primary">
             <CalendarClock className="h-3.5 w-3.5" /> Jadwal rutin
           </p>
-          <p className="mt-1 text-sm font-medium">{settings.pickupSchedule}</p>
+          <p className="mt-1 text-[13px] font-medium">{settings.pickupSchedule}</p>
           {settings.dropoffInfo && (
-            <p className="mt-1 flex items-start gap-1.5 text-xs text-muted-foreground">
+            <p className="mt-1 flex items-start gap-1.5 text-[11px] text-muted-foreground">
               <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {settings.dropoffInfo}
             </p>
           )}
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-3">
-        <Link to="/tim/setor">
-          <div className="rounded-3xl border border-border bg-card p-4 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-elegant">
-            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-primary text-primary-foreground shadow-elegant">
-              <Scale className="h-6 w-6" />
-            </span>
-            <p className="mt-3 text-sm font-bold">Setor Sampah</p>
-            <p className="text-xs text-muted-foreground">Scan QR / cari warga</p>
-          </div>
-        </Link>
-        <Link to="/tim/pickup">
-          <div className="rounded-3xl border border-border bg-card p-4 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-elegant">
-            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-accent text-accent-foreground shadow-glow">
-              <Truck className="h-6 w-6" />
-            </span>
-            <p className="mt-3 text-sm font-bold">Penjemputan</p>
-            <p className="text-xs text-muted-foreground">{activeTasks.length} tugas aktif</p>
-          </div>
-        </Link>
-      </div>
-
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <h3 className="flex items-center gap-1.5 text-sm font-semibold">
-              <ClipboardList className="h-4 w-4 text-primary" /> Rekap Hari Ini
-            </h3>
-            <Link to="/tim/rekap" className="flex items-center gap-1 text-xs font-medium text-primary">
-              Detail <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
-          <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-            <div className="rounded-lg bg-muted/60 p-2.5">
-              <p className="text-lg font-bold text-foreground">{recap.totalTransactions}</p>
-              <p className="text-xs text-muted-foreground">Transaksi</p>
-            </div>
-            <div className="rounded-lg bg-muted/60 p-2.5">
-              <p className="text-lg font-bold text-foreground">{formatNumber(recap.totalWeight)}</p>
-              <p className="text-xs text-muted-foreground">Kg Sampah</p>
-            </div>
-            <div className="rounded-lg bg-muted/60 p-2.5">
-              <p className="text-lg font-bold text-accent">{formatRupiah(recap.totalAmount)}</p>
-              <p className="text-xs text-muted-foreground">Nilai Setoran</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       <section>
-        <h3 className="mb-2 text-sm font-semibold">Tugas Penjemputan Terdekat</h3>
+        <h3 className="mb-2 text-[13px] font-semibold">
+          Tugas Penjemputan Terdekat ({activeTasks.length})
+        </h3>
+
         <div className="space-y-2">
           {activeTasks.length === 0 && (
             <p className="text-sm text-muted-foreground">Tidak ada tugas aktif.</p>
