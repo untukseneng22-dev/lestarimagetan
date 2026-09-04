@@ -33,7 +33,7 @@ export function MobileShell({
         {/* Header ala m-banking: bar ramping, identitas kiri, aksi kanan */}
         <header className="relative overflow-hidden rounded-b-3xl bg-gradient-primary px-5 pb-5 pt-5 text-primary-foreground shadow-elegant">
           <div className="pointer-events-none absolute -right-14 -top-16 h-40 w-40 rounded-full bg-white/10" />
-          <div className="pointer-events-none absolute -left-10 bottom--8 h-24 w-24 rounded-full bg-white/5" />
+          <div className="pointer-events-none absolute -left-10 bottom-0 h-24 w-24 rounded-full bg-white/5" />
           <div className="relative flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2.5">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/95 shadow-card">
