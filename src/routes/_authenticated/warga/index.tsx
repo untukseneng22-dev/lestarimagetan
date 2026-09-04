@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import QRCode from "react-qr-code";
-import { Megaphone, Truck, Wallet, ChevronRight, CalendarClock, MapPin, Trophy, Tag } from "lucide-react";
+import { Megaphone, Truck, Wallet, ChevronRight, CalendarClock, MapPin, Trophy, Tag, ShoppingBasket, QrCode, MessageSquareWarning } from "lucide-react";
 import { getWargaDashboard } from "@/lib/warga.functions";
 import { getAppSettings, getLeaderboard, getCategoriesWithPrices } from "@/lib/common.functions";
 import { useMyAccount } from "@/lib/use-account";
@@ -134,7 +134,7 @@ function WargaDashboard() {
 
 
       <section>
-        <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
+        <h3 className="mb-2 flex items-center gap-1.5 text-[13px] font-semibold">
           <Truck className="h-4 w-4 text-primary" /> Jadwal Penjemputan
         </h3>
         <Card>
@@ -171,7 +171,7 @@ function WargaDashboard() {
 
       {leaderboard && leaderboard.length > 0 && (
         <section>
-          <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
+          <h3 className="mb-2 flex items-center gap-1.5 text-[13px] font-semibold">
             <Trophy className="h-4 w-4 text-accent" /> Warga Teladan Bulan Ini
           </h3>
           <Card>
@@ -201,7 +201,7 @@ function WargaDashboard() {
       )}
 
       <section>
-        <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
+        <h3 className="mb-2 flex items-center gap-1.5 text-[13px] font-semibold">
           <Megaphone className="h-4 w-4 text-accent" /> Pengumuman
         </h3>
         <div className="space-y-2">
