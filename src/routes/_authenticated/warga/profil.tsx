@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { AvatarUpload } from "@/components/AvatarUpload";
 import { LogoutButton } from "@/components/LogoutButton";
 import { AppVersion } from "@/components/AppVersion";
+import { AccountSettings } from "@/components/AccountSettings";
 
 export const Route = createFileRoute("/_authenticated/warga/profil")({
   head: () => ({ meta: [{ title: "Profil — LESTARI MAGETAN" }] }),
@@ -71,11 +72,13 @@ function ProfilPage() {
               <span className="min-w-0">{account.address ?? "-"}</span>
             </div>
             <p className="rounded-xl bg-muted px-3 py-2 text-[11px] text-muted-foreground">
-              Data diri hanya dapat diubah oleh Admin. Hubungi Admin atau RT bila ada data yang perlu diperbarui.
+              Nama dan RT/RW hanya dapat diubah oleh Admin. No. WhatsApp, alamat, dan kata sandi bisa Anda ubah sendiri di bawah.
             </p>
           </div>
         </CardContent>
       </Card>
+
+      <AccountSettings phone={account.phone} address={account.address} />
 
       <LogoutButton variant="destructive" />
 
