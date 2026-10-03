@@ -127,3 +127,23 @@ export const updateMyProfile = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// Warga/petugas boleh memperbarui No. WhatsApp dan alamat sendiri.
+export const updateMyContact = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        phone: z.string().trim().regex(/^(\+?62|0)8\d{7,12}$/),
+        address: z.string().trim().min(5).max(255),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("profiles")
+      .update({ phone: data.phone, address: data.address })
+      .eq("id", context.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
