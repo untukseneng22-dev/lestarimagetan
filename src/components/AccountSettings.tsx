@@ -36,7 +36,7 @@ export function AccountSettings({
 
   async function saveContact() {
     const r = contactSchema.safeParse({ phone: p, address: a });
-    if (!r.success) return toast.error(r.error.issues[0]?.message ?? "Data tidak valid");
+    if (!r.success) { toast.error(r.error.issues[0]?.message ?? "Data tidak valid"); return; }
     setSavingC(true);
     try {
       await updateFn({ data: r.data });
@@ -50,8 +50,8 @@ export function AccountSettings({
   }
 
   async function savePassword() {
-    if (pw.length < 6) return toast.error("Kata sandi minimal 6 karakter");
-    if (pw !== pw2) return toast.error("Konfirmasi kata sandi tidak sama");
+    if (pw.length < 6) { toast.error("Kata sandi minimal 6 karakter"); return; }
+    if (pw !== pw2) { toast.error("Konfirmasi kata sandi tidak sama"); return; }
     setSavingP(true);
     const { error } = await supabase.auth.updateUser({ password: pw });
     setSavingP(false);
