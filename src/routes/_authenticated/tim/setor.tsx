@@ -216,8 +216,8 @@ function SetorPage() {
               {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             </Button>
           </div>
-          {results.length > 0 && !resident && (
-            <div className="mt-2 divide-y divide-border rounded-lg border border-border">
+          {(results.length > 0 || searching) && !resident && (
+            <div className="mt-2 divide-y divide-border rounded-lg border border-border bg-card">
               {results.map((r) => (
                 <button
                   key={r.id}
@@ -225,9 +225,10 @@ function SetorPage() {
                   onClick={() => {
                     setResident(r);
                     setResults([]);
+                    setQuery(r.full_name);
                   }}
                 >
-                  <UserRound className="h-5 w-5 text-primary" />
+                  <UserRound className="h-5 w-5 shrink-0 text-primary" />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{r.full_name}</p>
                     <p className="truncate text-xs text-muted-foreground">
@@ -236,7 +237,15 @@ function SetorPage() {
                   </div>
                 </button>
               ))}
+              {results.length === 0 && searching && (
+                <div className="flex items-center gap-2 p-3 text-xs text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Mencari warga…
+                </div>
+              )}
             </div>
+          )}
+          {results.length === 0 && !searching && query.trim().length >= 2 && !resident && (
+            <p className="mt-2 text-xs text-muted-foreground">Tidak ada warga yang cocok dengan pencarian.</p>
           )}
         </CardContent>
       </Card>
