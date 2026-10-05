@@ -156,15 +156,19 @@ function WargaDashboard() {
               <p className="text-sm text-muted-foreground">Belum ada permintaan penjemputan aktif.</p>
             ) : (
               data.pickups.map((p) => (
-                <div key={p.id} className="flex items-center justify-between rounded-lg border border-border p-2.5">
-                  <div>
-                    <p className="text-sm font-medium">{formatTanggal(p.scheduled_date)}</p>
-                    <p className="text-xs text-muted-foreground">{p.address}</p>
+                <div key={p.id} className="rounded-lg border border-border p-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-medium">Dijemput: {formatTanggal(p.scheduled_date)}</p>
+                      <p className="text-xs text-muted-foreground">{p.address}</p>
+                    </div>
+                    <StatusBadge status={p.status} />
                   </div>
-                  <StatusBadge status={p.status} />
+                  {p.notes && <p className="mt-1 text-xs text-muted-foreground">Catatan: {p.notes}</p>}
                 </div>
               ))
             )}
+            <RequestPickupDialog defaultAddress={account?.address ?? null} />
           </CardContent>
         </Card>
       </section>
