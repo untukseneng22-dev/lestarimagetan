@@ -2,11 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, Lock, Plus, ScanLine, Search, Trash2, UserRound, CheckCircle2 } from "lucide-react";
+import { Loader2, Lock, Plus, ScanLine, Search, Trash2, UserRound, CheckCircle2, Send } from "lucide-react";
 import { toast } from "sonner";
 import { createDeposit, searchResidents } from "@/lib/tim.functions";
 import { getCategoriesWithPrices } from "@/lib/common.functions";
 import { formatNumber, formatRupiah, todayISO } from "@/lib/format";
+import { buildReceiptText, waLink, type ReceiptItem } from "@/lib/wa-receipt";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +36,7 @@ function SetorPage() {
   const [items, setItems] = useState<CalcItem[]>([{ categoryId: "", weight: "" }]);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
-  const [lastDeposit, setLastDeposit] = useState<{ totalAmount: number; newBalance: number } | null>(null);
+  const [lastDeposit, setLastDeposit] = useState<{ totalAmount: number; newBalance: number; waUrl: string; hasPhone: boolean } | null>(null);
   const [scanOpen, setScanOpen] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
@@ -135,8 +136,16 @@ function SetorPage() {
           items: valid.map((it) => ({ categoryId: it.categoryId, weight: Number(it.weight) })),
         },
       });
-      setLastDeposit({ totalAmount: res.totalAmount, newBalance: res.newBalance });
-      toast.success(`Setoran ${formatRupiah(res.totalAmount)} tercatat. Notifikasi WhatsApp dikirim ke warga.`);
+      const text = buildReceiptText({
+        name: resident.full_name,
+        date: todayISO(),
+        items: res.items as ReceiptItem[],
+        totalWeight: res.totalWeight,
+        totalAmount: res.totalAmount,
+        newBalance: res.newBalance,
+      });
+      setLastDeposit({ totalAmount: res.totalAmount, newBalance: res.newBalance, waUrl: waLink(resident.phone, text), hasPhone: !!resident.phone });
+      toast.success(`Setoran ${formatRupiah(res.totalAmount)} tercatat. Kirim struk via WhatsApp.`);
       setResident(null);
       setItems([{ categoryId: "", weight: "" }]);
       setResults([]);
@@ -161,7 +170,15 @@ function SetorPage() {
           <p className="text-sm text-muted-foreground">
             Saldo warga sekarang: <span className="font-semibold text-accent">{formatRupiah(lastDeposit.newBalance)}</span>
           </p>
-          <Button className="w-full" onClick={() => setLastDeposit(null)}>Setor Lagi</Button>
+          <Button asChild className="w-full bg-[#25D366] text-white hover:bg-[#1ebe5a]">
+            <a href={lastDeposit.waUrl} target="_blank" rel="noreferrer">
+              <Send className="mr-1.5 h-4 w-4" /> Kirim Struk via WA
+            </a>
+          </Button>
+          {!lastDeposit.hasPhone && (
+            <p className="text-xs text-muted-foreground">Nomor WA warga belum terdaftar — pilih kontak secara manual di WhatsApp.</p>
+          )}
+          <Button variant="outline" className="w-full" onClick={() => setLastDeposit(null)}>Setor Lagi</Button>
         </CardContent>
       </Card>
     );

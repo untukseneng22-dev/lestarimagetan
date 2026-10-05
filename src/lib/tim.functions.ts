@@ -127,7 +127,7 @@ export const createDeposit = createServerFn({ method: "POST" })
       }),
     });
 
-    return { ok: true, transactionId: tx.id as string, totalAmount, totalWeight, newBalance };
+    return { ok: true, transactionId: tx.id as string, totalAmount, totalWeight, newBalance, items };
   });
 
 export const listPickupTasks = createServerFn({ method: "GET" })
