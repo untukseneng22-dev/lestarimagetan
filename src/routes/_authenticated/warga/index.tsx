@@ -18,6 +18,7 @@ import {
 import { StatusBadge } from "@/components/StatusBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RequestPickupDialog } from "@/components/RequestPickupDialog";
 
 export const Route = createFileRoute("/_authenticated/warga/")({
   head: () => ({ meta: [{ title: "Beranda Warga — LESTARI MAGETAN" }] }),
