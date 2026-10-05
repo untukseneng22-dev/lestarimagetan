@@ -101,12 +101,12 @@ function SetorPage() {
     return sum + Math.round(w * cat.price_per_kg);
   }, 0);
 
-  async function doSearch(value?: string) {
+  async function doSearch(value?: string, fromScan = false) {
     setSearching(true);
     try {
       const res = await searchFn({ data: { query: value ?? query } });
       setResults(res as Resident[]);
-      if (value && res.length === 1) {
+      if (fromScan && value && res.length === 1) {
         // Hasil pindai QR umumnya tepat satu warga — langsung pilih.
         setResident(res[0] as Resident);
         setResults([]);
@@ -115,6 +115,19 @@ function SetorPage() {
       setSearching(false);
     }
   }
+
+  // Saran nama muncul otomatis saat mengetik (tanpa perlu menekan tombol cari).
+  useEffect(() => {
+    if (resident || scanOpen) return;
+    const q = query.trim();
+    if (q.length < 2) {
+      setResults([]);
+      return;
+    }
+    const t = setTimeout(() => void doSearch(), 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, resident, scanOpen]);
 
   function updateItem(index: number, patch: Partial<CalcItem>) {
     setItems((prev) => prev.map((it, i) => (i === index ? { ...it, ...patch } : it)));
