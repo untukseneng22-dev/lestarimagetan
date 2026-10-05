@@ -59,7 +59,7 @@ function SetorPage() {
             disposed = true;
             setScanOpen(false);
             setQuery(decoded);
-            void doSearch(decoded);
+            void doSearch(decoded, true);
           },
           () => {},
         );
@@ -185,7 +185,7 @@ function SetorPage() {
           </p>
           <Button asChild className="w-full bg-[#25D366] text-white hover:bg-[#1ebe5a]">
             <a href={lastDeposit.waUrl} target="_blank" rel="noreferrer">
-              <Send className="mr-1.5 h-4 w-4" /> Kirim Struk via WA
+              <Send className="mr-1.5 h-4 w-4" /> Kirim ke Warga (WhatsApp)
             </a>
           </Button>
           {!lastDeposit.hasPhone && (
