@@ -2,7 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { ChevronDown, ChevronRight, Lock } from "lucide-react";
+import { ChevronDown, ChevronRight, Lock, Send } from "lucide-react";
+import { buildReceiptText, waLink } from "@/lib/wa-receipt";
+import { Button } from "@/components/ui/button";
 import { listTransactionsAdmin } from "@/lib/admin.functions";
 import { formatNumber, formatRupiah, formatTanggal, todayISO } from "@/lib/format";
 import { Card, CardContent } from "@/components/ui/card";
@@ -107,6 +109,21 @@ function TransaksiPage() {
                         <span className="font-medium">{formatRupiah(Number(it.subtotal))}</span>
                       </div>
                     ))}
+                    <Button asChild size="sm" className="mt-2 bg-[#25D366] text-white hover:bg-[#1ebe5a]">
+                      <a
+                        target="_blank"
+                        rel="noreferrer"
+                        href={waLink(t.resident_phone, buildReceiptText({
+                          name: t.resident_name,
+                          date: t.deposit_date,
+                          items,
+                          totalWeight: Number(t.total_weight),
+                          totalAmount: Number(t.total_amount),
+                        }))}
+                      >
+                        <Send className="mr-1.5 h-4 w-4" /> Kirim Struk via WA
+                      </a>
+                    </Button>
                   </div>
                 )}
               </div>

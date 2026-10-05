@@ -360,11 +360,13 @@ export const listTransactionsAdmin = createServerFn({ method: "GET" })
     const list = rows ?? [];
     const ids = [...new Set(list.flatMap((r) => [r.resident_id, r.recorded_by]).filter(Boolean))] as string[];
     const { data: profiles } = ids.length
-      ? await supabase.from("profiles").select("id, full_name").in("id", ids)
+      ? await supabase.from("profiles").select("id, full_name, phone").in("id", ids)
       : { data: [] };
     const nameMap = new Map((profiles ?? []).map((p) => [p.id, p.full_name]));
+    const phoneMap = new Map((profiles ?? []).map((p) => [p.id, (p as { phone?: string | null }).phone ?? null]));
     return list.map((r) => ({
       ...r,
+      resident_phone: phoneMap.get(r.resident_id) ?? null,
       resident_name: nameMap.get(r.resident_id) ?? "-",
       recorded_by_name: r.recorded_by ? (nameMap.get(r.recorded_by) ?? "-") : "-",
     }));
