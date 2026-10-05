@@ -59,7 +59,7 @@ function SetorPage() {
             disposed = true;
             setScanOpen(false);
             setQuery(decoded);
-            void doSearch(decoded);
+            void doSearch(decoded, true);
           },
           () => {},
         );
@@ -101,12 +101,12 @@ function SetorPage() {
     return sum + Math.round(w * cat.price_per_kg);
   }, 0);
 
-  async function doSearch(value?: string) {
+  async function doSearch(value?: string, fromScan = false) {
     setSearching(true);
     try {
       const res = await searchFn({ data: { query: value ?? query } });
       setResults(res as Resident[]);
-      if (value && res.length === 1) {
+      if (fromScan && value && res.length === 1) {
         // Hasil pindai QR umumnya tepat satu warga — langsung pilih.
         setResident(res[0] as Resident);
         setResults([]);
@@ -115,6 +115,19 @@ function SetorPage() {
       setSearching(false);
     }
   }
+
+  // Saran nama muncul otomatis saat mengetik (tanpa perlu menekan tombol cari).
+  useEffect(() => {
+    if (resident || scanOpen) return;
+    const q = query.trim();
+    if (q.length < 2) {
+      setResults([]);
+      return;
+    }
+    const t = setTimeout(() => void doSearch(), 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, resident, scanOpen]);
 
   function updateItem(index: number, patch: Partial<CalcItem>) {
     setItems((prev) => prev.map((it, i) => (i === index ? { ...it, ...patch } : it)));
@@ -172,7 +185,7 @@ function SetorPage() {
           </p>
           <Button asChild className="w-full bg-[#25D366] text-white hover:bg-[#1ebe5a]">
             <a href={lastDeposit.waUrl} target="_blank" rel="noreferrer">
-              <Send className="mr-1.5 h-4 w-4" /> Kirim Struk via WA
+              <Send className="mr-1.5 h-4 w-4" /> Kirim ke Warga (WhatsApp)
             </a>
           </Button>
           {!lastDeposit.hasPhone && (
@@ -203,8 +216,8 @@ function SetorPage() {
               {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             </Button>
           </div>
-          {results.length > 0 && !resident && (
-            <div className="mt-2 divide-y divide-border rounded-lg border border-border">
+          {(results.length > 0 || searching) && !resident && (
+            <div className="mt-2 divide-y divide-border rounded-lg border border-border bg-card">
               {results.map((r) => (
                 <button
                   key={r.id}
@@ -212,9 +225,10 @@ function SetorPage() {
                   onClick={() => {
                     setResident(r);
                     setResults([]);
+                    setQuery(r.full_name);
                   }}
                 >
-                  <UserRound className="h-5 w-5 text-primary" />
+                  <UserRound className="h-5 w-5 shrink-0 text-primary" />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{r.full_name}</p>
                     <p className="truncate text-xs text-muted-foreground">
@@ -223,7 +237,15 @@ function SetorPage() {
                   </div>
                 </button>
               ))}
+              {results.length === 0 && searching && (
+                <div className="flex items-center gap-2 p-3 text-xs text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Mencari warga…
+                </div>
+              )}
             </div>
+          )}
+          {results.length === 0 && !searching && query.trim().length >= 2 && !resident && (
+            <p className="mt-2 text-xs text-muted-foreground">Tidak ada warga yang cocok dengan pencarian.</p>
           )}
         </CardContent>
       </Card>
